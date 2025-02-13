@@ -212,12 +212,10 @@ pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                                         // 添加注册语句
                                         reg_statements.push(quote! {
-                                            // 需注册的函数指针
-                                            let fn_ref: crate::mirror::core::remote_calls::RemoteCallDelegateType = #struct_ident::#invoke_user_code_method_name;
                                             // 调用注册函数
                                             crate::mirror::core::remote_calls::RemoteProcedureCalls::register_command_delegate::<#struct_ident>(
                                                 &#csharp_signature,
-                                                fn_ref,
+                                                #struct_ident::#invoke_user_code_method_name,
                                                 #requires_authority,
                                             );
                                         });
