@@ -1,6 +1,7 @@
 pub mod mirror;
 
 use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
+use crate::mirror::core::network_identity::network_identities;
 use crate::mirror::core::network_reader::NetworkReader;
 use std::any::Any;
 use unity_mirror_rs_macro::{command, component};
@@ -21,7 +22,19 @@ impl NetworkBehaviourTrait for MyStruct {
 impl MyStruct {
     #[command(requires_authority = true)]
     fn existing_method(&mut self, id: u32) {
-        println!("组件名字: {}  参数 1: {}", self.name, id)
+        println!("组件名字: {}  参数 1: {}", self.name, id);
+
+        // 测试自己找自己
+
+        self.name = "组件 2".to_string();
+
+        match network_identities().get_mut(&99) {
+            None => {}
+            Some(identity) => {
+                let component = &mut identity.network_behaviours[0];
+                println!("{:?}", component);
+            }
+        }
     }
 }
 
