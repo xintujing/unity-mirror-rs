@@ -38,8 +38,8 @@ pub fn network_identities() -> &'static mut HashMap<u32, NetworkIdentity> {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum OwnedType {
     #[default]
-    Client,
     Server,
+    Client,
 }
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum Visibility {
@@ -124,6 +124,8 @@ impl NetworkIdentity {}
 mod tests {
     use super::*;
     use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
+    use crate::mirror::core::network_identity::OwnedType::Server;
+    use crate::mirror::core::network_identity::Visibility::Default;
 
     #[derive(Debug)]
     struct Test {
@@ -149,8 +151,8 @@ mod tests {
             destroy_called: false,
             network_behaviours: vec![],
             scene_ids: DashMap::new(),
-            owned_type: OwnedType::Client,
-            visibility: Visibility::Default,
+            owned_type: Server,
+            visibility: Default,
             network_identity_serialization_tick: 1,
         };
 
