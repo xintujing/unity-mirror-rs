@@ -1013,6 +1013,16 @@ dependencies = [
  "parking_lot",
  "rust_decimal",
  "tklog",
+ "unity-mirror-rs-macro",
+]
+
+[[package]]
+name = "unity-mirror-rs-macro"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
 ]
 
 [[package]]

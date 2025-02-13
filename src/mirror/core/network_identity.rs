@@ -18,7 +18,7 @@ fn __init__() {
     }
 }
 
-pub fn add_network_identity(net_id: u32, network_identity: NetworkIdentity) {
+pub fn insert_network_identity(net_id: u32, network_identity: NetworkIdentity) {
     #[allow(static_mut_refs)]
     unsafe {
         let ptr = NETWORK_IDENTITIES.load(std::sync::atomic::Ordering::SeqCst);
@@ -51,12 +51,12 @@ pub enum Visibility {
 
 #[derive(Debug, Default)]
 pub struct NetworkIdentity {
-    net_id: Arc<parking_lot::RwLock<u32>>,
-    conn_id: Arc<parking_lot::RwLock<u64>>,
+    pub net_id: Arc<parking_lot::RwLock<u32>>,
+    pub conn_id: Arc<parking_lot::RwLock<u64>>,
     /// The set of network connections (players) that can see this object.
-    observers: Vec<u64>,
+    pub observers: Vec<u64>,
 
-    had_authority: bool,
+    pub had_authority: bool,
 
     /// Unique identifier for NetworkIdentity objects within a scene, used for spawning scene objects.
     // persistent scene id <sceneHash/32,sceneId/32> (see AssignSceneID comments)
@@ -158,7 +158,7 @@ mod tests {
 
         network_identity.network_behaviours.push(Box::new(test));
 
-        add_network_identity(1, network_identity);
+        insert_network_identity(1, network_identity);
 
         network_identities()
             .get_mut(&1)
