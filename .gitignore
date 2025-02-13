@@ -98,3 +98,5 @@ fabric.properties
 rust-project.json
 
 
+/.idea/misc.xml
+/.idea/vcs.xml
