@@ -28,10 +28,8 @@ impl MyStruct {
 #[cfg(test)]
 mod tests {
     use crate::mirror::core::network_connection_to_client::NetworkConnectionToClient;
-    use crate::mirror::core::network_identity::OwnedType::Client;
-    use crate::mirror::core::network_identity::Visibility::Default;
     use crate::mirror::core::network_identity::{
-        insert_network_identity, network_identities, NetworkIdentity,
+        insert_network_identity, network_identities, NetworkIdentity, OwnedType, Visibility,
     };
     use crate::mirror::core::network_reader::NetworkReader;
     use crate::mirror::core::network_writer::{NetworkWriter, NetworkWriterTrait};
@@ -59,8 +57,8 @@ mod tests {
             destroy_called: false,
             network_behaviours: vec![],
             scene_ids: dashmap::DashMap::new(),
-            owned_type: Client,
-            visibility: Default,
+            owned_type: OwnedType::Server,
+            visibility: Visibility::Default,
             network_identity_serialization_tick: 1,
         };
 
