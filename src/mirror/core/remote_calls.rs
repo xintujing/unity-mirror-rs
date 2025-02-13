@@ -96,7 +96,7 @@ impl RemoteProcedureCalls {
             if old_invoker.are_equal(type_id, remote_call_type, func) {
                 return true;
             }
-            log_error!("Delegate already exists for hash: {}", func_hash);
+            log_error!(format!("Delegate already exists for hash: {}", func_hash));
         }
         false
     }
