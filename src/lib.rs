@@ -1,6 +1,6 @@
 pub mod mirror;
 
-use crate::mirror::core::network_behaviour::{NetworkBehaviourTrait, NetworkBehaviourType};
+use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
 use crate::mirror::core::network_reader::NetworkReader;
 use std::any::Any;
 use unity_mirror_rs_macro::{command, component};
@@ -86,13 +86,14 @@ mod tests {
             None => {}
             Some(identity) => {
                 let component = &mut identity.network_behaviours[index];
-                let invoke1 = RemoteProcedureCalls::invoke(
+                let is_invoke = RemoteProcedureCalls::invoke(
                     func_hash,
                     remote_call_type,
                     &mut reader,
                     component,
                     &mut connection_to_client,
                 );
+                assert_eq!(is_invoke, true);
             }
         }
     }
