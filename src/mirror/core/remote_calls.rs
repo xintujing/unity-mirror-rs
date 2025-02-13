@@ -2,7 +2,7 @@ use crate::mirror::core::network_behaviour::NetworkBehaviourType;
 use crate::mirror::core::network_connection_to_client::NetworkConnectionToClient;
 use crate::mirror::core::tools::stable_hash::StableHash;
 use crate::{log_error, NetworkReader};
-use dashmap::mapref::one::RefMut;
+use dashmap::mapref::one::Ref;
 use dashmap::DashMap;
 use lazy_static::lazy_static;
 use std::any::TypeId;
@@ -21,27 +21,34 @@ impl RemoteProcedureCalls {
         obj: &mut NetworkBehaviourType,
         connection_to_client: &mut NetworkConnectionToClient,
     ) -> bool {
-        // 找到对应的委托
-        let (has, invoker_option) = Self::get_invoker_for_hash(func_hash, remote_call_type);
-        if has {
-            if let Some(invoker) = invoker_option {
+        match Self::get_invoker_for_hash(func_hash, remote_call_type) {
+            // 没有找到对应的委托
+            None => false,
+            // 找到对应的委托
+            Some(invoker) => {
                 (invoker.function)(obj, reader, connection_to_client);
-                return has;
+                true
             }
         }
-        has
+    }
+
+    pub fn command_requires_authority(func_hash: u16) -> bool {
+        if let Some(invoker) = NETWORK_MESSAGE_HANDLERS.get(&func_hash) {
+            return invoker.requires_authority;
+        }
+        false
     }
 
     fn get_invoker_for_hash(
         func_hash: u16,
         remote_call_type: RemoteCallType,
-    ) -> (bool, Option<RefMut<'static, u16, Invoker>>) {
-        if let Some(invoker) = NETWORK_MESSAGE_HANDLERS.get_mut(&func_hash) {
+    ) -> Option<Ref<'static, u16, Invoker>> {
+        if let Some(invoker) = NETWORK_MESSAGE_HANDLERS.get(&func_hash) {
             if invoker.call_type == remote_call_type {
-                return (true, Some(invoker));
+                return Some(invoker);
             }
         }
-        (false, None)
+        None
     }
 
     pub fn register_command_delegate<T: 'static>(
