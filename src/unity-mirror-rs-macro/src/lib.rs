@@ -326,6 +326,44 @@ pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
 }
 
+/// 定义 sync 宏
+#[proc_macro_derive(sync)]
+pub fn sync(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let struct_ident = input.ident;
+    let mut fields = vec![];
+
+    if let Data::Struct(data) = input.data {
+        if let Fields::Named(fields_named) = data.fields {
+            for field in fields_named.named {
+                let field_name = field.ident.unwrap();
+                let field_type = type_to_csharp(&field.ty);
+                fields.push(quote! {
+                    public #field_type #field_name;
+                });
+            }
+        }
+    }
+
+    let token_stream = TokenStream::from(quote! {
+
+    });
+
+    token_stream
+}
+
+/// 定义 sync_var attribute 宏
+#[proc_macro_attribute]
+pub fn sync_var(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    item
+}
+
+/// 定义 sync_struct attribute 宏
+#[proc_macro_attribute]
+pub fn sync_struct(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    item
+}
+
 // 将蛇形命名转换为帕斯卡命名
 fn snake_to_pascal(snake_case: &str) -> String {
     snake_case
@@ -360,7 +398,7 @@ fn type_to_csharp(ty: &Type) -> String {
             let type_name = last_segment.ident.to_string();
 
             match type_name.as_str() {
-                "u8" => "System.Byte".to_string(), // 单个字节
+                "u8" => "System.Byte".to_string(),  // 单个字节
                 "i8" => "System.SByte".to_string(), // 有符号字节
                 "u16" => "System.UInt16".to_string(),
                 "i16" => "System.Int16".to_string(),
