@@ -360,15 +360,20 @@ fn type_to_csharp(ty: &Type) -> String {
             let type_name = last_segment.ident.to_string();
 
             match type_name.as_str() {
+                "u8" => "System.Byte".to_string(), // 单个字节
+                "i8" => "System.SByte".to_string(), // 有符号字节
+                "u16" => "System.UInt16".to_string(),
+                "i16" => "System.Int16".to_string(),
+                "u32" => "System.UInt32".to_string(),
                 "i32" => "System.Int32".to_string(),
+                "u64" => "System.UInt64".to_string(),
                 "i64" => "System.Int64".to_string(),
                 "f32" => "System.Single".to_string(),
                 "f64" => "System.Double".to_string(),
                 "bool" => "System.Boolean".to_string(),
-                "&str" | "String" => "System.String".to_string(),
                 "usize" => "System.UIntPtr".to_string(),
                 "isize" => "System.IntPtr".to_string(),
-                "u8" => "System.Byte".to_string(), // 单个字节
+                "&str" | "String" => "System.String".to_string(),
                 "Vec" => {
                     // 处理 Vec<T>
                     if let PathArguments::AngleBracketed(args) = &last_segment.arguments {
