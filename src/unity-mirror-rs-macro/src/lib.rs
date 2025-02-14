@@ -331,16 +331,14 @@ pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn sync(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let struct_ident = input.ident;
-    let mut fields = vec![];
+    // let mut fields = vec![];
 
     if let Data::Struct(data) = input.data {
         if let Fields::Named(fields_named) = data.fields {
             for field in fields_named.named {
                 let field_name = field.ident.unwrap();
-                let field_type = type_to_csharp(&field.ty);
-                fields.push(quote! {
-                    public #field_type #field_name;
-                });
+                let field_type = field.ty;
+
             }
         }
     }
