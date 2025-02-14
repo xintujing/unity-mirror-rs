@@ -12,3 +12,19 @@ readme = "README.md"
 exclude = []
 
 [dependencies]
+unity-mirror-rs-macro = { path = "src/unity-mirror-rs-macro" }
+lazy_static = "1.5.0"
+dashmap = "6.1.0"
+
+# log start
+tklog = "0.2.7"
+# log end
+
+# writer reader start
+rust_decimal = "1.36.0"
+half = "2.4.1"
+nalgebra = "0.33.2"
+# writer reader end
+
+ctor = "0.3.0"
+parking_lot = "0.12"
