@@ -35,14 +35,17 @@ pub enum TransportError {
 pub type TransportCallBackFuncType = fn(TransportCallback);
 
 // 传输层抽象
+#[derive(Default)]
 pub struct Transport {
-    pub transport_cb_fn: TransportCallBackFuncType,
+    pub transport_cb_fn: Option<TransportCallBackFuncType>,
 }
 
-impl Default for Transport {
-    fn default() -> Self {
-        Self {
-            transport_cb_fn: |_: TransportCallback| {},
-        }
-    }
+pub trait TransportTrait {
+    fn get_client_address(&self, conn_id: u64) -> String;
+    fn send(&self, conn_id: u64, data: Vec<u8>, channel: TransportChannel);
+    fn disconnect(&self, conn_id: u64);
+    fn transport_cb_fn(&self) -> Option<TransportCallBackFuncType>;
+    fn set_transport_cb_fn(&mut self, cb: TransportCallBackFuncType);
+    fn early_update(&mut self);
+    fn late_update(&mut self);
 }
