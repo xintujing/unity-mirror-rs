@@ -11,7 +11,7 @@ pub struct MyStruct {
     name: String,
     age: u64,
     #[sync_var]
-    health: u64,
+    health: u32,
 }
 
 // 实现 NetworkBehaviourTrait
@@ -74,7 +74,6 @@ mod tests {
 
     #[test]
     fn test() {
-        
         let net_id = 99;
         let index = 0;
 

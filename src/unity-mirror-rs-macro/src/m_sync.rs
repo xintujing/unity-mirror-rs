@@ -48,6 +48,18 @@ pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
                             "str" => {
                                 quote! {writer.write_str(self.#field_name);}
                             }
+                            "i32" => {
+                                quote! {writer.compress_var_int(self.#field_name);}
+                            }
+                            "u32" => {
+                                quote! {writer.compress_var_uint(self.#field_name);}
+                            }
+                            "i64" => {
+                                quote! {writer.compress_var_long(self.#field_name);}
+                            }
+                            "u64" => {
+                                quote! {writer.compress_var_ulong(self.#field_name);}
+                            }
                             _ => {
                                 quote! {writer.write_blittable::<#field_type>(self.#field_name);}
                             }
@@ -62,6 +74,18 @@ pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
                             }
                             "str" => {
                                 quote! {self.#field_name = reader.read_str();}
+                            }
+                            "i32" => {
+                                quote! {self.#field_name = reader.decompress_var_int();}
+                            }
+                            "u32" => {
+                                quote! {self.#field_name = reader.decompress_var_uint();}
+                            }
+                            "i64" => {
+                                quote! {self.#field_name = reader.decompress_var_long();}
+                            }
+                            "u64" => {
+                                quote! {self.#field_name = reader.decompress_var_ulong();}
                             }
                             _ => {
                                 quote! {self.#field_name = reader.read_blittable::<#field_type>();}
