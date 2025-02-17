@@ -42,7 +42,38 @@ impl NetworkMessageTrait for AddPlayerMessage {
 }
 
 /// SceneMessage
-// TODO
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
+#[repr(u8)]
+pub enum SceneOperation {
+    #[default]
+    Normal = 0,
+    LoadAdditive = 1,
+    UnloadAdditive = 2,
+}
+impl SceneOperation {
+    pub fn from(value: u8) -> SceneOperation {
+        match value {
+            0 => SceneOperation::Normal,
+            1 => SceneOperation::LoadAdditive,
+            2 => SceneOperation::UnloadAdditive,
+            _ => SceneOperation::Normal,
+        }
+    }
+    pub fn to_u8(&self) -> u8 {
+        *self as u8
+    }
+}
+#[derive(Debug, PartialEq, Clone, Default, NetworkMessage)]
+pub struct SceneMessage {
+    pub scene_name: String,
+    pub operation: u8,
+    pub custom_handling: bool,
+}
+impl NetworkMessageTrait for SceneMessage {
+    fn get_full_name() -> &'static str {
+        "Mirror.SceneMessage"
+    }
+}
 
 #[derive(Debug, PartialEq, Clone, Default, NetworkMessage)]
 pub struct CommandMessage {
@@ -199,4 +230,22 @@ pub trait NetworkMessageTrait: Send + Sync + NetworkMessagePreTrait {
     fn get_full_name() -> &'static str
     where
         Self: Sized;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::mirror::core::network_writer_pool::NetworkWriterPool;
+
+    #[test]
+    fn test_network_message_trait() {
+        let mut writer = NetworkWriterPool::get();
+        let mut message = NetworkPingMessage {
+            local_time: 1.0,
+            predicted_time_adjusted: 2.0,
+        };
+        message.serialize(&mut writer);
+
+        println!("{:?}", writer.to_bytes());
+    }
 }
