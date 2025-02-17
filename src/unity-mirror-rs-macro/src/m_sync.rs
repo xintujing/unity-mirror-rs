@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use std::time::SystemTime;
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, Type};
 
 /// sync 宏实现
 pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
@@ -22,31 +22,63 @@ pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
                     if attr.path().is_ident("sync_var") {
                         let filed_index = sync_var_index;
                         sync_var_index += 1;
+                        // 获取字段的名字
                         let field_name = field.ident.as_ref().unwrap();
+                        // 获取字段的类型
                         let field_type = &field.ty;
+                        // 获取字段的类型名字
+                        let ref field_type_str = match field_type {
+                            Type::Path(type_path) => {
+                                // 获取类型标识符的名字
+                                type_path.path.segments.last().unwrap().ident.to_string()
+                            }
+                            _ => {
+                                // 暂时不支持复杂类型
+                                panic!("Field type {} is not supported", field_name);
+                            }
+                        };
+
+                        // 生成序列化的代码
+                        // TODO 压缩类型 特殊处理
+                        let serialize_ts = match field_type_str.as_str() {
+                            "String" => {
+                                // String 类型
+                                quote! {writer.write_string(self.#field_name.clone());}
+                            }
+                            "str" => {
+                                quote! {writer.write_str(self.#field_name);}
+                            }
+                            _ => {
+                                quote! {writer.write_blittable::<#field_type>(self.#field_name);}
+                            }
+                        };
+
+                        // 生成反序列化的代码
+                        // TODO 压缩类型 特殊处理
+                        let deserialize_ts = match field_type_str.as_str() {
+                            "String" => {
+                                // String 类型
+                                quote! {self.#field_name = reader.read_string();}
+                            }
+                            "str" => {
+                                quote! {self.#field_name = reader.read_str();}
+                            }
+                            _ => {
+                                quote! {self.#field_name = reader.read_blittable::<#field_type>();}
+                            }
+                        };
 
                         // Generate logic for SerializeSyncVars
                         serialize_fields.push(quote! {
                             if force_all || (self.sync_var_dirty_bits() & (1 << #filed_index)) != 0 {
-                                // TODO 压缩类型 特殊处理
-                                writer.write_blittable::<#field_type>(self.#field_name);
-                                // // 如果是 String 类型
-                                // if std::any::TypeId::of::<#field_type>() == std::any::TypeId::of::<String>() {
-                                //     writer.write_string(self.#field_name.clone());
-                                // }
-                                // else if std::any::TypeId::of::<#field_type>() == std::any::TypeId::of::<&str>() {
-                                //     writer.write_str(self.#field_name);
-                                // } else {
-                                //     writer.write_blittable::<#field_type>(self.#field_name);
-                                // }
+                                #serialize_ts
                             }
                         });
 
                         // Generate logic for DeserializeSyncVars
                         deserialize_fields.push(quote! {
                             if initial_state || (reader.decompress_var_ulong() & (1 << #filed_index)) != 0 {
-                                // TODO 压缩类型 特殊处理
-                                self.#field_name = reader.read_blittable::<#field_type>();
+                                #deserialize_ts
                             }
                         });
                     }

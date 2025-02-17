@@ -8,7 +8,7 @@ use unity_mirror_rs_macro::{command, component, MSync};
 #[derive(Debug, MSync)]
 pub struct MyStruct {
     #[sync_var]
-    name: u64,
+    name: String,
     age: u64,
     #[sync_var]
     health: u64,
@@ -29,7 +29,7 @@ impl MyStruct {
 
         // 测试自己找自己
 
-        self.name = 2;
+        self.name = "组件 2".to_string();
 
         match network_identities().get_mut(&99) {
             None => {}
@@ -58,14 +58,28 @@ mod tests {
     use crate::MyStruct;
 
     #[test]
+    fn bb() {
+        match "u64" {
+            "String" => {
+                println!("writer.write_string(self.name.clone());")
+            }
+            "str" => {
+                println!("writer.write_str(self.name);")
+            }
+            _ => {
+                println!("writer.write_blittable::<u64>(self.name);")
+            }
+        }
+    }
+
+    #[test]
     fn test() {
-        println!("{}", std::any::TypeId::of::<str>() == std::any::TypeId::of::<String>());
-        return;
+        
         let net_id = 99;
         let index = 0;
 
         let my_struct = MyStruct {
-            name: 1,
+            name: "组件 1".to_string(),
             age: 0,
             health: 0,
         };
