@@ -5,6 +5,7 @@ use crate::mirror::core::network_identity::network_identities;
 use crate::mirror::core::network_reader::NetworkReader;
 use unity_mirror_rs_macro::{command, component, MSync, NetworkMessage};
 
+
 #[derive(Debug, MSync)]
 pub struct MyStruct {
     #[sync_var]
