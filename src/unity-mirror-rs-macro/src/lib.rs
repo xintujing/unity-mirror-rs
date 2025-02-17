@@ -1,10 +1,12 @@
 extern crate proc_macro;
 mod component;
 mod m_sync;
+mod network_message;
 mod tools;
 
 use crate::component::component_impl;
 use crate::m_sync::m_sync_impl;
+use crate::network_message::network_message_impl;
 use proc_macro::TokenStream;
 use quote::quote;
 use std::time::SystemTime;
@@ -71,4 +73,9 @@ pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_derive(MSync, attributes(sync_var, sync_struct))]
 pub fn m_sync(input: TokenStream) -> TokenStream {
     m_sync_impl(input)
+}
+
+#[proc_macro_derive(NetworkMessage)]
+pub fn network_message(input: TokenStream) -> TokenStream {
+    network_message_impl(input)
 }
