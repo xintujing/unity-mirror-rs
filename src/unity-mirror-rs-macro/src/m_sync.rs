@@ -3,34 +3,6 @@ use quote::quote;
 use std::time::SystemTime;
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
-// struct SyncVarArgs {
-//     index: u64,
-// }
-//
-// impl syn::parse::Parse for SyncVarArgs {
-//     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-//         let mut index = 0;
-//         // 解析多个 `key = value` 或 `key` 形式的参数
-//         while !input.is_empty() {
-//             let name_value: MetaNameValue = input.parse()?; // 解析每个 `key = value`
-//             let key = name_value.path.to_token_stream().to_string();
-//             let value = name_value.value.to_token_stream();
-//             match key.as_str() {
-//                 "index" => {
-//                     index = value.to_string().parse().unwrap();
-//                 }
-//                 _ => {}
-//             }
-//
-//             // 如果有逗号，则跳过，否则结束
-//             if input.peek(Token![,]) {
-//                 input.parse::<Token![,]>()?;
-//             }
-//         }
-//         Ok(SyncVarArgs { index })
-//     }
-// }
-
 /// sync 宏实现
 pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -58,6 +30,15 @@ pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
                             if force_all || (self.sync_var_dirty_bits() & (1 << #filed_index)) != 0 {
                                 // TODO 压缩类型 特殊处理
                                 writer.write_blittable::<#field_type>(self.#field_name);
+                                // // 如果是 String 类型
+                                // if std::any::TypeId::of::<#field_type>() == std::any::TypeId::of::<String>() {
+                                //     writer.write_string(self.#field_name.clone());
+                                // }
+                                // else if std::any::TypeId::of::<#field_type>() == std::any::TypeId::of::<&str>() {
+                                //     writer.write_str(self.#field_name);
+                                // } else {
+                                //     writer.write_blittable::<#field_type>(self.#field_name);
+                                // }
                             }
                         });
 

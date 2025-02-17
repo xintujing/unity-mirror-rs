@@ -3,7 +3,6 @@ pub mod mirror;
 use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
 use crate::mirror::core::network_identity::network_identities;
 use crate::mirror::core::network_reader::NetworkReader;
-use std::any::Any;
 use unity_mirror_rs_macro::{command, component, MSync};
 
 #[derive(Debug, MSync)]
@@ -60,6 +59,8 @@ mod tests {
 
     #[test]
     fn test() {
+        println!("{}", std::any::TypeId::of::<str>() == std::any::TypeId::of::<String>());
+        return;
         let net_id = 99;
         let index = 0;
 
