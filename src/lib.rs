@@ -4,17 +4,21 @@ use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
 use crate::mirror::core::network_identity::network_identities;
 use crate::mirror::core::network_reader::NetworkReader;
 use std::any::Any;
-use unity_mirror_rs_macro::{command, component};
+use unity_mirror_rs_macro::{command, component, MSync};
 
-#[derive(Debug)]
-struct MyStruct {
-    name: String,
+#[derive(Debug, MSync)]
+pub struct MyStruct {
+    #[sync_var]
+    name: u64,
+    age: u64,
+    #[sync_var]
+    health: u64,
 }
 
 // 实现 NetworkBehaviourTrait
 impl NetworkBehaviourTrait for MyStruct {
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
+    fn sync_var_dirty_bits(&self) -> u64 {
+        0
     }
 }
 
@@ -26,7 +30,7 @@ impl MyStruct {
 
         // 测试自己找自己
 
-        self.name = "组件 2".to_string();
+        self.name = 2;
 
         match network_identities().get_mut(&99) {
             None => {}
@@ -35,6 +39,10 @@ impl MyStruct {
                 println!("{:?}", component);
             }
         }
+    }
+
+    fn sync_var_dirty_bits(&self) -> u64 {
+        0
     }
 }
 
@@ -56,7 +64,9 @@ mod tests {
         let index = 0;
 
         let my_struct = MyStruct {
-            name: "组件 1".to_string(),
+            name: 1,
+            age: 0,
+            health: 0,
         };
 
         let mut network_identity = NetworkIdentity {

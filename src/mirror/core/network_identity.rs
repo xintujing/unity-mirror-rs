@@ -123,18 +123,21 @@ impl NetworkIdentity {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
+    use crate::mirror::core::network_behaviour::{
+        NetworkBehaviourMSyncTrait, NetworkBehaviourTrait,
+    };
     use crate::mirror::core::network_identity::OwnedType::Server;
     use crate::mirror::core::network_identity::Visibility::Default;
+    use unity_mirror_rs_macro::MSync;
 
-    #[derive(Debug)]
+    #[derive(Debug, MSync)]
     struct Test {
         id: u32,
     }
 
     impl NetworkBehaviourTrait for Test {
-        fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-            self
+        fn sync_var_dirty_bits(&self) -> u64 {
+            0
         }
     }
 
