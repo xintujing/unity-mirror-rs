@@ -56,6 +56,7 @@ impl RemoteProcedureCalls {
         func: RemoteCallDelegateType,
         cmd_requires_authority: bool,
     ) -> u16 {
+        println!("{}", function_full_name);
         Self::register_delegate::<T>(
             function_full_name,
             RemoteCallType::Command,

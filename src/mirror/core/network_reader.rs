@@ -16,10 +16,7 @@ impl NetworkReader {
         Self::new_with_bytes(Vec::new())
     }
     pub fn new_with_bytes(data: Vec<u8>) -> Self {
-        Self {
-            data,
-            position: 0,
-        }
+        Self { data, position: 0 }
     }
     pub fn reset(&mut self) {
         self.position = 0;
@@ -55,6 +52,10 @@ impl NetworkReader {
     pub fn set_array_segment(&mut self, data: &[u8]) {
         self.data = data.to_vec();
         self.position = 0;
+    }
+
+    pub fn read_to<T>(&mut self) -> T {
+        self.read_blittable()
     }
     pub fn read_blittable<T>(&mut self) -> T {
         let size = size_of::<T>();
@@ -102,7 +103,7 @@ impl NetworkReader {
     pub fn read_remaining_array_segment(&mut self) -> &[u8] {
         self.read_array_segment(self.remaining())
     }
-    pub fn read<T: Readable<TYPE=T>>(&mut self) -> T {
+    pub fn read<T: Readable<TYPE = T>>(&mut self) -> T {
         if let Some(reader_fn) = T::get_reader() {
             reader_fn(self)
         } else {
@@ -191,7 +192,17 @@ pub trait NetworkReaderTrait {
 
 impl fmt::Display for NetworkReader {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let hex_string = self.data.iter().map(|byte| format!("{:02X}", byte)).collect::<String>();
-        write!(f, "[{} @ {}/{}]", hex_string, self.position, self.capacity())
+        let hex_string = self
+            .data
+            .iter()
+            .map(|byte| format!("{:02X}", byte))
+            .collect::<String>();
+        write!(
+            f,
+            "[{} @ {}/{}]",
+            hex_string,
+            self.position,
+            self.capacity()
+        )
     }
 }
