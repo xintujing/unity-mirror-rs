@@ -1,1 +1,0 @@
-# unity-mirror-rs-macro
