@@ -1,18 +1,25 @@
 extern crate proc_macro;
 use crate::component::component_attribute_handler;
+use crate::m_sync::m_sync_impl;
 use crate::namespace::namespace_attribute_handler;
+use crate::network_message::network_message_impl;
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
+use quote::quote;
+use quote::ToTokens;
 use std::time::SystemTime;
-use syn::parse::{Parse, ParseStream};
+use syn::parse::Parse;
+use syn::parse::ParseStream;
 use syn::*;
 
 mod utils;
 
 mod command;
-mod rpc;
 mod component;
+mod m_sync;
 mod namespace;
+mod network_message;
+mod rpc;
+mod tools;
 
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
@@ -98,12 +105,14 @@ pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
     component_attribute_handler(attr, item)
 }
 
+/// 定义 command attribute 宏
 attribute_args!(CommandArgs, requires_authority);
 #[proc_macro_attribute]
 pub fn command(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
 }
 
+/// 定义 rpc attribute 宏
 #[proc_macro_attribute]
 pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
@@ -113,4 +122,13 @@ attribute_args!(NamespaceArgs, value, full_path);
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
     namespace_attribute_handler(attr, item)
+}
+#[proc_macro_derive(MSync, attributes(sync_var, sync_struct))]
+pub fn m_sync(input: TokenStream) -> TokenStream {
+    m_sync_impl(input)
+}
+
+#[proc_macro_derive(NetworkMessage)]
+pub fn network_message(input: TokenStream) -> TokenStream {
+    network_message_impl(input)
 }
