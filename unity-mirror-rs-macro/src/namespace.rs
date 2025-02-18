@@ -1,3 +1,4 @@
+use crate::utils::write_to_file;
 use crate::NamespaceArgs;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -40,7 +41,7 @@ pub(crate) fn namespace_attribute_handler(attr: TokenStream, item: TokenStream) 
         }
     });
 
-    // write_to_file("namespace", output.to_string());
+    write_to_file("namespace", output.to_string());
 
     output
 }

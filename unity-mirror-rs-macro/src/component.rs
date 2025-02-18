@@ -1,6 +1,6 @@
 use crate::command::command_handler;
 use crate::rpc::rpc_handler;
-use crate::utils::generate_unique_string;
+use crate::utils::{generate_unique_string, write_to_file};
 use crate::ComponentArgs;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
@@ -110,7 +110,7 @@ pub(crate) fn component_attribute_handler(attr: TokenStream, item: TokenStream) 
         }
     });
 
-    // write_to_file("component", token_stream.to_string());
+    write_to_file("component", token_stream.to_string());
 
     token_stream
 }

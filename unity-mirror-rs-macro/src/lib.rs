@@ -1,27 +1,25 @@
 extern crate proc_macro;
 use crate::component::component_attribute_handler;
-use crate::namespace::namespace_attribute_handler;
-mod component;
-mod m_sync;
-mod network_message;
-mod tools;
-
-use crate::component::component_impl;
 use crate::m_sync::m_sync_impl;
+use crate::namespace::namespace_attribute_handler;
 use crate::network_message::network_message_impl;
 use proc_macro::TokenStream;
 use quote::quote;
-use quote::{quote, ToTokens};
+use quote::ToTokens;
 use std::time::SystemTime;
-use syn::parse::{Parse, ParseStream};
+use syn::parse::Parse;
+use syn::parse::ParseStream;
 use syn::*;
 
 mod utils;
 
 mod command;
 mod component;
+mod m_sync;
 mod namespace;
+mod network_message;
 mod rpc;
+mod tools;
 
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {

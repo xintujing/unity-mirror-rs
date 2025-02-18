@@ -6,8 +6,7 @@ use crate::mirror::core::network_reader::NetworkReader;
 use serde::Deserialize;
 use std::any::Any;
 use std::fmt::{Debug, Formatter};
-use unity_mirror_rs_macro::{command, component, namespace, rpc};
-use unity_mirror_rs_macro::{command, component, MSync, NetworkMessage};
+use unity_mirror_rs_macro::{command, component, namespace, rpc, MSync, NetworkMessage};
 
 #[derive(Debug, MSync)]
 pub struct MyStruct {
