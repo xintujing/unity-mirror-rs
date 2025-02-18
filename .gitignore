@@ -102,5 +102,5 @@ rust-project.json
 /.idea/misc.xml
 /.idea/vcs.xml
 
-src/unity-mirror-rs-macro/target
+unity-mirror-rs-macro/target
 /tmp/
