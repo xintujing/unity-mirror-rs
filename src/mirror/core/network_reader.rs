@@ -72,11 +72,11 @@ impl NetworkReader {
         value
     }
     pub fn read_blittable_nullable<T>(&mut self) -> Option<T> {
-        let is_null = self.read_byte() == 0;
+        let is_null = self.read_blittable::<u8>() == 0;
         if is_null {
             None
         } else {
-            Some(self.read_blittable())
+            Some(self.read_blittable::<T>())
         }
     }
     pub fn read_bytes(&mut self, count: usize) -> Vec<u8> {

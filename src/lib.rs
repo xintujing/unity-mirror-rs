@@ -7,19 +7,23 @@ use serde::Deserialize;
 use std::any::Any;
 use std::fmt::{Debug, Formatter};
 use unity_mirror_rs_macro::{command, component, namespace, rpc};
+use unity_mirror_rs_macro::{command, component, MSync, NetworkMessage};
 
-#[derive(Debug)]
-// #[network_behaviour]
-struct MyStruct {
+#[derive(Debug, MSync)]
+pub struct MyStruct {
+    #[sync_var]
     name: String,
+    age: u64,
+    #[sync_var]
+    health: u32,
 }
 
 // fn check_implements_my_trait<T: CustomDataType>(_: &T) -> bool {
 //     true
 // }
 impl NetworkBehaviourTrait for MyStruct {
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
+    fn sync_var_dirty_bits(&self) -> u64 {
+        0
     }
 }
 
@@ -59,6 +63,10 @@ impl MyStruct {
     fn test_rpc2(&self) {}
     #[rpc]
     fn test_rpc3(&self) {}
+
+    fn sync_var_dirty_bits(&self) -> u64 {
+        0
+    }
 }
 
 fn test2() {
@@ -80,12 +88,29 @@ mod tests {
     fn a() {}
 
     #[test]
+    fn bb() {
+        match "u64" {
+            "String" => {
+                println!("writer.write_string(self.name.clone());")
+            }
+            "str" => {
+                println!("writer.write_str(self.name);")
+            }
+            _ => {
+                println!("writer.write_blittable::<u64>(self.name);")
+            }
+        }
+    }
+
+    #[test]
     fn test() {
         let net_id = 99;
         let index = 0;
 
         let my_struct = MyStruct {
             name: "组件 1".to_string(),
+            age: 0,
+            health: 0,
         };
 
         let mut network_identity = NetworkIdentity {
@@ -140,5 +165,3 @@ mod tests {
         }
     }
 }
-
-fn main() {}
