@@ -23,7 +23,7 @@ tklog = "0.2.7"
 # writer reader start
 rust_decimal = "1.36.0"
 half = "2.4.1"
-nalgebra = "0.33.2"
+nalgebra = { version = "0.33.2", features = ["rand"] }
 # writer reader end
 
 ctor = "0.3.0"

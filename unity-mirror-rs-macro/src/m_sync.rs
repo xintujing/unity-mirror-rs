@@ -145,16 +145,16 @@ pub(crate) fn m_sync_impl(input: TokenStream) -> TokenStream {
 
     let token_stream = TokenStream::from(generated);
 
-    let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-
-    std::fs::write(
-        format!("tmp/__sync_{}.rs", timestamp),
-        token_stream.to_string(),
-    )
-    .expect("write file failed");
+    // let timestamp = SystemTime::now()
+    //     .duration_since(SystemTime::UNIX_EPOCH)
+    //     .unwrap()
+    //     .as_secs();
+    //
+    // std::fs::write(
+    //     format!("tmp/__sync_{}.rs", timestamp),
+    //     token_stream.to_string(),
+    // )
+    // .expect("write file failed");
 
     token_stream
 }

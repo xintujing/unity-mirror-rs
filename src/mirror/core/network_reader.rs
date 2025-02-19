@@ -54,9 +54,6 @@ impl NetworkReader {
         self.position = 0;
     }
 
-    pub fn read_to<T>(&mut self) -> T {
-        self.read_blittable()
-    }
     pub fn read_blittable<T>(&mut self) -> T {
         let size = size_of::<T>();
         if self.remaining() < size {

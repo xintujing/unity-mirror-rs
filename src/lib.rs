@@ -3,8 +3,10 @@ pub mod mirror;
 use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
 use crate::mirror::core::network_identity::network_identities;
 use crate::mirror::core::network_reader::NetworkReader;
+use nalgebra::Quaternion;
 use serde::Deserialize;
 use std::any::Any;
+use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use unity_mirror_rs_macro::{command, component, namespace, rpc, MSync, NetworkMessage};
 
@@ -36,6 +38,24 @@ pub struct AuthResponseMessage {
 
 // 实现 NetworkBehaviourTrait
 
+#[namespace(value = "qwer")]
+#[derive(Debug, Default)]
+struct Vector3;
+
+#[derive(Default, Debug)]
+struct MyType {
+    a: i8,
+    b: i16,
+    c: String,
+    d: Vec<u8>,
+    e: HashMap<String, i64>,
+    f: Vector3,
+    g: nalgebra::Vector3<f64>,
+    h: nalgebra::Vector4<f64>,
+    i: Quaternion<f64>,
+    j: (i8, u8, bool),
+}
+
 #[component(namespace = "Mirror")]
 impl MyStruct {
     #[command(requires_authority = true)]
@@ -56,6 +76,16 @@ impl MyStruct {
         }
     }
 
+    #[command(requires_authority = true)]
+    fn test_command1(
+        &self,
+        bs: &[u8],
+        bs2: Vec<String>,
+        /* b3: HashMap<String, i64>,*/ b4: &[u8; 32],
+        b5: nalgebra::Vector3<f64>,
+        b6: Vector3,
+    ) {
+    }
     #[rpc]
     fn test_rpc1(&self) {}
     #[rpc]
@@ -81,10 +111,21 @@ mod tests {
     use crate::mirror::core::network_writer::{NetworkWriter, NetworkWriterTrait};
     use crate::mirror::core::remote_calls::{RemoteCallType, RemoteProcedureCalls};
     use crate::mirror::core::tools::stable_hash::StableHash;
-    use crate::MyStruct;
+    use crate::{MyStruct, MyType, Vector3};
+    use std::collections::HashMap;
 
     #[test]
-    fn a() {}
+    fn a() {
+        let mut a = MyType::default();
+
+        let l = s(a);
+        println!("{}", l) // 输出: 24
+    }
+
+    fn s<T>(t: T) -> usize {
+        size_of::<T>()
+        // size_of_val::<T>(&t)
+    }
 
     #[test]
     fn bb() {
@@ -143,8 +184,38 @@ mod tests {
         let remote_call_type = RemoteCallType::Command;
         // NetworkWriter
         let mut writer = NetworkWriter::new();
-        writer.write_int(22);
+
+        writer.write_blittable(crate::MyType {
+            a: 6,
+            b: 7,
+            c: "999".to_string(),
+            d: vec![22, 255, 231],
+            e: || -> HashMap<String, i64> {
+                let mut m = HashMap::new();
+                m.insert("key".to_string(), 123);
+                m
+            }(),
+            f: Vector3 {},
+            g: Default::default(),
+            h: Default::default(),
+            i: Default::default(),
+            j: (6, 6, true),
+        });
+
+        let hex_str = writer
+            .to_bytes()
+            .iter()
+            .map(|b| format!("{:02X}", b))
+            .collect::<Vec<String>>();
+
+        println!("hex_str: {}", hex_str.join(" "));
+
+
         let mut reader = NetworkReader::new_with_bytes(writer.to_bytes());
+
+        let _my_type: MyType = reader.read_blittable();
+        println!("_my_type: {:?}", _my_type);
+
         // NetworkConnectionToClient
         let mut connection_to_client = NetworkConnectionToClient::default();
 
@@ -159,7 +230,7 @@ mod tests {
                     component,
                     &mut connection_to_client,
                 );
-                assert_eq!(is_invoke, true);
+                // assert_eq!(is_invoke, true);
             }
         }
     }

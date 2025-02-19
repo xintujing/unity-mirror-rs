@@ -19,7 +19,6 @@ mod m_sync;
 mod namespace;
 mod network_message;
 mod rpc;
-mod tools;
 
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
@@ -106,7 +105,7 @@ pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 /// 定义 command attribute 宏
-attribute_args!(CommandArgs, requires_authority);
+attribute_args!(CommandArgs, authority);
 #[proc_macro_attribute]
 pub fn command(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
@@ -118,7 +117,7 @@ pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
 }
 
-attribute_args!(NamespaceArgs, value, full_path);
+attribute_args!(NamespaceArgs, value, package);
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
     namespace_attribute_handler(attr, item)

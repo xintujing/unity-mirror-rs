@@ -63,7 +63,7 @@ impl NetworkWriter {
     pub fn set_position(&mut self, value: usize) {
         self.position = value;
     }
-    pub fn write_blittable<T: Copy>(&mut self, value: T) {
+    pub fn write_blittable<T>(&mut self, value: T) {
         // Check if the type is blittable (i.e., it has a defined layout)
         // In Rust, this is generally true for all Copy types, but we can add
         // more specific checks if needed.

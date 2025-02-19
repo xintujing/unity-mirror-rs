@@ -15,13 +15,13 @@ pub(crate) fn namespace_attribute_handler(attr: TokenStream, item: TokenStream) 
         Some(value) => value.clone(),
     };
 
-    let full_path = match attrs.full_path {
+    let package = match attrs.package {
         None => String::new(),
-        Some(mut full_path) => match full_path.chars().last().unwrap() {
-            '.' | '+' | '\0' => full_path.clone(),
+        Some(mut package) => match package.chars().last().unwrap() {
+            '.' | '+' | '\0' => package.clone(),
             _ => {
-                full_path.push('.');
-                full_path.clone()
+                package.push('.');
+                package.clone()
             }
         },
     };
@@ -35,13 +35,13 @@ pub(crate) fn namespace_attribute_handler(attr: TokenStream, item: TokenStream) 
                 #namespace
             }
 
-            fn get_prefix() -> &'static str {
-                #full_path
+            fn get_package() -> &'static str {
+                #package
             }
         }
     });
 
-    write_to_file("namespace", output.to_string());
+    // write_to_file("namespace", output.to_string());
 
     output
 }
