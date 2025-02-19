@@ -1,5 +1,5 @@
 use crate::component::ComponentBlock;
-use crate::utils::{write_to_file, StringUtils};
+use crate::utils::StringUtils;
 use crate::{utils, CommandArgs};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};

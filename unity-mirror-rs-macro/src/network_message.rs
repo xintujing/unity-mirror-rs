@@ -1,6 +1,5 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use std::time::SystemTime;
 use syn::{parse_macro_input, Data, DeriveInput, Fields, Type};
 
 pub(crate) fn network_message_impl(input: TokenStream) -> TokenStream {

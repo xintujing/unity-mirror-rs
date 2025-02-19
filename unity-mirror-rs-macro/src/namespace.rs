@@ -1,4 +1,3 @@
-use crate::utils::write_to_file;
 use crate::NamespaceArgs;
 use proc_macro::TokenStream;
 use quote::quote;

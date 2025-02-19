@@ -108,7 +108,7 @@ mod tests {
         insert_network_identity, network_identities, NetworkIdentity, OwnedType, Visibility,
     };
     use crate::mirror::core::network_reader::NetworkReader;
-    use crate::mirror::core::network_writer::{NetworkWriter, NetworkWriterTrait};
+    use crate::mirror::core::network_writer::NetworkWriter;
     use crate::mirror::core::remote_calls::{RemoteCallType, RemoteProcedureCalls};
     use crate::mirror::core::tools::stable_hash::StableHash;
     use crate::{MyStruct, MyType, Vector3};

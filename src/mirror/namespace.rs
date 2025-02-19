@@ -15,9 +15,6 @@ pub trait Namespace {
 
 #[cfg(test)]
 mod tests {
-    use crate::mirror::namespace::Namespace;
-    use nalgebra::Vector3;
-
     #[test]
     fn test1() {
         // let a = Vector3::<f64>::get_namespace();

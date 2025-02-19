@@ -1,4 +1,3 @@
-use quote::{format_ident, ToTokens};
 use std::time::SystemTime;
 use syn::{
     GenericArgument, Path, PathArguments, PathSegment, Type, TypeArray, TypePath, TypeReference,
