@@ -63,7 +63,7 @@ impl NetworkWriter {
     pub fn set_position(&mut self, value: usize) {
         self.position = value;
     }
-    pub fn write_blittable<T: Copy>(&mut self, value: T) {
+    pub fn write_blittable<T: Clone>(&mut self, value: T) {
         // Check if the type is blittable (i.e., it has a defined layout)
         // In Rust, this is generally true for all Copy types, but we can add
         // more specific checks if needed.
@@ -97,7 +97,8 @@ impl NetworkWriter {
     }
     pub fn write_bytes(&mut self, value: Vec<u8>, offset: usize, count: usize) {
         self.ensure_capacity(self.position + count);
-        self.data[self.position..self.position + count].copy_from_slice(&value[offset..offset + count]);
+        self.data[self.position..self.position + count]
+            .copy_from_slice(&value[offset..offset + count]);
         self.position += count;
     }
     pub fn write_bytes_all(&mut self, value: Vec<u8>) {
@@ -108,7 +109,8 @@ impl NetworkWriter {
     }
     pub fn write_array_segment(&mut self, value: &[u8], offset: usize, count: usize) {
         self.ensure_capacity(self.position + count);
-        self.data[self.position..self.position + count].copy_from_slice(&value[offset..offset + count]);
+        self.data[self.position..self.position + count]
+            .copy_from_slice(&value[offset..offset + count]);
         self.position += count;
     }
     pub fn write_array_segment_all(&mut self, value: &[u8]) {
@@ -196,11 +198,18 @@ pub trait Writeable {
 
 impl fmt::Display for NetworkWriter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let hex_string = self.to_array_segment()
+        let hex_string = self
+            .to_array_segment()
             .iter()
             .map(|byte| format!("{:02X}", byte))
             .collect::<String>();
-        write!(f, "[{} @ {}/{}]", hex_string, self.position, self.capacity())
+        write!(
+            f,
+            "[{} @ {}/{}]",
+            hex_string,
+            self.position,
+            self.capacity()
+        )
     }
 }
 
@@ -210,7 +219,6 @@ mod tests {
 
     #[test]
     fn test_write_blittable() {}
-
 
     #[test]
     fn test_pos_write() {

@@ -1,3 +1,4 @@
+pub mod messages;
 pub mod network_behaviour;
 pub mod network_connection;
 pub mod network_connection_to_client;
@@ -9,6 +10,7 @@ pub mod network_writer;
 pub mod network_writer_extensions;
 pub mod network_writer_pool;
 pub mod remote_calls;
+mod sync_list;
+mod sync_object;
 pub mod tools;
 pub mod transport;
-pub mod messages;
