@@ -3,8 +3,10 @@ pub mod mirror;
 use crate::mirror::core::network_behaviour::NetworkBehaviourTrait;
 use crate::mirror::core::network_identity::network_identities;
 use crate::mirror::core::network_reader::NetworkReader;
-use unity_mirror_rs_macro::{command, component, MSync, NetworkMessage};
-
+use serde::Deserialize;
+use std::any::Any;
+use std::fmt::{Debug, Formatter};
+use unity_mirror_rs_macro::{command, component, namespace, rpc, MSync, NetworkMessage};
 
 #[derive(Debug, MSync)]
 pub struct MyStruct {
@@ -15,19 +17,32 @@ pub struct MyStruct {
     health: u32,
 }
 
-// 实现 NetworkBehaviourTrait
+// fn check_implements_my_trait<T: CustomDataType>(_: &T) -> bool {
+//     true
+// }
 impl NetworkBehaviourTrait for MyStruct {
     fn sync_var_dirty_bits(&self) -> u64 {
         0
     }
 }
 
+// #[derive(Debug)]
+// #[custom_data_type(namespace = "Mirror.Model.")]
+#[namespace(value = "Mirror.Authenticators", full_path = "BasicAuthenticator+")]
+pub struct AuthResponseMessage {
+    q: bool,
+}
+// Mirror.Authenticators.BasicAuthenticator+AuthResponseMessage
+
+// 实现 NetworkBehaviourTrait
+
 #[component(namespace = "Mirror")]
 impl MyStruct {
     #[command(requires_authority = true)]
-    fn existing_method(&mut self, id: u32) {
-        println!("组件名字: {}  参数 1: {}", self.name, id);
+    fn existing_method(&mut self, id: AuthResponseMessage, _pa: bool) {
+        // println!("组件名字: {}  参数 1: {:?}", self.name, id);
 
+        id.q;
         // 测试自己找自己
 
         self.name = "组件 2".to_string();
@@ -41,11 +56,21 @@ impl MyStruct {
         }
     }
 
+    #[rpc]
+    fn test_rpc1(&self) {}
+    #[rpc]
+    fn test_rpc2(&self) {}
+    #[rpc]
+    fn test_rpc3(&self) {}
+
     fn sync_var_dirty_bits(&self) -> u64 {
         0
     }
 }
 
+fn test2() {
+    // AAA {}
+}
 #[cfg(test)]
 mod tests {
     use crate::mirror::core::network_connection_to_client::NetworkConnectionToClient;
@@ -57,6 +82,9 @@ mod tests {
     use crate::mirror::core::remote_calls::{RemoteCallType, RemoteProcedureCalls};
     use crate::mirror::core::tools::stable_hash::StableHash;
     use crate::MyStruct;
+
+    #[test]
+    fn a() {}
 
     #[test]
     fn bb() {

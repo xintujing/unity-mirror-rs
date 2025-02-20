@@ -1,16 +1,62 @@
 extern crate proc_macro;
-mod component;
-mod m_sync;
-mod network_message;
-mod tools;
-
-use crate::component::component_impl;
+use crate::component::component_attribute_handler;
 use crate::m_sync::m_sync_impl;
+use crate::namespace::namespace_attribute_handler;
 use crate::network_message::network_message_impl;
 use proc_macro::TokenStream;
 use quote::quote;
+use quote::ToTokens;
 use std::time::SystemTime;
+use syn::parse::Parse;
+use syn::parse::ParseStream;
 use syn::*;
+
+mod utils;
+
+mod command;
+mod component;
+mod m_sync;
+mod namespace;
+mod network_message;
+mod rpc;
+mod tools;
+
+macro_rules! attribute_args {
+    ($type_name:ident, $($field_name:ident),+) => {
+        #[derive(Default)]
+        #[allow(unused)]
+        struct $type_name {
+            $($field_name: Option<String>,)*
+        }
+
+        impl Parse for $type_name {
+            fn parse(input: ParseStream) -> Result<Self> {
+                $(let mut $field_name: String = "".to_string();)*
+
+                let mut result= $type_name::default();
+
+                while !input.is_empty() {
+                    let name_value: MetaNameValue = input.parse()?;
+                    let key = name_value.path.to_token_stream().to_string();
+                    let value = name_value.value.to_token_stream();
+
+                    match key.as_str() {
+                        $(stringify!($field_name) => {
+                            result.$field_name = Some(value.to_string().trim_matches('"').to_string());
+                        },)*
+                        _ => {}
+                    }
+
+                    if input.peek(Token![,]) {
+                        input.parse::<Token![,]>()?;
+                    }
+                }
+
+                Ok(result)
+            }
+        }
+    };
+}
 
 #[proc_macro_attribute]
 pub fn mirror(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -53,12 +99,14 @@ pub fn mirror(_attr: TokenStream, item: TokenStream) -> TokenStream {
     stream
 }
 
+attribute_args!(ComponentArgs, namespace);
 #[proc_macro_attribute]
 pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
-    component_impl(attr, item)
+    component_attribute_handler(attr, item)
 }
 
 /// 定义 command attribute 宏
+attribute_args!(CommandArgs, requires_authority);
 #[proc_macro_attribute]
 pub fn command(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
@@ -70,6 +118,11 @@ pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
     item
 }
 
+attribute_args!(NamespaceArgs, value, full_path);
+#[proc_macro_attribute]
+pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
+    namespace_attribute_handler(attr, item)
+}
 #[proc_macro_derive(MSync, attributes(sync_var, sync_struct))]
 pub fn m_sync(input: TokenStream) -> TokenStream {
     m_sync_impl(input)

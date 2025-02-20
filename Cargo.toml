@@ -28,3 +28,4 @@ nalgebra = "0.33.2"
 
 ctor = "0.3.0"
 parking_lot = "0.12"
+serde = { version = "1.0.217", features = ["derive"] }
