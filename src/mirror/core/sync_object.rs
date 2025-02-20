@@ -16,7 +16,7 @@ pub trait SyncObject: Any + Send + Sync {
     fn clear_changes(&mut self);
     fn on_serialize_all(&self, writer: &mut NetworkWriter);
     fn on_serialize_delta(&self, writer: &mut NetworkWriter);
-    fn on_deserialize_all(&mut self, reader: &mut NetworkReader) -> bool;
-    fn on_deserialize_delta(&mut self, reader: &mut NetworkReader) -> bool;
+    fn on_deserialize_all(&mut self, reader: &mut NetworkReader);
+    fn on_deserialize_delta(&mut self, reader: &mut NetworkReader);
     fn reset(&mut self);
 }
