@@ -10,6 +10,20 @@ pub enum Operation {
     OpInsert,
     OpRemoveAt,
     OpClear,
+    None,
+}
+
+impl Operation {
+    pub fn from_u8(value: u8) -> Self {
+        match value {
+            0 => Operation::OpAdd,
+            1 => Operation::OpSet,
+            2 => Operation::OpInsert,
+            3 => Operation::OpRemoveAt,
+            4 => Operation::OpClear,
+            _ => Operation::None,
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -137,6 +151,7 @@ impl<T: Clone + Default + PartialEq + Eq + Sync + Send + 'static> SyncList<T> {
                 (self.on_change)(operation, index, new_value);
                 (self.call_back)(operation, index, old_value, new_value);
             }
+            _ => {}
         }
     }
 
@@ -280,6 +295,7 @@ impl<T: Clone + Default + PartialEq + Eq + Sync + Send + 'static> SyncObject for
                 }
                 Operation::OpClear => {}
                 Operation::OpInsert => {}
+                _ => {}
             }
         }
     }
@@ -299,7 +315,11 @@ impl<T: Clone + Default + PartialEq + Eq + Sync + Send + 'static> SyncObject for
 
     fn on_deserialize_delta(&mut self, reader: &mut NetworkReader) {
         let changes_count = reader.read_uint() as usize;
+        for _ in 0..changes_count {
+            let operation = reader.read_byte();
+            let index = reader.read_uint() as usize;
 
+        }
     }
 
     fn reset(&mut self) {
