@@ -1,4 +1,4 @@
-use crate::mirror::core::network_reader::NetworkReader;
+use crate::mirror::core::network_reader::{NetworkReader, NetworkReaderTrait};
 use crate::mirror::core::network_writer::{NetworkWriter, NetworkWriterTrait};
 use crate::mirror::core::sync_object::SyncObject;
 
@@ -284,12 +284,22 @@ impl<T: Clone + Default + PartialEq + Eq + Sync + Send + 'static> SyncObject for
         }
     }
 
-    fn on_deserialize_all(&mut self, reader: &mut NetworkReader) -> bool {
-        todo!()
+    fn on_deserialize_all(&mut self, reader: &mut NetworkReader) {
+        let count = reader.read_uint();
+
+        self.objects.clear();
+        self.changes.clear();
+
+        for _ in 0..count {
+            self.objects.push(reader.read_blittable());
+        }
+
+        self.changes_ahead = reader.read_uint() as usize;
     }
 
-    fn on_deserialize_delta(&mut self, reader: &mut NetworkReader) -> bool {
-        todo!()
+    fn on_deserialize_delta(&mut self, reader: &mut NetworkReader) {
+        let changes_count = reader.read_uint() as usize;
+
     }
 
     fn reset(&mut self) {
