@@ -138,7 +138,7 @@ mod tests {
 
         // 函数签名的稳定哈希
         let func_hash =
-            "System.Void Mirror.MyStruct::ExistingMethod(System.UInt32)".get_fn_stable_hash_code();
+            "System.Void Mirror.MyStruct::ExistingMethod(Mirror.Authenticators.BasicAuthenticator+AuthResponseMessage,System.Boolean)".get_fn_stable_hash_code();
         // 远程调用类型
         let remote_call_type = RemoteCallType::Command;
         // NetworkWriter
