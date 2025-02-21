@@ -316,9 +316,39 @@ impl<T: Clone + Default + PartialEq + Eq + Sync + Send + 'static> SyncObject for
     fn on_deserialize_delta(&mut self, reader: &mut NetworkReader) {
         let changes_count = reader.read_uint() as usize;
         for _ in 0..changes_count {
-            let operation = reader.read_byte();
-            let index = reader.read_uint() as usize;
-
+            let operation = Operation::from_u8(reader.read_byte());
+            let apply = self.changes_ahead == 0;
+            let mut index = 0;
+            let mut old_value = T::default();
+            let mut new_value = T::default();
+            match operation {
+                Operation::OpAdd => {
+                    new_value = reader.read_blittable();
+                    if apply {
+                        index = self.objects.len();
+                        self.objects.push(new_value.clone());
+                        self.add_operation(operation, index - 1, &old_value, &new_value, false);
+                    }
+                }
+                Operation::OpSet => {}
+                Operation::OpInsert => {
+                    index = reader.read_uint() as usize;
+                    new_value = reader.read_blittable();
+                    if apply {
+                        self.objects.insert(index, new_value.clone());
+                        self.add_operation(operation, index, &old_value, &new_value, false);
+                    }
+                }
+                Operation::OpRemoveAt => {
+                    index = reader.read_uint() as usize;
+                    if apply {
+                        old_value = self.objects.remove(index);
+                        self.add_operation(operation, index, &old_value, &new_value, false);
+                    }
+                }
+                Operation::OpClear => {}
+                Operation::None => {}
+            }
         }
     }
 
