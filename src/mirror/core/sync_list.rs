@@ -349,6 +349,9 @@ impl<T: Clone + Default + PartialEq + Eq + Sync + Send + 'static> SyncObject for
                 Operation::OpClear => {}
                 Operation::None => {}
             }
+            if !apply {
+                self.changes_ahead -= 1;
+            }
         }
     }
 
