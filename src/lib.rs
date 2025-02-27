@@ -164,3 +164,60 @@ mod tests {
         }
     }
 }
+
+
+
+
+mod tests1 {
+
+    trait Behaviour {
+        fn get_base(&self) -> Option<Box<&mut dyn Behaviour>>;
+    }
+
+    struct NetworkRoomPlayer {
+        id: u64,
+    }
+
+    trait NetworkRoomPlayerTrait: Behaviour {
+        fn on_ready(&self);
+
+        fn on_stop(&self);
+    }
+
+    impl Behaviour for NetworkRoomPlayer {
+        fn get_base(&self) -> Option<Box<&mut dyn Behaviour>> {
+            None
+        }
+    }
+    impl NetworkRoomPlayerTrait for NetworkRoomPlayer {
+        fn on_ready(&self) {
+            println!("base on_ready read");
+            self.on_stop()
+        }
+
+        fn on_stop(&self) {
+            todo!()
+        }
+    }
+
+    struct MyNetworkRoomPlayer {
+        base: NetworkRoomPlayer,
+
+    }
+
+    impl Behaviour for MyNetworkRoomPlayer {
+        fn get_base(&mut self) -> Option<Box<&mut dyn Behaviour>> {
+            Some(Box::new(&mut self.base))
+        }
+    }
+
+    impl NetworkRoomPlayerTrait for MyNetworkRoomPlayer {
+        fn on_ready(&self) {
+           self.base.on_ready()
+        }
+
+        fn on_stop(&self) {
+            println!("MyNetworkRoomPlayer on_stop read");
+        }
+    }
+}
