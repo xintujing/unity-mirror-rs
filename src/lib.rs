@@ -165,59 +165,105 @@ mod tests {
     }
 }
 
+// mod tests1 {
+//
+//     trait Behaviour {
+//         fn get_base(&self) -> Option<Box<&mut dyn Behaviour>>;
+//     }
+//
+//     struct NetworkRoomPlayer {
+//         id: u64,
+//     }
+//
+//     trait NetworkRoomPlayerTrait: Behaviour {
+//         fn on_ready(&self);
+//
+//         fn on_stop(&self);
+//     }
+//
+//     impl Behaviour for NetworkRoomPlayer {
+//         fn get_base(&self) -> Option<Box<&mut dyn Behaviour>> {
+//             None
+//         }
+//     }
+//     impl NetworkRoomPlayerTrait for NetworkRoomPlayer {
+//         fn on_ready(&self) {
+//             println!("base on_ready read");
+//             self.on_stop()
+//         }
+//
+//         fn on_stop(&self) {
+//             todo!()
+//         }
+//     }
+//
+//     struct MyNetworkRoomPlayer {
+//         base: NetworkRoomPlayer,
+//     }
+//
+//     impl Behaviour for MyNetworkRoomPlayer {
+//         fn get_base(&mut self) -> Option<Box<&mut dyn Behaviour>> {
+//             Some(Box::new(&mut self.base))
+//         }
+//     }
+//
+//     impl NetworkRoomPlayerTrait for MyNetworkRoomPlayer {
+//         fn on_ready(&self) {
+//             self.base.on_ready()
+//         }
+//
+//         fn on_stop(&self) {
+//             println!("MyNetworkRoomPlayer on_stop read");
+//         }
+//     }
+// }
 
+mod tests2 {
 
+    trait A001T {
+        fn a001(&self);
 
-mod tests1 {
-
-    trait Behaviour {
-        fn get_base(&self) -> Option<Box<&mut dyn Behaviour>>;
+        fn a002(&self);
     }
 
-    struct NetworkRoomPlayer {
+    struct A001 {
         id: u64,
     }
 
-    trait NetworkRoomPlayerTrait: Behaviour {
-        fn on_ready(&self);
+    impl A001T for A001 {
 
-        fn on_stop(&self);
-    }
-
-    impl Behaviour for NetworkRoomPlayer {
-        fn get_base(&self) -> Option<Box<&mut dyn Behaviour>> {
-            None
-        }
-    }
-    impl NetworkRoomPlayerTrait for NetworkRoomPlayer {
-        fn on_ready(&self) {
-            println!("base on_ready read");
-            self.on_stop()
+        fn a001(&self) {
+            self.a002();
         }
 
-        fn on_stop(&self) {
-            todo!()
+        fn a002(&self) {
+            println!("a002 1");
         }
     }
 
-    struct MyNetworkRoomPlayer {
-        base: NetworkRoomPlayer,
-
+    struct A002 {
+        a001: A001,
+        id: u64,
     }
 
-    impl Behaviour for MyNetworkRoomPlayer {
-        fn get_base(&mut self) -> Option<Box<&mut dyn Behaviour>> {
-            Some(Box::new(&mut self.base))
+    impl A001T for A002 {
+
+        fn a001(&self) {
+            self.a001.a001();
+        }
+
+        fn a002(&self) {
+            println!("a002 2");
         }
     }
 
-    impl NetworkRoomPlayerTrait for MyNetworkRoomPlayer {
-        fn on_ready(&self) {
-           self.base.on_ready()
-        }
+    #[test]
+    fn test() {
+        let a002 = A002 {
+            a001: A001 { id: 1 },
+            id: 1,
+        };
 
-        fn on_stop(&self) {
-            println!("MyNetworkRoomPlayer on_stop read");
-        }
+        a002.a001();
     }
 }
