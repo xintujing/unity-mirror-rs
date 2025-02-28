@@ -15,10 +15,10 @@ pub struct RemoteProcedureCalls;
 
 impl RemoteProcedureCalls {
     pub fn invoke(
+        obj: &mut NetworkBehaviourType,
         func_hash: u16,
         remote_call_type: RemoteCallType,
         reader: &mut NetworkReader,
-        obj: &mut NetworkBehaviourType,
         connection_to_client: &mut NetworkConnectionToClient,
     ) -> bool {
         match Self::get_invoker_for_hash(func_hash, remote_call_type) {
