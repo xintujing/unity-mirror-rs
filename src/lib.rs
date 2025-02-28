@@ -153,9 +153,9 @@ mod tests {
             Some(identity) => {
                 let component = &mut identity.network_behaviours[index];
                 let is_invoke = RemoteProcedureCalls::invoke(
-                    component,
                     func_hash,
                     remote_call_type,
+                    component,
                     &mut reader,
                     &mut connection_to_client,
                 );
