@@ -1,25 +1,13 @@
-extern crate proc_macro;
-use crate::component::component_attribute_handler;
-use crate::m_sync::m_sync_impl;
-use crate::namespace::namespace_attribute_handler;
-use crate::network_message::network_message_impl;
 use proc_macro::TokenStream;
-use quote::quote;
-use quote::ToTokens;
-use std::time::SystemTime;
-use syn::parse::Parse;
-use syn::parse::ParseStream;
-use syn::*;
 
-mod utils;
-
-mod command;
-mod component;
-mod m_sync;
+mod metadata_settings;
 mod namespace;
-mod network_message;
-mod rpc;
 
+mod component;
+mod string_case;
+mod synced;
+
+#[allow(unused)]
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
         #[derive(Default)]
@@ -28,9 +16,11 @@ macro_rules! attribute_args {
             $($field_name: Option<String>,)*
         }
 
+
         impl Parse for $type_name {
-            fn parse(input: ParseStream) -> Result<Self> {
-                $(let mut $field_name: String = "".to_string();)*
+            fn parse(input: ParseStream) -> syn::Result<Self> {
+
+
 
                 let mut result= $type_name::default();
 
@@ -57,77 +47,57 @@ macro_rules! attribute_args {
     };
 }
 
-#[proc_macro_attribute]
-pub fn mirror(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    // 解析输入的 TokenStream 到 ItemImpl 结构
-    let mut input = parse_macro_input!(item as ItemFn);
-
-    // 只能在main方法上使用
-    if input.sig.ident != "main" {
-        panic!("Only main method can use mirror attribute");
-    }
-
-    // 在main方法上添加一个方法，用于注册命令
-    input.block.stmts.insert(
-        0,
-        parse_quote! {
-            unsafe {
-                for register_function in REGISTER_FUNCTIONS.iter() {
-                    register_function()
-                }
-            }
-        },
-    );
-
-    let stream = TokenStream::from(quote! {
-
-        pub static mut REGISTER_FUNCTIONS: Vec<fn()> = vec![];
-
-        #input
-
-    });
-
-    let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-
-    std::fs::write(format!("{}_main.rs", timestamp), stream.to_string())
-        .expect("write file failed");
-
-    stream
+#[proc_macro_derive(MetadataSettingsWrapper)]
+pub fn derive_metadata_settings_wrapper(input: TokenStream) -> TokenStream {
+    metadata_settings::wrapper::handler(input)
 }
 
-attribute_args!(ComponentArgs, namespace);
-#[proc_macro_attribute]
-pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
-    component_attribute_handler(attr, item)
+#[proc_macro]
+pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
+    metadata_settings::wrapper_register::handler(input)
 }
 
-/// 定义 command attribute 宏
-attribute_args!(CommandArgs, authority);
-#[proc_macro_attribute]
-pub fn command(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
-}
 
-/// 定义 rpc attribute 宏
-#[proc_macro_attribute]
-pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
-}
-
-attribute_args!(NamespaceArgs, value, package);
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
-    namespace_attribute_handler(attr, item)
-}
-#[proc_macro_derive(MSync, attributes(sync_var, sync_struct))]
-pub fn m_sync(input: TokenStream) -> TokenStream {
-    m_sync_impl(input)
+    namespace::handler(attr, item)
 }
 
-#[proc_macro_derive(NetworkMessage)]
-pub fn network_message(input: TokenStream) -> TokenStream {
-    network_message_impl(input)
+// #[proc_macro_derive(MirrorComponent, attributes(parent))]
+// pub fn mirror_component(item: TokenStream) -> TokenStream {
+//     component::component::handler(item)
+// }
+
+#[proc_macro_attribute]
+pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
+    component::component2::handler(attr, item)
 }
+
+// #[proc_macro_derive(State, attributes(sync_variable, sync_object))]
+// pub fn derive_state(item: TokenStream) -> TokenStream {
+//     component::state::handler(item)
+// }
+
+#[proc_macro_attribute]
+pub fn state(attr: TokenStream, item: TokenStream) -> TokenStream {
+    component::state2::handler(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn mirror_synced(attr: TokenStream, item: TokenStream) -> TokenStream {
+    synced::handler(attr, item)
+}
+
+#[proc_macro_derive(InnerState, attributes(sync_variable, sync_object))]
+pub fn derive_inner_state(_: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+// #[proc_macro_attribute]
+// pub fn sync_variable(_: TokenStream, item: TokenStream) -> TokenStream {
+//     item
+// }
+// #[proc_macro_attribute]
+// pub fn sync_object(_: TokenStream, item: TokenStream) -> TokenStream {
+//     item
+// }
