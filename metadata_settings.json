@@ -18527,7 +18527,1060 @@
   "scenes": {
     "Assets/Scenes/GameScene.unity": {},
     "Assets/Scenes/LobbyScene.unity": {},
-    "Assets/Scenes/RoomScene.unity": {}
+    "Assets/Scenes/RoomScene.unity": {
+      "Assets/Prefabs/Tank.prefab": {
+        "id": 24014,
+        "name": "Tank",
+        "tag": "Untagged",
+        "layer": 0,
+        "isStatic": false,
+        "isActive": true,
+        "transform": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "localPosition": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "localRotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "localScale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "instanceId": 24032,
+          "type": "UnityEngine.Transform",
+          "assetId": 2638947628,
+          "assetPath": "Assets/Prefabs/Tank.prefab"
+        },
+        "components": {
+          "Mirror.NetworkIdentity": [
+            [
+              {
+                "Mirror.NetworkIdentity": {
+                  "assetId": 2638947628,
+                  "sceneId": "0",
+                  "serverOnly": false,
+                  "visibility": 0,
+                  "networkBehaviours": [
+                    [
+                      {
+                        "Mirror.NetworkBehaviour": {
+                          "syncDirection": 1,
+                          "syncMode": 0,
+                          "syncInterval": 0.0
+                        }
+                      },
+                      {
+                        "Mirror.NetworkTransformBase": {
+                          "target": {
+                            "position": [
+                              0.0,
+                              0.0,
+                              0.0
+                            ],
+                            "localPosition": [
+                              0.0,
+                              0.0,
+                              0.0
+                            ],
+                            "rotation": [
+                              0.0,
+                              0.0,
+                              0.0,
+                              1.0
+                            ],
+                            "localRotation": [
+                              0.0,
+                              0.0,
+                              0.0,
+                              1.0
+                            ],
+                            "localScale": [
+                              1.0,
+                              1.0,
+                              1.0
+                            ],
+                            "instanceId": 24032,
+                            "type": "UnityEngine.Transform",
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          },
+                          "syncPosition": true,
+                          "syncRotation": true,
+                          "syncScale": false,
+                          "onlySyncOnChange": true,
+                          "compressRotation": true,
+                          "interpolatePosition": true,
+                          "interpolateRotation": true,
+                          "interpolateScale": false,
+                          "coordinateSpace": 0,
+                          "timelineOffset": false
+                        }
+                      },
+                      {
+                        "Mirror.NetworkTransformUnreliable": {
+                          "bufferResetMultiplier": 3.0,
+                          "positionSensitivity": 0.010,
+                          "rotationSensitivity": 0.010,
+                          "scaleSensitivity": 0.010
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "Mirror.NetworkBehaviour": {
+                          "syncDirection": 1,
+                          "syncMode": 0,
+                          "syncInterval": 0.0
+                        }
+                      },
+                      {
+                        "Mirror.NetworkTransformBase": {
+                          "target": {
+                            "position": [
+                              0.0,
+                              1.56,
+                              0.0
+                            ],
+                            "localPosition": [
+                              0.0,
+                              0.0056,
+                              0.0
+                            ],
+                            "rotation": [
+                              0.0,
+                              0.0,
+                              0.0,
+                              1.0
+                            ],
+                            "localRotation": [
+                              0.0,
+                              0.0,
+                              0.0,
+                              1.0
+                            ],
+                            "localScale": [
+                              1.0,
+                              1.0,
+                              1.0
+                            ],
+                            "instanceId": 24072,
+                            "type": "UnityEngine.Transform",
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          },
+                          "syncPosition": false,
+                          "syncRotation": true,
+                          "syncScale": false,
+                          "onlySyncOnChange": true,
+                          "compressRotation": true,
+                          "interpolatePosition": false,
+                          "interpolateRotation": true,
+                          "interpolateScale": false,
+                          "coordinateSpace": 0,
+                          "timelineOffset": false
+                        }
+                      },
+                      {
+                        "Mirror.NetworkTransformUnreliable": {
+                          "bufferResetMultiplier": 3.0,
+                          "positionSensitivity": 0.010,
+                          "rotationSensitivity": 0.010,
+                          "scaleSensitivity": 0.010
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "Mirror.NetworkBehaviour": {
+                          "syncDirection": 1,
+                          "syncMode": 0,
+                          "syncInterval": 0.0
+                        }
+                      },
+                      {
+                        "Mirror.NetworkAnimator": {
+                          "clientAuthority": false,
+                          "animator": {
+                            "layers": [
+                              {
+                                "name": "Base Layer",
+                                "fullPathHash": 1432961145,
+                                "normalizedTime": 0.0,
+                                "weight": 1.0
+                              }
+                            ],
+                            "parameters": [
+                              {
+                                "name": "Moving",
+                                "type": 4,
+                                "value": [
+                                  0
+                                ]
+                              },
+                              {
+                                "name": "Shoot",
+                                "type": 9,
+                                "value": []
+                              }
+                            ],
+                            "instanceId": 24068,
+                            "type": "UnityEngine.Animator",
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          }
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            ]
+          ]
+        },
+        "children": [
+          {
+            "id": 24090,
+            "name": "BasePrefab",
+            "tag": "Untagged",
+            "layer": 0,
+            "isStatic": false,
+            "isActive": true,
+            "transform": {
+              "position": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "localPosition": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              "localRotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              "localScale": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "instanceId": 24064,
+              "type": "UnityEngine.Transform",
+              "assetId": 2638947628,
+              "assetPath": "Assets/Prefabs/Tank.prefab"
+            },
+            "components": {},
+            "children": [
+              {
+                "id": 24126,
+                "name": "Recon_Tank",
+                "tag": "Untagged",
+                "layer": 0,
+                "isStatic": false,
+                "isActive": true,
+                "transform": {
+                  "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "localPosition": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": [
+                    -0.7071068,
+                    0.0,
+                    0.0,
+                    0.7071067
+                  ],
+                  "localRotation": [
+                    -0.7071068,
+                    0.0,
+                    0.0,
+                    0.7071067
+                  ],
+                  "localScale": [
+                    100.0,
+                    100.0,
+                    100.0
+                  ],
+                  "instanceId": 24106,
+                  "type": "UnityEngine.Transform",
+                  "assetId": 2638947628,
+                  "assetPath": "Assets/Prefabs/Tank.prefab"
+                },
+                "components": {},
+                "children": [],
+                "assetId": 2638947628,
+                "assetPath": "Assets/Prefabs/Tank.prefab"
+              },
+              {
+                "id": 24144,
+                "name": "Recon_Tank_Rig",
+                "tag": "Untagged",
+                "layer": 0,
+                "isStatic": false,
+                "isActive": true,
+                "transform": {
+                  "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "localPosition": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": [
+                    -0.7071068,
+                    0.0,
+                    0.0,
+                    0.7071067
+                  ],
+                  "localRotation": [
+                    -0.7071068,
+                    0.0,
+                    0.0,
+                    0.7071067
+                  ],
+                  "localScale": [
+                    100.0,
+                    100.0,
+                    100.0
+                  ],
+                  "instanceId": 24108,
+                  "type": "UnityEngine.Transform",
+                  "assetId": 2638947628,
+                  "assetPath": "Assets/Prefabs/Tank.prefab"
+                },
+                "components": {},
+                "children": [
+                  {
+                    "id": 24176,
+                    "name": "Root",
+                    "tag": "Untagged",
+                    "layer": 0,
+                    "isStatic": false,
+                    "isActive": true,
+                    "transform": {
+                      "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                      ],
+                      "localPosition": [
+                        0.0,
+                        0.0,
+                        0.0
+                      ],
+                      "rotation": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                      ],
+                      "localRotation": [
+                        0.7071068,
+                        0.0,
+                        0.0,
+                        0.7071067
+                      ],
+                      "localScale": [
+                        1.0,
+                        1.0,
+                        1.0
+                      ],
+                      "instanceId": 24132,
+                      "type": "UnityEngine.Transform",
+                      "assetId": 2638947628,
+                      "assetPath": "Assets/Prefabs/Tank.prefab"
+                    },
+                    "components": {},
+                    "children": [
+                      {
+                        "id": 24130,
+                        "name": "Chasis",
+                        "tag": "Untagged",
+                        "layer": 0,
+                        "isStatic": false,
+                        "isActive": true,
+                        "transform": {
+                          "position": [
+                            0.0,
+                            0.9999998,
+                            0.0
+                          ],
+                          "localPosition": [
+                            0.0,
+                            0.010,
+                            0.0
+                          ],
+                          "rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                          ],
+                          "localRotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                          ],
+                          "localScale": [
+                            1.0,
+                            1.0,
+                            1.0
+                          ],
+                          "instanceId": 24102,
+                          "type": "UnityEngine.Transform",
+                          "assetId": 2638947628,
+                          "assetPath": "Assets/Prefabs/Tank.prefab"
+                        },
+                        "components": {},
+                        "children": [
+                          {
+                            "id": 24096,
+                            "name": "Turret",
+                            "tag": "Untagged",
+                            "layer": 0,
+                            "isStatic": false,
+                            "isActive": true,
+                            "transform": {
+                              "position": [
+                                0.0,
+                                1.56,
+                                0.0
+                              ],
+                              "localPosition": [
+                                0.0,
+                                0.0056,
+                                0.0
+                              ],
+                              "rotation": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                              ],
+                              "localRotation": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                              ],
+                              "localScale": [
+                                1.0,
+                                1.0,
+                                1.0
+                              ],
+                              "instanceId": 24072,
+                              "type": "UnityEngine.Transform",
+                              "assetId": 2638947628,
+                              "assetPath": "Assets/Prefabs/Tank.prefab"
+                            },
+                            "components": {},
+                            "children": [
+                              {
+                                "id": 24140,
+                                "name": "Barrel",
+                                "tag": "Untagged",
+                                "layer": 0,
+                                "isStatic": false,
+                                "isActive": true,
+                                "transform": {
+                                  "position": [
+                                    0.0,
+                                    2.76,
+                                    1.6
+                                  ],
+                                  "localPosition": [
+                                    0.0,
+                                    0.012,
+                                    0.016
+                                  ],
+                                  "rotation": [
+                                    0.0,
+                                    0.7071068,
+                                    0.7071068,
+                                    0.0
+                                  ],
+                                  "localRotation": [
+                                    0.0,
+                                    0.7071068,
+                                    0.7071068,
+                                    0.0
+                                  ],
+                                  "localScale": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                  ],
+                                  "instanceId": 24098,
+                                  "type": "UnityEngine.Transform",
+                                  "assetId": 2638947628,
+                                  "assetPath": "Assets/Prefabs/Tank.prefab"
+                                },
+                                "components": {},
+                                "children": [
+                                  {
+                                    "id": 24136,
+                                    "name": "Barrel_end",
+                                    "tag": "Untagged",
+                                    "layer": 0,
+                                    "isStatic": false,
+                                    "isActive": true,
+                                    "transform": {
+                                      "position": [
+                                        0.0,
+                                        2.759999,
+                                        5.844419
+                                      ],
+                                      "localPosition": [
+                                        0.0,
+                                        0.0424442,
+                                        0.0
+                                      ],
+                                      "rotation": [
+                                        0.0,
+                                        0.7071068,
+                                        0.7071068,
+                                        0.0
+                                      ],
+                                      "localRotation": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                      ],
+                                      "localScale": [
+                                        1.0,
+                                        1.0,
+                                        1.0
+                                      ],
+                                      "instanceId": 24084,
+                                      "type": "UnityEngine.Transform",
+                                      "assetId": 2638947628,
+                                      "assetPath": "Assets/Prefabs/Tank.prefab"
+                                    },
+                                    "components": {},
+                                    "children": [
+                                      {
+                                        "id": 24082,
+                                        "name": "ProjectileMount",
+                                        "tag": "Untagged",
+                                        "layer": 0,
+                                        "isStatic": false,
+                                        "isActive": true,
+                                        "transform": {
+                                          "position": [
+                                            0.0,
+                                            2.759999,
+                                            5.844419
+                                          ],
+                                          "localPosition": [
+                                            0.0,
+                                            0.0,
+                                            0.0
+                                          ],
+                                          "rotation": [
+                                            0.0,
+                                            0.0000001192093,
+                                            0.0,
+                                            1.0
+                                          ],
+                                          "localRotation": [
+                                            0.0000000842937,
+                                            -0.7071068,
+                                            -0.7071068,
+                                            0.0000000842937
+                                          ],
+                                          "localScale": [
+                                            1.0,
+                                            1.0,
+                                            1.0
+                                          ],
+                                          "instanceId": 24074,
+                                          "type": "UnityEngine.Transform",
+                                          "assetId": 2638947628,
+                                          "assetPath": "Assets/Prefabs/Tank.prefab"
+                                        },
+                                        "components": {},
+                                        "children": [],
+                                        "assetId": 2638947628,
+                                        "assetPath": "Assets/Prefabs/Tank.prefab"
+                                      }
+                                    ],
+                                    "assetId": 2638947628,
+                                    "assetPath": "Assets/Prefabs/Tank.prefab"
+                                  }
+                                ],
+                                "assetId": 2638947628,
+                                "assetPath": "Assets/Prefabs/Tank.prefab"
+                              },
+                              {
+                                "id": 24114,
+                                "name": "SeatedPlayer",
+                                "tag": "Untagged",
+                                "layer": 0,
+                                "isStatic": false,
+                                "isActive": false,
+                                "transform": {
+                                  "position": [
+                                    0.0,
+                                    3.159999,
+                                    0.0
+                                  ],
+                                  "localPosition": [
+                                    0.0,
+                                    0.016,
+                                    0.0
+                                  ],
+                                  "rotation": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                                  ],
+                                  "localRotation": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                                  ],
+                                  "localScale": [
+                                    0.006,
+                                    0.006,
+                                    0.006
+                                  ],
+                                  "instanceId": 24100,
+                                  "type": "UnityEngine.Transform",
+                                  "assetId": 2638947628,
+                                  "assetPath": "Assets/Prefabs/Tank.prefab"
+                                },
+                                "components": {},
+                                "children": [
+                                  {
+                                    "id": 24158,
+                                    "name": "Visor",
+                                    "tag": "Untagged",
+                                    "layer": 0,
+                                    "isStatic": false,
+                                    "isActive": true,
+                                    "transform": {
+                                      "position": [
+                                        0.0,
+                                        3.4,
+                                        0.2999997
+                                      ],
+                                      "localPosition": [
+                                        0.0,
+                                        0.4,
+                                        0.5
+                                      ],
+                                      "rotation": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                      ],
+                                      "localRotation": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                      ],
+                                      "localScale": [
+                                        0.5,
+                                        0.1,
+                                        0.2
+                                      ],
+                                      "instanceId": 24116,
+                                      "type": "UnityEngine.Transform",
+                                      "assetId": 2638947628,
+                                      "assetPath": "Assets/Prefabs/Tank.prefab"
+                                    },
+                                    "components": {},
+                                    "children": [],
+                                    "assetId": 2638947628,
+                                    "assetPath": "Assets/Prefabs/Tank.prefab"
+                                  }
+                                ],
+                                "assetId": 2638947628,
+                                "assetPath": "Assets/Prefabs/Tank.prefab"
+                              }
+                            ],
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          }
+                        ],
+                        "assetId": 2638947628,
+                        "assetPath": "Assets/Prefabs/Tank.prefab"
+                      },
+                      {
+                        "id": 24214,
+                        "name": "Wheel_Front_L",
+                        "tag": "Untagged",
+                        "layer": 0,
+                        "isStatic": false,
+                        "isActive": true,
+                        "transform": {
+                          "position": [
+                            0.0,
+                            0.7751945,
+                            1.8
+                          ],
+                          "localPosition": [
+                            0.0,
+                            0.007751945,
+                            0.018
+                          ],
+                          "rotation": [
+                            -0.5,
+                            0.4999999,
+                            0.4999999,
+                            0.5000001
+                          ],
+                          "localRotation": [
+                            -0.5,
+                            0.5,
+                            0.4999999,
+                            0.5000001
+                          ],
+                          "localScale": [
+                            1.0,
+                            0.9999999,
+                            1.0
+                          ],
+                          "instanceId": 24178,
+                          "type": "UnityEngine.Transform",
+                          "assetId": 2638947628,
+                          "assetPath": "Assets/Prefabs/Tank.prefab"
+                        },
+                        "components": {},
+                        "children": [
+                          {
+                            "id": 24244,
+                            "name": "Wheel_Front_L_end",
+                            "tag": "Untagged",
+                            "layer": 0,
+                            "isStatic": false,
+                            "isActive": true,
+                            "transform": {
+                              "position": [
+                                -1.461409,
+                                0.7751948,
+                                1.8
+                              ],
+                              "localPosition": [
+                                0.0,
+                                0.01461409,
+                                0.0
+                              ],
+                              "rotation": [
+                                -0.5,
+                                0.4999999,
+                                0.4999999,
+                                0.5000001
+                              ],
+                              "localRotation": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                              ],
+                              "localScale": [
+                                1.0,
+                                1.0,
+                                1.0
+                              ],
+                              "instanceId": 24216,
+                              "type": "UnityEngine.Transform",
+                              "assetId": 2638947628,
+                              "assetPath": "Assets/Prefabs/Tank.prefab"
+                            },
+                            "components": {},
+                            "children": [],
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          }
+                        ],
+                        "assetId": 2638947628,
+                        "assetPath": "Assets/Prefabs/Tank.prefab"
+                      },
+                      {
+                        "id": 24208,
+                        "name": "Wheel_Middle_L",
+                        "tag": "Untagged",
+                        "layer": 0,
+                        "isStatic": false,
+                        "isActive": true,
+                        "transform": {
+                          "position": [
+                            0.0,
+                            0.7751944,
+                            0.0000006556511
+                          ],
+                          "localPosition": [
+                            0.0,
+                            0.007751945,
+                            0.000000007152557
+                          ],
+                          "rotation": [
+                            -0.5,
+                            0.4999999,
+                            0.4999999,
+                            0.5000001
+                          ],
+                          "localRotation": [
+                            -0.5,
+                            0.5,
+                            0.4999999,
+                            0.5000001
+                          ],
+                          "localScale": [
+                            1.0,
+                            0.9999999,
+                            1.0
+                          ],
+                          "instanceId": 24180,
+                          "type": "UnityEngine.Transform",
+                          "assetId": 2638947628,
+                          "assetPath": "Assets/Prefabs/Tank.prefab"
+                        },
+                        "components": {},
+                        "children": [
+                          {
+                            "id": 24240,
+                            "name": "Wheel_Middle_L_end",
+                            "tag": "Untagged",
+                            "layer": 0,
+                            "isStatic": false,
+                            "isActive": true,
+                            "transform": {
+                              "position": [
+                                -1.461409,
+                                0.7751946,
+                                0.0000005364418
+                              ],
+                              "localPosition": [
+                                0.0,
+                                0.01461409,
+                                0.0
+                              ],
+                              "rotation": [
+                                -0.5,
+                                0.4999999,
+                                0.4999999,
+                                0.5000001
+                              ],
+                              "localRotation": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                              ],
+                              "localScale": [
+                                1.0,
+                                1.0,
+                                1.0
+                              ],
+                              "instanceId": 24210,
+                              "type": "UnityEngine.Transform",
+                              "assetId": 2638947628,
+                              "assetPath": "Assets/Prefabs/Tank.prefab"
+                            },
+                            "components": {},
+                            "children": [],
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          }
+                        ],
+                        "assetId": 2638947628,
+                        "assetPath": "Assets/Prefabs/Tank.prefab"
+                      },
+                      {
+                        "id": 24220,
+                        "name": "Wheel_Rear_L",
+                        "tag": "Untagged",
+                        "layer": 0,
+                        "isStatic": false,
+                        "isActive": true,
+                        "transform": {
+                          "position": [
+                            0.0,
+                            0.7751943,
+                            -1.799999
+                          ],
+                          "localPosition": [
+                            0.0,
+                            0.007751945,
+                            -0.018
+                          ],
+                          "rotation": [
+                            -0.5,
+                            0.4999999,
+                            0.4999999,
+                            0.5000001
+                          ],
+                          "localRotation": [
+                            -0.5,
+                            0.5,
+                            0.4999999,
+                            0.5000001
+                          ],
+                          "localScale": [
+                            1.0,
+                            0.9999999,
+                            1.0
+                          ],
+                          "instanceId": 24182,
+                          "type": "UnityEngine.Transform",
+                          "assetId": 2638947628,
+                          "assetPath": "Assets/Prefabs/Tank.prefab"
+                        },
+                        "components": {},
+                        "children": [
+                          {
+                            "id": 24248,
+                            "name": "Wheel_Rear_L_end",
+                            "tag": "Untagged",
+                            "layer": 0,
+                            "isStatic": false,
+                            "isActive": true,
+                            "transform": {
+                              "position": [
+                                -1.461409,
+                                0.7751944,
+                                -1.8
+                              ],
+                              "localPosition": [
+                                0.0,
+                                0.01461409,
+                                0.0
+                              ],
+                              "rotation": [
+                                -0.5,
+                                0.4999999,
+                                0.4999999,
+                                0.5000001
+                              ],
+                              "localRotation": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                1.0
+                              ],
+                              "localScale": [
+                                1.0,
+                                1.0,
+                                1.0
+                              ],
+                              "instanceId": 24222,
+                              "type": "UnityEngine.Transform",
+                              "assetId": 2638947628,
+                              "assetPath": "Assets/Prefabs/Tank.prefab"
+                            },
+                            "components": {},
+                            "children": [],
+                            "assetId": 2638947628,
+                            "assetPath": "Assets/Prefabs/Tank.prefab"
+                          }
+                        ],
+                        "assetId": 2638947628,
+                        "assetPath": "Assets/Prefabs/Tank.prefab"
+                      }
+                    ],
+                    "assetId": 2638947628,
+                    "assetPath": "Assets/Prefabs/Tank.prefab"
+                  }
+                ],
+                "assetId": 2638947628,
+                "assetPath": "Assets/Prefabs/Tank.prefab"
+              }
+            ],
+            "assetId": 2638947628,
+            "assetPath": "Assets/Prefabs/Tank.prefab"
+          },
+          {
+            "id": 24086,
+            "name": "HealthBar",
+            "tag": "Untagged",
+            "layer": 0,
+            "isStatic": false,
+            "isActive": true,
+            "transform": {
+              "position": [
+                0.0,
+                5.0,
+                0.0
+              ],
+              "localPosition": [
+                0.0,
+                5.0,
+                0.0
+              ],
+              "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              "localRotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              "localScale": [
+                0.1,
+                0.1,
+                0.1
+              ],
+              "instanceId": 24066,
+              "type": "UnityEngine.Transform",
+              "assetId": 2638947628,
+              "assetPath": "Assets/Prefabs/Tank.prefab"
+            },
+            "components": {},
+            "children": [],
+            "assetId": 2638947628,
+            "assetPath": "Assets/Prefabs/Tank.prefab"
+          }
+        ],
+        "assetId": 2638947628,
+        "assetPath": "Assets/Prefabs/Tank.prefab"
+      }
+    }
   },
   "networkManagers": {
     "Assets/Prefabs/NetworkRoomManager.prefab": [

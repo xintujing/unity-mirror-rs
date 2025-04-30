@@ -1,6 +1,6 @@
 use backtrace::Backtrace;
 
-pub fn trace(crop_level: usize, error: Box<dyn std::error::Error>) {
+pub fn trace(mut crop_level: usize, error: Box<dyn std::error::Error>) {
     let mut traces = vec![];
     let bt = Backtrace::new();
     for frame in bt.frames() {
@@ -23,6 +23,11 @@ pub fn trace(crop_level: usize, error: Box<dyn std::error::Error>) {
             }
         }
     }
+
+    if crop_level > traces.len() {
+        crop_level = traces.len();
+    }
+
     eprintln!(
         "{}\n{}",
         error.to_string(),

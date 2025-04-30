@@ -10,3 +10,4 @@ pub mod component_type;
 pub mod state;
 pub mod synced;
 pub mod sync_object;
+pub mod sync_list;

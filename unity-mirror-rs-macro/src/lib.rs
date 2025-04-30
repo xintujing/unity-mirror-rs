@@ -57,7 +57,6 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
     metadata_settings::wrapper_register::handler(input)
 }
 
-
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
     namespace::handler(attr, item)
@@ -79,14 +78,14 @@ pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
 // }
 
 #[proc_macro_attribute]
-pub fn state(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn component_state(attr: TokenStream, item: TokenStream) -> TokenStream {
     component::state2::handler(attr, item)
 }
 
-#[proc_macro_attribute]
-pub fn mirror_synced(attr: TokenStream, item: TokenStream) -> TokenStream {
-    synced::handler(attr, item)
-}
+// #[proc_macro_attribute]
+// pub fn mirror_synced(attr: TokenStream, item: TokenStream) -> TokenStream {
+//     synced::handler(attr, item)
+// }
 
 #[proc_macro_derive(InnerState, attributes(sync_variable, sync_object))]
 pub fn derive_inner_state(_: TokenStream) -> TokenStream {
@@ -101,3 +100,9 @@ pub fn derive_inner_state(_: TokenStream) -> TokenStream {
 // pub fn sync_object(_: TokenStream, item: TokenStream) -> TokenStream {
 //     item
 // }
+
+#[proc_macro_derive(Metadata, attributes(metadata))]
+pub fn derive_metadata(input: TokenStream) -> TokenStream {
+    // metadata_settings::metadata::handler(input)
+    TokenStream::new()
+}

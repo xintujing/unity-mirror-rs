@@ -1,8 +1,9 @@
 use std::fmt::{Debug, Formatter};
-use std::sync::Weak;
 use std::sync::{Mutex, MutexGuard};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard, Weak};
+use crate::commons;
 
-pub struct Reference<T>(Weak<Mutex<T>>);
+pub struct Reference<T>(Weak<RwLock<T>>);
 
 impl<T> Clone for Reference<T> {
     fn clone(&self) -> Self {
@@ -23,7 +24,7 @@ impl<T> Default for Reference<T> {
 }
 
 impl<T> Reference<T> {
-    pub fn new(w: Weak<Mutex<T>>) -> Self {
+    pub fn new(w: Weak<RwLock<T>>) -> Self {
         Reference(w)
     }
 
@@ -31,15 +32,32 @@ impl<T> Reference<T> {
         Reference(Weak::new())
     }
 
-    pub fn get(&self, f: impl Fn(MutexGuard<T>)) {
+    pub fn get(&self, f: impl Fn(RwLockReadGuard<T>)) {
         if let Some(value) = self.0.upgrade() {
-            if let Ok(value) = value.try_lock() {
+            if let Ok(value) = value.read() {
                 f(value)
             } else {
                 log::warn!("Reference::get failed, value is locked")
             }
         } else {
-            log::warn!("Reference::get failed, value is None")
+            commons::trace::trace(4, "Reference::get failed, value is None".into());
         }
+    }
+
+    pub fn get_mut(&self, f: impl Fn(RwLockWriteGuard<T>)) {
+        if let Some(value) = self.0.upgrade() {
+            if let Ok(value) = value.write() {
+                f(value)
+            } else {
+                log::warn!("Reference::get failed, value is locked")
+            }
+        } else {
+            commons::trace::trace(4, "Reference::get_mut failed, value is None".into());
+            // log::warn!("Reference::get failed, value is None")
+        }
+    }
+
+    pub fn is_none(&self) -> bool {
+        self.0.upgrade().is_none()
     }
 }

@@ -1,5 +1,4 @@
 use crate::commons::reference::Reference;
-use std::sync::{Arc, Mutex};
 
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::{
     MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
@@ -12,11 +11,11 @@ use crate::mirror::component::state::StateInitialize;
 use crate::mirror::component::sync_object::SyncObject;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_identity::NetworkIdentity;
-use crate::unity::game_object::GameObject;
-use unity_mirror_rs_macro::{component, state};
+use crate::unity::GameObject;
+use unity_mirror_rs_macro::{component, component_state, Metadata};
 use String;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub enum SyncDirection {
     #[default]
     ServerToClient,
@@ -49,7 +48,8 @@ impl Into<SyncMode> for MetadataSyncMode {
 }
 
 #[allow(unused)]
-#[state]
+#[component_state]
+#[derive(Metadata)]
 pub struct NetworkBehaviourState {
     pub game_object_ref: Reference<GameObject>,
     pub identity: NetworkIdentity,
@@ -57,18 +57,20 @@ pub struct NetworkBehaviourState {
     pub connection_ref: Reference<NetworkConnection>,
 
     // 同步方向
+    #[metadata]
     pub sync_direction: SyncDirection,
     // 同步模式
+    #[metadata]
     pub sync_mode: SyncMode,
     // 同步间隔
+    #[metadata]
     pub sync_interval: f64,
     // 同步脏位
     pub sync_var_dirty_bit: u64,
     pub sync_object_dirty_bit: u64,
     // 最后同步时间
     pub last_sync_time: f64,
-
-    pub sync_objects: Vec<Arc<Mutex<Box<dyn SyncObject>>>>,
+    // pub sync_objects: Vec<Arc<Mutex<Box<dyn SyncObject>>>>,
 }
 
 impl StateInitialize for NetworkBehaviourState {

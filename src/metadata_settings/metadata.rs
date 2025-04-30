@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
 use crate::metadata_settings::unity::metadata_scene::MetadataScene;
@@ -34,10 +35,16 @@ impl MetadataLoader {
 
 #[derive(Deserialize)]
 pub struct Metadata {
-    pub prefabs: IndexMap<String, MetadataPrefab>,
-    pub scenes: IndexMap<String, MetadataScene>,
+    pub prefabs: HashMap<String, MetadataPrefab>,
+    pub scenes: HashMap<String, HashMap<String, MetadataPrefab>>,
     #[serde(rename = "networkManagers")]
-    pub network_managers: IndexMap<String, MetadataNetworkManagerWrapper>,
+    pub network_managers: HashMap<String, MetadataNetworkManagerWrapper>,
+}
+
+impl Metadata {
+    pub(crate) fn get_scene(path: &str) -> Option<&HashMap<String, MetadataPrefab>> {
+        METADATA.scenes.get(path)
+    }
 }
 
 impl Metadata {
@@ -52,16 +59,6 @@ impl Metadata {
 
 #[cfg(test)]
 mod metadata_test {
-    use crate::metadata_settings::metadata::Metadata;
-    use crate::metadata_settings::mirror::metadata_network_identity::{
-        MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
-    };
-    use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManager;
-    use crate::metadata_settings::unity::capsule_collider::MetadataCapsuleCollider;
-    use crate::metadata_settings::unity::collider::MetadataColliderWrapper;
-    use crate::metadata_settings::unity::rigid_body::{
-        MetadataRigidBody, MetadataRigidBodyWrapper,
-    };
 
     // #[test]
     // fn test() {

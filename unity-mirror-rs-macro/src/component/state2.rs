@@ -47,16 +47,16 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
     );
 
     let mut sync_variable_index = 0u8;
-    let mut sync_object_index = 0u8;
-
     let mut sync_variable_serialize_slots = vec![];
     let mut sync_variable_deserialize_slots = vec![];
-    let mut sync_objects_serialize_slots = vec![];
-    let mut sync_objects_deserialize_slots = vec![];
+    let mut sync_variable_getter_setter = vec![];
+
+    let mut sync_object_index = 0u8;
+    let mut sync_object_idents = vec![];
+    let mut sync_object_serialize_delta_slots = vec![];
+    let mut sync_object_deserialize_delta_slots = vec![];
 
     let mut on_change_callback_slots = vec![];
-
-    let mut get_set_sync_fns = vec![];
 
     for field in item_struct.fields.iter() {
         for field_attr in field.attrs.iter() {
@@ -74,29 +74,50 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
 
                     if field_attr.meta.path().is_ident("sync_variable") {
                         sync_variable_serialize_slots.push(quote! {
-                            if initial || *dirty_bit & (1u64 << (#sync_variable_index + index)) != 0 {
+                            if initial || dirty_bit & (1u64 << (#sync_variable_index + self.var_start_offset)) != 0 {
                                 // self.value.serialize(writer);
                                 crate::mirror::network_writer::DataTypeSerializer::serialize(&self.#field_ident, writer);
                             }
                         });
                         sync_variable_deserialize_slots.push(quote! {
-                            if initial || *dirty_bit & (1u64 << (#sync_variable_index + index)) != 0 {
+                            if initial || dirty_bit & (1u64 << (#sync_variable_index + self.var_start_offset)) != 0 {
                                 self.#set_sync_field_ident(<#type_path as crate::mirror::network_reader::DataTypeDeserializer>::deserialize(reader));
                             }
                         });
 
-                        get_set_sync_fns.push(quote! {
+                        sync_variable_getter_setter.push(quote! {
                             pub fn #get_sync_field_ident(&self) -> &#field_type {
                                 &self.#field_ident
                             }
 
                             pub fn #set_sync_field_ident(&mut self, value: #field_type) {
-                                let old_value = self.#field_ident.clone();
-                                self.#field_ident = value.clone();
-                                if let Some(mut state) = NetworkBehaviour::state_mut(&self.id) {
+
+                                 let old_value = unsafe {
+                                    let mut value_buffer = [0u8; size_of::<#field_type>()];
+                                    std::ptr::copy_nonoverlapping(
+                                        &self.#field_ident as *const #field_type as *const u8,
+                                        value_buffer.as_mut_ptr(),
+                                        size_of::<#field_type>(),
+                                    );
+                                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(value_buffer)
+                                };
+                                let new_value = unsafe {
+                                    let mut value_buffer = [0u8; size_of::<#field_type>()];
+                                    std::ptr::copy_nonoverlapping(
+                                        &value as *const #field_type as *const u8,
+                                        value_buffer.as_mut_ptr(),
+                                        size_of::<#field_type>(),
+                                    );
+                                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(value_buffer)
+                                };
+
+                                self.#field_ident = value;
+
+                                if let Some(mut state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
                                     state.sync_var_dirty_bit |= 1u64 << (#sync_variable_index + self.var_start_offset);
                                 }
-                                self.#on_change_callback_ident(&old_value, &value)
+
+                                self.#on_change_callback_ident(&old_value, &new_value)
                             }
                         });
 
@@ -104,32 +125,33 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
                     }
 
                     if field_attr.meta.path().is_ident("sync_object") {
-                        sync_objects_serialize_slots.push(quote! {
-                            if initial || *dirty_bit & (1u64 << (#sync_object_index + index)) != 0 {
-                                // self.value.serialize(writer);
-                                // crate::mirror::network_writer::DataTypeSerializer::serialize(&#field_name, writer);
+                        sync_object_idents.push(field_ident.clone());
+
+                        sync_object_serialize_delta_slots.push(quote! {
+                            if dirty_bit & (1u64 << (#sync_object_index + self.var_start_offset)) != 0 {
+                                self.#field_ident.on_serialize_delta(writer);
                             }
                         });
-                        sync_objects_deserialize_slots.push(quote! {
-                            if initial || *dirty_bit & (1u64 << (#sync_object_index + index)) != 0 {
-                                // self.#set_sync_field_ident(crate::mirror::network_reader::DataTypeDeserializer::deserialize(reader));
+                        sync_object_deserialize_delta_slots.push(quote! {
+                            if dirty_bit & (1u64 << (#sync_object_index + self.var_start_offset)) != 0 {
+                                self.#field_ident.on_deserialize_delta(reader);
                             }
                         });
 
-                        get_set_sync_fns.push(quote! {
-                            pub fn #get_sync_field_ident(&self) -> &#field_type {
-                                &self.#field_ident
-                            }
-
-                            pub fn #set_sync_field_ident(&mut self, value: #field_type) {
-                                let old_value = self.#field_ident.clone();
-                                self.#field_ident = value.clone();
-                                if let Some(mut state) = NetworkBehaviour::state_mut(&self.id) {
-                                    state.sync_object_dirty_bit |= 1u64 << (#sync_object_index + self.var_start_offset);
-                                }
-                                self.#on_change_callback_ident(&old_value, &value)
-                            }
-                        });
+                        // get_set_sync_fns.push(quote! {
+                        //     pub fn #get_sync_field_ident(&self) -> &#field_type {
+                        //         &self.#field_ident
+                        //     }
+                        //
+                        //     pub fn #set_sync_field_ident(&mut self, value: #field_type) {
+                        //         let old_value = self.#field_ident.clone();
+                        //         self.#field_ident = value.clone();
+                        //         if let Some(mut state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+                        //             state.sync_object_dirty_bit |= 1u64 << (#sync_object_index + self.var_start_offset);
+                        //         }
+                        //         self.#on_change_callback_ident(&old_value, &value)
+                        //     }
+                        // });
 
                         sync_object_index += 1;
                     }
@@ -142,6 +164,11 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
         }
     }
 
+    let this_struct_private_mod_ident = format_ident!(
+        "private_component_state_{}",
+        struct_ident.to_string().to_snake_case().to_lowercase()
+    );
+
     TokenStream::from(quote! {
         // #item_struct
 
@@ -153,7 +180,7 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
 
         impl #state_condition_ident for #struct_ident {}
 
-        mod private {
+        mod #this_struct_private_mod_ident {
             use super::*;
 
             static mut #static_state_ident: once_cell::sync::Lazy<
@@ -163,8 +190,37 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
 
             #item_struct
 
+            // 同步变量 get/set
             impl #struct_ident {
-                #(#get_set_sync_fns)*
+                #(#sync_variable_getter_setter)*
+            }
+
+            // 同步对象相关
+            impl #struct_ident {
+                fn serialize_objects_all(&self, writer: &mut crate::mirror::network_writer::NetworkWriter) {
+                    use crate::mirror::component::sync_object::SyncObject;
+                    #(
+                        self.#sync_object_idents.on_serialize_all(writer);
+                    )*
+                }
+
+                fn serialize_sync_object_delta(&self, dirty_bit: u64, writer: &mut crate::mirror::network_writer::NetworkWriter) {
+                    use crate::mirror::component::sync_object::SyncObject;
+                    #(#sync_object_serialize_delta_slots)*
+                }
+
+                fn deserialize_objects_all(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader) {
+                    use crate::mirror::component::sync_object::SyncObject;
+                    #(
+                        self.#sync_object_idents.on_deserialize_all(reader);
+                    )*
+                }
+
+                fn deserialize_sync_object_delta(&mut self, dirty_bit: u64, reader: &mut crate::mirror::network_reader::NetworkReader) {
+                    use crate::mirror::component::sync_object::SyncObject;
+                    #(#sync_object_deserialize_delta_slots)*
+                }
+
             }
 
             impl #struct_ident {
@@ -173,7 +229,7 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
                     state.id = id.to_string();
                     state.obj_start_offset = *obj_start_offset;
                     state.var_start_offset = *var_start_offset;
-
+                    // println!("obj_start_offset: {}, var_start_offset: {}", *obj_start_offset, *var_start_offset);
                     *obj_start_offset += #sync_object_index;
                     *var_start_offset += #sync_variable_index;
 
@@ -220,48 +276,60 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
             impl crate::mirror::component::state::State for #struct_ident {
                 fn on_serialize_sync_variable(
                     &mut self,
-                    index: u8,
-                    dirty_bit: &mut u64,
+                    // index: u8,
+                    dirty_bit: u64,
                     writer: &mut crate::mirror::network_writer::NetworkWriter,
                     initial: bool,
                 ) {
+                    if !initial && #sync_variable_index > 0 {
+                        writer.write_blittable::<u64>(dirty_bit);
+                    }
                     #(#sync_variable_serialize_slots)*
                 }
 
                 fn on_serialize_sync_object(
                     &mut self,
-                    index: u8,
-                    dirty_bit: &mut u64,
+                    dirty_bit: u64,
                     writer: &mut crate::mirror::network_writer::NetworkWriter,
                     initial: bool,
                 ) {
-                    #(#sync_objects_serialize_slots)*
+                    if initial {
+                        self.serialize_objects_all(writer);
+                    } else {
+                        self.serialize_sync_object_delta(dirty_bit, writer);
+                    }
                 }
 
                 fn on_deserialize_sync_variable(
                     &mut self,
-                    index: u8,
-                    dirty_bit: &mut u64,
                     reader: &mut crate::mirror::network_reader::NetworkReader,
                     initial: bool,
                 ) {
+                    let mut dirty_bit = 0;
+                    if !initial && #sync_variable_index > 0 {
+                        dirty_bit = reader.read_blittable::<u64>();
+                    }
+
                     #(#sync_variable_deserialize_slots)*
                 }
 
                 fn on_deserialize_sync_object(
                     &mut self,
-                    index: u8,
-                    dirty_bit: &mut u64,
+                    dirty_bit: u64,
                     reader: &mut crate::mirror::network_reader::NetworkReader,
                     initial: bool,
                 ) {
-                    #(#sync_objects_deserialize_slots)*
+                    if initial {
+                        self.deserialize_objects_all(reader)
+                    } else {
+                        self.deserialize_sync_object_delta(dirty_bit, reader)
+                    }
                 }
             }
         }
 
 
-        pub use private::#struct_ident;
+        pub use #this_struct_private_mod_ident::#struct_ident;
 
     })
 }

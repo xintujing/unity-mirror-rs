@@ -114,7 +114,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut get_parent_slot = quote! { None };
     let mut parent_component_on_serialize_slot = None;
     let mut parent_component_on_deserialize_slot = None;
-    if let Some(parent_path) = parent {
+
+    let is_root = parent.is_none();
+
+    if let Some(parent_path) = &parent {
         // 父组件字段
         named.push(parse_quote! { parent: #parent_path });
         instance_fields.push(parse_quote! { parent });
@@ -142,8 +145,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut state_clear_slot = None;
     let mut component_state_impl_slot = None;
-    let mut component_serialize_slot = None;
-    let mut component_deserialize_slot = None;
+
+    let mut variable_serialize_slot = None;
+    let mut variable_deserialize_slot = None;
+    let mut object_serialize_slot = None;
+    let mut object_deserialize_slot = None;
+
     let mut this_component_state_trait_slot = None;
     if let Some(state_path) = state {
         // named.push(parse_quote! { state: #state_path });
@@ -180,47 +187,97 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         });
 
-        component_serialize_slot = Some(quote! {
-            if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
-                let index = network_behaviour_state.index;
-                if let Some(mut state) = Self::state_mut(&self.id) {
-                    use crate::mirror::component::state::State;
-                    state.on_serialize_sync_variable (
-                        index,
-                        &mut network_behaviour_state.sync_var_dirty_bit,
-                        writer,
-                        initial,
-                    );
-                    state.on_serialize_sync_object (
-                        index,
-                        &mut network_behaviour_state.sync_object_dirty_bit,
-                        writer,
-                        initial,
-                    );
-                }
-            }
-        });
+        // component_serialize_slot = Some(quote! {
+        //     if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+        //         if let Some(mut state) = Self::state_mut(&self.id) {
+        //             use crate::mirror::component::state::State;
+        //             state.on_serialize_sync_variable (
+        //                 &mut network_behaviour_state.sync_var_dirty_bit,
+        //                 writer,
+        //                 initial,
+        //             );
+        //             state.on_serialize_sync_object (
+        //                 &mut network_behaviour_state.sync_object_dirty_bit,
+        //                 writer,
+        //                 initial,
+        //             );
+        //         }
+        //     }
+        // });
 
-        component_deserialize_slot = Some(quote! {
-            if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
-                let index = network_behaviour_state.index;
+        if parent.is_none() {
+            object_serialize_slot = Some(quote! {
+                if !initial {
+                    if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+                         writer.write_blittable::<u64>(network_behaviour_state.sync_var_dirty_bit);
+                    }
+                }
+            });
+            // object_deserialize_slot = Some(quote! {
+            //
+            // });
+        } else {
+            variable_serialize_slot = Some(quote! {
+                if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+                    if let Some(mut state) = Self::state_mut(&self.id) {
+                        use crate::mirror::component::state::State;
+                        state.on_serialize_sync_variable (
+                            network_behaviour_state.sync_var_dirty_bit,
+                            writer,
+                            initial,
+                        );
+                    }
+                }
+            });
+            object_serialize_slot = Some(quote! {
+                if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+                    if let Some(mut state) = Self::state_mut(&self.id) {
+                        use crate::mirror::component::state::State;
+                        state.on_serialize_sync_object (
+                            network_behaviour_state.sync_object_dirty_bit,
+                            writer,
+                            initial,
+                        );
+                    }
+                }
+            });
+            variable_deserialize_slot = Some(quote! {
                 if let Some(mut state) = Self::state_mut(&self.id) {
                     use crate::mirror::component::state::State;
-                    state.on_deserialize_sync_variable (
-                        index,
-                        &mut network_behaviour_state.sync_var_dirty_bit,
-                        reader,
-                        initial,
-                    );
-                    state.on_deserialize_sync_object (
-                        index,
-                        &mut network_behaviour_state.sync_object_dirty_bit,
-                        reader,
-                        initial,
-                    );
+                    state.on_deserialize_sync_variable (reader,initial);
                 }
-            }
-        });
+            });
+            object_deserialize_slot = Some(quote! {
+                if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+                    if let Some(mut state) = Self::state_mut(&self.id) {
+                        use crate::mirror::component::state::State;
+                        state.on_deserialize_sync_object (
+                            dirty_bit,
+                            reader,
+                            initial,
+                        );
+                    }
+                }
+            });
+        }
+
+        // component_deserialize_slot = Some(quote! {
+        //     if let Some(mut network_behaviour_state) = crate::mirror::components::network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+        //         if let Some(mut state) = Self::state_mut(&self.id) {
+        //             use crate::mirror::component::state::State;
+        //             state.on_deserialize_sync_variable (
+        //                 &mut network_behaviour_state.sync_var_dirty_bit,
+        //                 reader,
+        //                 initial,
+        //             );
+        //             state.on_deserialize_sync_object (
+        //                 &mut network_behaviour_state.sync_object_dirty_bit,
+        //                 reader,
+        //                 initial,
+        //             );
+        //         }
+        //     }
+        // });
     }
 
     // ---------------------------------------------------------
@@ -285,17 +342,46 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             #component_state_impl_slot
 
 
+
+
+
             impl crate::mirror::component::component_serializer::ComponentOnSerializer for #struct_ident {
-                fn on_serialize(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
-                    #parent_component_on_serialize_slot
-                    #component_serialize_slot
+                fn serialize_sync_objects(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
+                    use crate::mirror::component::component_basic::ComponentBasic;
+                    if let Some(parent) = self.parent() {
+                        parent.serialize_sync_objects(writer, initial);
+                    }
+                    #object_serialize_slot
+                }
+
+                fn serialize_sync_variables(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
+                    use crate::mirror::component::component_basic::ComponentBasic;
+                    if let Some(parent) = self.parent() {
+                        parent.serialize_sync_variables(writer, initial);
+                    }
+                    #variable_serialize_slot
                 }
             }
 
             impl crate::mirror::component::component_deserializer::ComponentOnDeserializer for #struct_ident {
-                fn on_deserialize(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) {
-                    #parent_component_on_deserialize_slot
-                    #component_deserialize_slot
+                fn deserialize_sync_objects(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) -> u64 {
+                    use crate::mirror::component::component_basic::ComponentBasic;
+                    let dirty_bit = if let Some(parent) = self.parent() {
+                        parent.deserialize_sync_objects(reader, initial)
+                    } else {
+                        reader.read_blittable::<u64>()
+                    };
+                    #object_deserialize_slot
+
+                    dirty_bit
+                }
+
+                fn deserialize_sync_variables(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) {
+                    use crate::mirror::component::component_basic::ComponentBasic;
+                    if let Some(parent) = self.parent() {
+                        parent.deserialize_sync_variables(reader, initial);
+                    }
+                    #variable_deserialize_slot
                 }
             }
         }

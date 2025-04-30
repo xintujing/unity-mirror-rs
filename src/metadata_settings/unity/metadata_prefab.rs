@@ -15,4 +15,9 @@ pub struct MetadataPrefab {
     pub is_active: bool,
     pub transform: MetadataTransform,
     pub components: MetadataComponentWrapper,
+    pub children: Vec<MetadataPrefab>,
+    #[serde(rename = "assetId")]
+    pub asset_id: u32,
+    #[serde(rename = "assetPath")]
+    pub asset_path: String,
 }
