@@ -1,4 +1,4 @@
-use crate::commons::namespace::Namespace;
+use crate::commons::object::Object;
 use serde::Deserialize;
 use serde_json::{Error, Value};
 use std::any::Any;
@@ -27,7 +27,11 @@ impl<T: Settings + Send + Sync + 'static> SettingsAny for T {
     }
 }
 
-pub trait Settings: Any + Send + Sync + SettingsParser + SettingsAny + Namespace {}
+pub trait Settings: Any + Send + Sync + SettingsParser + SettingsAny + Object {
+    // fn to<T>(&self) -> &'static T {
+    //     self.as_any().downcast_ref::<T>().unwrap()
+    // }
+}
 
 // #[macro_export]
 // macro_rules! settings_wrapper_register {

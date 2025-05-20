@@ -13,9 +13,7 @@ pub struct MetadataLoader;
 
 const FILE_PATH: &str = "metadata_settings.json";
 
-lazy_static! {
-    static ref METADATA: Lazy<Arc<Metadata>> = Lazy::new(|| MetadataLoader::load(FILE_PATH));
-}
+static mut METADATA: Lazy<Arc<Metadata>> = Lazy::new(|| MetadataLoader::load(FILE_PATH));
 
 impl MetadataLoader {
     pub fn load(file_path: &str) -> Arc<Metadata> {
@@ -43,17 +41,20 @@ pub struct Metadata {
 
 impl Metadata {
     pub(crate) fn get_scene(path: &str) -> Option<&HashMap<String, MetadataPrefab>> {
-        METADATA.scenes.get(path)
+        #[allow(static_mut_refs)]
+        unsafe { METADATA.scenes.get(path) }
     }
 }
 
 impl Metadata {
     pub fn get_prefab(prefab_path: &str) -> Option<&MetadataPrefab> {
-        METADATA.prefabs.get(prefab_path)
+        #[allow(static_mut_refs)]
+        unsafe { METADATA.prefabs.get(prefab_path) }
     }
 
     pub fn get_network_manager(prefab_path: &str) -> Option<&MetadataNetworkManagerWrapper> {
-        METADATA.network_managers.get(prefab_path)
+        #[allow(static_mut_refs)]
+        unsafe { METADATA.network_managers.get(prefab_path) }
     }
 }
 

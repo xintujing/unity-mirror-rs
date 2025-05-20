@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use unity_mirror_rs_macro::{namespace, MetadataSettingsWrapper};
+use unity_mirror_macro::{namespace, MetadataSettingsWrapper};
 
 #[derive(Deserialize_repr, Debug, Clone)]
 #[repr(u8)]
@@ -17,12 +17,12 @@ pub enum MetadataSyncDirection {
 }
 
 #[namespace("Mirror", rename = "NetworkBehaviour")]
-#[derive(Deserialize, MetadataSettingsWrapper)]
+#[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataNetworkBehaviour {
     #[serde(rename = "syncMode")]
     pub sync_mode: MetadataSyncMode,
     #[serde(rename = "syncDirection")]
     pub sync_direction: MetadataSyncDirection,
     #[serde(rename = "syncInterval")]
-    pub sync_interval: f64,
+    pub sync_interval: f32,
 }

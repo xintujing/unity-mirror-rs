@@ -3,9 +3,9 @@ use crate::metadata_settings::unity::metadata_transform::MetadataTransform;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use std::collections::HashMap;
-use unity_mirror_rs_macro::{namespace, MetadataSettingsWrapper};
+use unity_mirror_macro::{namespace, MetadataSettingsWrapper};
 
-#[derive(Deserialize_repr)]
+#[derive(Deserialize_repr, Clone)]
 #[repr(u8)]
 pub enum HeadlessStartOptions {
     DoNothing = 0,
@@ -20,7 +20,7 @@ pub enum PlayerSpawnMethod {
     RoundRobin = 1,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct MetadataSnapshotSettings {
     #[serde(rename = "bufferTimeMultiplier")]
     pub buffer_time_multiplier: f64,
@@ -46,7 +46,7 @@ pub struct MetadataSnapshotSettings {
 
 #[allow(unused)]
 #[namespace("Mirror", rename = "NetworkManager")]
-#[derive(Deserialize, MetadataSettingsWrapper)]
+#[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataNetworkManager {
     #[serde(rename = "dontDestroyOnLoad")]
     pub dont_destroy_on_load: bool,

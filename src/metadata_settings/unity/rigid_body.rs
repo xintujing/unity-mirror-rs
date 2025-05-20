@@ -1,12 +1,12 @@
 #![allow(dead_code)]
-use crate::commons::namespace::Namespace;
+use crate::commons::object::Object;
 use crate::metadata_settings::unity::collider::LayerMask;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use serde::Deserialize;
-use unity_mirror_rs_macro::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
+use unity_mirror_macro::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
 
 #[namespace("UnityEngine", rename = "Rigidbody")]
-#[derive(Deserialize, MetadataSettingsWrapper)]
+#[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataRigidBody {
     #[serde(rename = "instanceId")]
     pub instance_id: i32,
@@ -32,8 +32,8 @@ pub struct MetadataRigidBody {
     pub exclude_layers: LayerMask,
 }
 
-impl Namespace for MetadataRigidBodyWrapper {
-    fn get_namespace() -> &'static str
+impl Object for MetadataRigidBodyWrapper {
+    fn get_full_name() -> &'static str
     where
         Self: Sized,
     {

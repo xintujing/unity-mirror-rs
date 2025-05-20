@@ -88,7 +88,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             quote! {}
         }
         Some(namespace_args) => {
-            let namespace_string = namespace_args.get_namespace(struct_ident);
+            let namespace_string = namespace_args.get_full_name(struct_ident);
             quote! {
                 impl crate::commons::namespace::Namespace for #struct_ident {
                     fn get_namespace() -> &'static str {

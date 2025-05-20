@@ -7,7 +7,7 @@ pub(crate) fn handler(#[allow(unused)] attr: TokenStream, item: TokenStream) -> 
     let mut item_struct = parse_macro_input!(item as syn::ItemStruct);
 
     item_struct.attrs.push(parse_quote!(
-        #[derive(Default, Debug, unity_mirror_rs_macro::InnerState)]
+        #[derive(Default, Debug, unity_mirror_macro::InnerState)]
     ));
 
     if let Fields::Named(fields_named) = &mut item_struct.fields {

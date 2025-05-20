@@ -1,0 +1,12 @@
+[package]
+name = "demo_game_server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.41"
+colored = "3.0.0"
+ctor = "0.4.2"
+env_logger = "0.11.8"
+log = "0.4.27"
+unity-mirror-rs = { path = "../../unity-mirror-rs" }

@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Deserialize,Default)]
+#[derive(Deserialize, Default, Clone)]
 pub struct MetadataAsset {
     #[serde(rename = "assetId")]
     pub asset_id: u32,

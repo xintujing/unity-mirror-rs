@@ -1,10 +1,10 @@
 #![allow(dead_code)]
-use crate::commons::namespace::Namespace;
+use crate::commons::object::Object;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use serde::Deserialize;
-use unity_mirror_rs_macro::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
+use unity_mirror_macro::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct LayerMask {
     pub value: i32,
 }
@@ -27,8 +27,8 @@ pub struct MetadataCollider {
     pub exclude_layers: LayerMask,
 }
 
-impl Namespace for MetadataColliderWrapper {
-    fn get_namespace() -> &'static str
+impl Object for MetadataColliderWrapper {
+    fn get_full_name() -> &'static str
     where
         Self: Sized,
     {

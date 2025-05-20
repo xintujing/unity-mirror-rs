@@ -1,6 +1,5 @@
-use crate::commons::namespace::Namespace;
 use crate::metadata_settings::wrapper::Settings;
-use std::any::TypeId;
+use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
 static METADATA_COMPONENT_REGISTERS: once_cell::sync::Lazy<
@@ -21,9 +20,9 @@ pub struct MetadataComponentWrapper {
 }
 impl MetadataComponentWrapper {
     pub fn register<T: Settings + 'static + for<'a> serde::Deserialize<'a>>() {
-        let name = T::get_namespace();
+        let name = T::get_full_name();
         let type_name = std::any::type_name::<T>();
-        println!("Register component: {} {}", type_name, name);
+        // println!("Register component: {} {}", type_name, name);
         let parser = |value: serde_json::Value| -> Result<Box<dyn Settings>, serde_json::Error> {
             T::parse(value).map(|c| c as Box<dyn Settings>)
         };
@@ -44,7 +43,17 @@ impl MetadataComponentWrapper {
         panic!("Component not found: {}", std::any::type_name::<T>());
     }
 
-    pub fn iter(&self) -> Box<dyn Iterator<Item = (&str, &MetadataComponentWrapper)>> {
+    pub fn group_by_full_name(
+        &self,
+    ) -> Box<dyn Iterator<Item = (&str, &Box<dyn Settings>)> + '_> {
+        Box::new(self.value.iter().flat_map(move |(type_id, values)| {
+            let full_name = self.type_mapping.get(type_id).unwrap().as_str();
+            values.iter().map(move |value| (full_name, value))
+
+        }))
+    }
+
+    pub fn list_group(&self) -> Box<dyn Iterator<Item = (String, &MetadataComponentWrapper)> + '_> {
         // for (type_id, values) in self.value.iter() {
         //     let full_name = self.type_mapping.get(type_id).unwrap();
         //     for _ in 0..values.len() {
@@ -52,11 +61,13 @@ impl MetadataComponentWrapper {
         //     }
         // }
         // // 构造上方f入参的迭代器并返回迭代器
-        Box::new(self.value.iter().flat_map(|(type_id, values)| {
+        Box::new(self.value.iter().flat_map(move |(type_id, values)| {
             let full_name = self.type_mapping.get(type_id).unwrap();
-            values.iter().map(|value| (full_name, self))
+            values.iter().map(move |value| (full_name.clone(), self))
         }))
     }
+
+    // pub fn next(&mut self) -> Option<Box<dyn Settings>> {}
 }
 
 impl<'de> serde::Deserialize<'de> for MetadataComponentWrapper {
