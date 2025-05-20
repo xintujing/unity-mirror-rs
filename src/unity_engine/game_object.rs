@@ -6,6 +6,7 @@ use crate::unity_engine::mirror::components::network_transform::network_transfor
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;
+use crate::unity_engine::WorldManager;
 use once_cell::race::OnceBool;
 use rand::RngCore;
 use std::any::{Any, TypeId};
@@ -37,6 +38,13 @@ impl GameObject {
         Self::recursive_children(arc_game_object.downgrade(), &metadata_prefab.children);
         arc_game_object.awake();
         arc_game_object
+    }
+
+    pub fn instantiate(metadata_prefab: &MetadataPrefab) {
+        let arc_game_object = Self::instance(metadata_prefab);
+        if let Some(world) = WorldManager::active_world().get() {
+            world.add_game_object(arc_game_object);
+        }
     }
 
     pub fn new(
@@ -172,8 +180,16 @@ impl GameObject {
         )
     }
 
-    pub fn find_transform(&self, instance_id: &i32) -> RevelWeak<Transform> {
-        RevelWeak::default()
+    pub fn find_transform(&self, instance_id: &i32) -> Option<RevelWeak<Transform>> {
+        if self.transform.instance_id == *instance_id {
+            return Some(self.transform.downgrade());
+        }
+        for (_, children_game_object) in self.children.iter() {
+            if let Some(weak_transform) = children_game_object.find_transform(instance_id) {
+                return Some(weak_transform);
+            }
+        }
+        None
     }
 }
 

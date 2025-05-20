@@ -11,7 +11,7 @@ use std::ops::Deref;
 use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::Ordering::SeqCst;
 
-static mut WORLDS: Lazy<Vec<RefCell<World>>> = Lazy::new(|| Vec::new());
+static mut WORLDS: Lazy<Vec<RevelArc<World>>> = Lazy::new(|| Vec::new());
 static mut ACTIVE_WORLD_INDEX: AtomicIsize = AtomicIsize::new(-1);
 static mut DONT_DESTROY_OBJECT: Lazy<HashMap<u64, RevelArc<GameObject>>> =
     Lazy::new(|| HashMap::default());
@@ -64,6 +64,10 @@ impl World {
             removed_arc_game_object.on_destroy();
         }
     }
+
+    pub fn add_game_object(&mut self, arc_game_object: RevelArc<GameObject>) {
+        self.game_objects.insert(arc_game_object.id, arc_game_object);
+    }
 }
 
 pub enum LoadSceneMode {
@@ -81,13 +85,13 @@ impl WorldManager {
                 LoadSceneMode::Single => {
                     WORLDS
                         .iter_mut()
-                        .for_each(|world| world.borrow_mut().destroy_all_game_object());
+                        .for_each(|world| world.destroy_all_game_object());
                     WORLDS.clear();
-                    WORLDS.push(RefCell::new(world));
+                    WORLDS.push(RevelArc::new(world));
                     Self::set_active_scene(0)
                 }
                 LoadSceneMode::Additive => {
-                    WORLDS.push(RefCell::new(world));
+                    WORLDS.push(RevelArc::new(world));
                     WORLDS.len() - 1
                 }
             }
@@ -104,13 +108,24 @@ impl WorldManager {
             {
                 println!("Active world index: {} [{}]", index, WORLDS.len());
                 let active_world = WORLDS.get(index).unwrap();
-                Self::active_world(active_world)
+                // Self::active_world(active_world)
             }
         }
         index
     }
 
-    fn active_world(active_world: &RefCell<World>) {}
+    pub fn active_world() -> RevelWeak<World> {
+        #[allow(static_mut_refs)]
+        unsafe {
+            let index = ACTIVE_WORLD_INDEX.load(SeqCst);
+            if index >= 0 {
+                if let Some(world) = WORLDS.get(index as usize) {
+                    return world.downgrade();
+                }
+            }
+            RevelWeak::default()
+        }
+    }
 
     pub fn dont_destroy_object(arc_game_object: RevelArc<GameObject>) -> RevelWeak<GameObject> {
         #[allow(static_mut_refs)]
@@ -137,7 +152,7 @@ impl WorldManager {
             } else {
                 let index = ACTIVE_WORLD_INDEX.load(std::sync::atomic::Ordering::SeqCst);
                 if let Some(world) = WORLDS.get_mut(index as usize) {
-                    world.borrow_mut().destroy_game_object_with_id(id);
+                    world.destroy_game_object_with_id(id);
                 }
             }
         }
@@ -151,7 +166,6 @@ impl WorldManager {
             let index = ACTIVE_WORLD_INDEX.load(SeqCst);
             if index >= 0 {
                 if let Some(world) = WORLDS.get(index as usize) {
-                    let world = world.borrow();
                     let world_root_game_objects = world
                         .game_objects
                         .values()
@@ -184,7 +198,7 @@ impl WorldManager {
         #[allow(static_mut_refs)]
         unsafe {
             for world in WORLDS.iter_mut() {
-                for (_, game_object) in world.borrow_mut().game_objects.iter_mut() {
+                for (_, game_object) in world.game_objects.iter_mut() {
                     game_object.fixed_update();
                 }
             }
@@ -195,7 +209,7 @@ impl WorldManager {
         #[allow(static_mut_refs)]
         unsafe {
             for world in WORLDS.iter_mut() {
-                for (_, game_object) in world.borrow_mut().game_objects.iter_mut() {
+                for (_, game_object) in world.game_objects.iter_mut() {
                     game_object.update();
                 }
             }
@@ -206,7 +220,7 @@ impl WorldManager {
         #[allow(static_mut_refs)]
         unsafe {
             for world in WORLDS.iter_mut() {
-                for (_, game_object) in world.borrow_mut().game_objects.iter_mut() {
+                for (_, game_object) in world.game_objects.iter_mut() {
                     game_object.late_update();
                 }
             }
