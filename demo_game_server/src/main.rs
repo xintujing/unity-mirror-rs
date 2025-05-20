@@ -51,5 +51,5 @@ fn main() {
     let option = Metadata::get_prefab("Assets/Prefabs/Projectile.prefab").unwrap();
     GameObject::instantiate(option);
 
-    // GameLooper::new().run();
+    GameLooper::new().run();
 }
