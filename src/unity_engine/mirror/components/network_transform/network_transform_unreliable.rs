@@ -62,11 +62,15 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         let game_object = &self.parent.get().unwrap().parent.get().unwrap().game_object;
 
         // let game_object = root_game_object.get().unwrap();
-        let weak_game_object = game_object.get().unwrap()
+        let weak_game_object = game_object
+            .get()
+            .unwrap()
             .try_get_component::<NetworkTransformUnreliable>()
             .unwrap();
 
-        let x = weak_game_object.downcast::<NetworkTransformUnreliable>().unwrap();
+        let x = weak_game_object
+            .downcast::<NetworkTransformUnreliable>()
+            .unwrap();
 
         let x1 = x.get().unwrap();
 
@@ -90,14 +94,15 @@ impl NetworkTransformUnreliable {
 
         let mut weak_network_transform_base = RevelWeak::default();
         if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
-            weak_network_transform_base = arc_network_behaviour
-                .downgrade()
-                .to::<NetworkTransformBase>()
+            weak_network_transform_base = arc_network_behaviour.downgrade();
         }
         let config = metadata.get::<MetadataNetworkTransformUnreliable>();
 
         let arc_mono_behaviour = RevelArc::new(Box::new(NetworkTransformUnreliable {
-            parent: weak_network_transform_base,
+            parent: weak_network_transform_base
+                .downcast::<NetworkTransformBase>()
+                .unwrap()
+                .clone(),
             buffer_reset_multiplier: config.buffer_reset_multiplier,
             position_sensitivity: config.position_sensitivity,
             rotation_sensitivity: config.rotation_sensitivity,

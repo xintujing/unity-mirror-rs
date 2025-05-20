@@ -92,7 +92,7 @@ impl NetworkTransformBase {
 
         let mut weak_network_behaviour = RevelWeak::default();
         if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
-            weak_network_behaviour = arc_network_behaviour.downgrade().to::<NetworkBehaviour>()
+            weak_network_behaviour = arc_network_behaviour.downgrade();
         }
 
         let config = metadata.get::<MetadataNetworkTransformBase>();
@@ -103,8 +103,11 @@ impl NetworkTransformBase {
             .find_transform(&config.target.instance_id);
 
         let arc_network_transform_base = RevelArc::new(Box::new(NetworkTransformBase {
-            parent: weak_network_behaviour,
-            target: weak_transform,
+            parent: weak_network_behaviour
+                .downcast::<NetworkBehaviour>()
+                .unwrap()
+                .clone(),
+            target: weak_transform.unwrap_or(RevelWeak::default()),
             server_snapshots: Default::default(),
             only_sync_on_change: config.only_sync_on_change,
             coordinate_space: config.coordinate_space.clone().into(),

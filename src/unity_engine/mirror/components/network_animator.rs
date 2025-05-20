@@ -5,7 +5,7 @@ use crate::metadata_settings::mirror::metadata_network_identity::{
 };
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::unity_engine::mirror::NetworkIdentity;
+use crate::unity_engine::mirror::{NetworkBehaviour, NetworkIdentity};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::GameObject;
