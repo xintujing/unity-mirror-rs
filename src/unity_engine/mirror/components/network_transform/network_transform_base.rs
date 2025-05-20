@@ -119,7 +119,8 @@ impl NetworkBehaviourInstance for NetworkTransformBase {
 
         let arc_network_transform_base = RevelArc::new(Box::new(NetworkTransformBase {
             parent: weak_network_behaviour,
-            target: weak_transform,
+            // TODO
+            target: RevelWeak::default(),
             server_snapshots: Default::default(),
             only_sync_on_change: config.only_sync_on_change,
             coordinate_space: config.coordinate_space.clone().into(),
