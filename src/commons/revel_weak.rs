@@ -3,9 +3,9 @@ use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
-use std::sync::Weak;
+use std::sync::{Arc, Weak};
 
-pub struct RevelWeak<T>(pub(super) Weak<UnsafeCell<T>>);
+pub struct RevelWeak<T>(pub Weak<UnsafeCell<T>>);
 
 impl<T> RevelWeak<T> {
     pub fn from_raw(ptr: *const UnsafeCell<T>) -> RevelWeak<T> {
@@ -49,7 +49,7 @@ impl<T: 'static> RevelWeak<T> {
         std::sync::Weak::ptr_eq(&self.0, &other.0)
     }
 
-    pub fn ptr(&self) -> *const UnsafeCell<T> {
+    pub fn as_ptr(&self) -> *const UnsafeCell<T> {
         self.0.as_ptr()
     }
 
@@ -69,6 +69,9 @@ impl<T: 'static> RevelWeak<T> {
         // self.0.upgrade().unwrap().eq_value(other)
     }
 
+    pub fn upgrade(&self) -> Option<Arc<UnsafeCell<T>>> {
+        self.0.upgrade()
+    }
     pub fn upgradable(&self) -> bool {
         self.0.upgrade().is_some()
     }

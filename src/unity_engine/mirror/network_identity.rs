@@ -4,7 +4,8 @@ use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
 use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::unity_engine::mirror::NetworkBehaviour;
+use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer;
+use crate::unity_engine::mirror::{network_behaviour_trait, NetworkBehaviour};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::world::WorldManager;
@@ -42,7 +43,7 @@ fn static_init() {
 pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
-    network_behaviours: Vec<Vec<RevelWeak<Box<dyn MonoBehaviour>>>>,
+    network_behaviours: Vec<Vec<RevelWeak<Box<dyn network_behaviour_trait::NetworkBehaviour>>>>,
     // network_behaviours: Vec<WeakRwLock<Box<dyn MonoBehaviour>>>,
 }
 

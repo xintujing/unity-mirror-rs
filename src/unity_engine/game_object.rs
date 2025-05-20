@@ -2,6 +2,7 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
+use crate::unity_engine::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;
@@ -9,6 +10,7 @@ use once_cell::race::OnceBool;
 use rand::RngCore;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
+use std::mem;
 
 #[derive(Default)]
 pub struct GameObject {
@@ -171,7 +173,7 @@ impl GameObject {
     }
 
     pub fn find_transform(&self, instance_id: &i32) -> RevelWeak<Transform> {
-        todo!()
+        RevelWeak::default()
     }
 }
 
@@ -186,7 +188,11 @@ macro_rules! recursive_event_fn {
                      children_game_object.$fn_name()
                 }
                 for component in &mut self.components {
-                    component.last_mut().unwrap().$fn_name()
+                    if let Some(component_mut) = component.last_mut() {
+                        if let Some(component_mut) = component.last_mut() {
+                            component_mut.get().$fn_name();
+                        }
+                    }
                 }
             }
         )*

@@ -1,6 +1,7 @@
 use unity_mirror_rs::unity_engine::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use unity_mirror_rs::unity_engine::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
-use unity_mirror_rs::unity_engine::{LoadSceneMode, WorldManager};
+use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
+use unity_mirror_rs::unity_engine::mirror::NetworkBehaviour;
 
 #[ctor::ctor]
 fn init_logger() {
@@ -36,18 +37,18 @@ fn init_logger() {
 fn main() {
     WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
 
-    let vec = WorldManager::root_game_objects();
-    vec.iter().for_each(|weak_game_object| {
-        if let Some(game_object) = weak_game_object.get() {
-            println!("{}", game_object.name);
-            if let Some(weak_network_identity) =
-                game_object.try_get_component::<NetworkTransformBase>()
-            {
-                let weak = weak_network_identity.to::<NetworkTransformUnreliable>();
-                println!("aaa {}", weak.get().unwrap().scale_sensitivity);
-            }
-        }
-    });
+    let root_game_objects = WorldManager::root_game_objects();
 
-    // GameLooper::new().run();
+    for root_game_object in root_game_objects.iter() {
+        let game_object = root_game_object.get().unwrap();
+        let mut weak_game_object = game_object
+            .try_get_component::<NetworkBehaviour>()
+            .unwrap();
+        let weak_network_transform_unreliable =
+            unsafe { weak_game_object.downcast::<NetworkTransformUnreliable>() };
+        let x = weak_network_transform_unreliable.unwrap();
+        println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
+    }
+
+    GameLooper::new().run();
 }

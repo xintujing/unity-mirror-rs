@@ -6,8 +6,10 @@ use nalgebra::{Quaternion, Vector3};
 #[derive(Default, Clone)]
 pub struct Transform {
     pub(super) instance_id: i32,
+
     pub(super) parent: RevelWeak<Transform>,
     pub(super) children: Vec<RevelWeak<Transform>>,
+
     pub(super) game_object: RevelWeak<GameObject>,
     pub(super) position: Vector3<f32>,
     pub(super) local_position: Vector3<f32>,

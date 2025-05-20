@@ -33,7 +33,7 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
 
 #[namespace("Mirror")]
 pub struct NetworkTransformBase {
-    parent: RevelWeak<Box<NetworkBehaviour>>,
+    pub parent: RevelWeak<Box<NetworkBehaviour>>,
 
     target: RevelWeak<Transform>,
     pub server_snapshots: BTreeMap<OrderedFloat<f64>, TransformSnapshot>,
@@ -90,9 +90,10 @@ impl NetworkTransformBase {
         let mut network_behaviour_chain =
             NetworkBehaviour::instance(weak_game_object.clone(), metadata);
 
-        let weak_network_behaviour = network_behaviour_chain
-            .last_to_weak::<NetworkBehaviour>()
-            .unwrap();
+        let mut weak_network_behaviour = RevelWeak::default();
+        if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
+            weak_network_behaviour = arc_network_behaviour.downgrade().to::<NetworkBehaviour>()
+        }
 
         let config = metadata.get::<MetadataNetworkTransformBase>();
 

@@ -83,11 +83,11 @@ impl<T> RevelArc<T> {
 pub trait VecRevelArc {
     fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>>;
 }
-impl VecRevelArc for Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
-    fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>> {
-        if let Some((mono_behaviour, _)) = self.last() {
-            return Some(mono_behaviour.clone().downgrade().to::<T>());
-        }
-        None
-    }
-}
+// impl VecRevelArc for Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+//     fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>> {
+//         if let Some((mono_behaviour, _)) = self.last() {
+//             return Some(mono_behaviour.clone().downgrade().to::<T>());
+//         }
+//         None
+//     }
+// }

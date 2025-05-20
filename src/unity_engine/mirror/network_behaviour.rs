@@ -55,7 +55,7 @@ pub struct NetworkBehaviour {
     component_index: u8,
 
     network_identity: RevelWeak<NetworkIdentity>,
-    game_object: RevelWeak<GameObject>,
+    pub game_object: RevelWeak<GameObject>,
     transform: RevelWeak<Transform>,
 
     sync_var_dirty_bits: u64,

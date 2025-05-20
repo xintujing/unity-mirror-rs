@@ -8,10 +8,10 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::unity_engine::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::unity_engine::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::unity_engine::mirror::NetworkIdentity;
+use crate::unity_engine::mirror::{NetworkBehaviour, NetworkIdentity};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
-use crate::unity_engine::GameObject;
+use crate::unity_engine::{GameObject, WorldManager};
 use std::any::TypeId;
 use unity_mirror_macro::{namespace, network_behaviour};
 
@@ -25,7 +25,7 @@ fn static_init() {
 #[namespace("Mirror")]
 // #[network_behaviour(namespace("Mirror"))]
 pub struct NetworkTransformUnreliable {
-    parent: RevelWeak<Box<NetworkTransformBase>>,
+    pub parent: RevelWeak<Box<NetworkTransformBase>>,
 
     pub buffer_reset_multiplier: f32,
     pub position_sensitivity: f32,
@@ -57,8 +57,23 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         // if let Some(parent) = self.parent.get() {
         //     parent.update();
         // }
-        // .unwrap().update();
         println!("Mirror: NetworkTransformUnreliable Update");
+
+        let game_object = &self.parent.get().unwrap().parent.get().unwrap().game_object;
+
+        // let game_object = root_game_object.get().unwrap();
+        let weak_game_object = game_object.get().unwrap()
+            .try_get_component::<NetworkTransformUnreliable>()
+            .unwrap();
+
+        let x = weak_game_object.downcast::<NetworkTransformUnreliable>().unwrap();
+
+        let x1 = x.get().unwrap();
+
+        // let weak_network_transform_unreliable =
+        //     weak_game_object.to::<NetworkTransformUnreliable>();
+        // let x = weak_network_transform_unreliable.get().unwrap();
+        println!("{}", x1.buffer_reset_multiplier);
     }
     fn late_update(&mut self) {
         println!("Mirror: NetworkTransformUnreliable LateUpdate");
@@ -73,10 +88,12 @@ impl NetworkTransformUnreliable {
         let mut network_behaviour_chain =
             NetworkTransformBase::instance(weak_game_object, metadata);
 
-        let weak_network_transform_base = network_behaviour_chain
-            .last_to_weak::<NetworkTransformBase>()
-            .unwrap();
-
+        let mut weak_network_transform_base = RevelWeak::default();
+        if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
+            weak_network_transform_base = arc_network_behaviour
+                .downgrade()
+                .to::<NetworkTransformBase>()
+        }
         let config = metadata.get::<MetadataNetworkTransformUnreliable>();
 
         let arc_mono_behaviour = RevelArc::new(Box::new(NetworkTransformUnreliable {
