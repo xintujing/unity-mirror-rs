@@ -10,7 +10,7 @@ use crate::unity_engine::mirror::NetworkIdentity;
 use crate::unity_engine::transform::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use std::any::TypeId;
-use unity_mirror_macro::{namespace, network_behaviour};
+use unity_mirror_macro::namespace;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub enum SyncDirection {
