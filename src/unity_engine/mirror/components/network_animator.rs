@@ -1,6 +1,7 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
 use crate::unity_engine::mirror::NetworkBehaviour;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::GameObject;
@@ -17,20 +18,33 @@ impl MonoBehaviour for NetworkAnimator {
     }
 }
 
-impl NetworkAnimator {
-    pub fn instance(
+impl NetworkBehaviourInstance for NetworkAnimator {
+    fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+    ) -> (
+        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        RevelWeak<NetworkBehaviour>,
+        u8,
+        u8,
+    )
+    where
+        Self: Sized,
+    {
         if let Some(game_object) = weak_game_object.get() {
             println!("{}", game_object.name);
         }
 
-        vec![(
-            RevelArc::new(Box::new(NetworkAnimator {
-                parent: RevelWeak::new(),
-            })),
-            TypeId::of::<NetworkAnimator>(),
-        )]
+        (
+            vec![(
+                RevelArc::new(Box::new(NetworkAnimator {
+                    parent: RevelWeak::new(),
+                })),
+                TypeId::of::<NetworkAnimator>(),
+            )],
+            RevelWeak::default(),
+            0,
+            0,
+        )
     }
 }

@@ -54,9 +54,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     }
 
-    // item_struct.attrs.push(parse_quote!(
-    //     // #[derive(Debug)]
-    // ));
+    item_struct.attrs.push(parse_quote!(
+        #[derive(Default, Debug, unity_mirror_macro::SyncState)]
+    ));
 
     // 扩展字段
     let mut fileds = Punctuated::<Field, Comma>::new();
@@ -67,6 +67,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     // let mut parent_component_on_serialize_slot = None;
     // let mut parent_component_on_deserialize_slot = None;
 
+    // 它的父组件
     if let Some(parent_path) = &parent {
         // 父组件字段
         fileds
@@ -83,6 +84,20 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         //     self.parent.on_deserialize(reader, initial);
         // });
     }
+
+    // fileds.push(parse_quote!(
+    //     var_start_offset: u8
+    // ));
+    // fields_instance.push(parse_quote!(
+    //     var_start_offset: 0
+    // ));
+
+    // fileds.push(parse_quote!(
+    //     obj_start_offset: u8
+    // ));
+    // fields_instance.push(parse_quote!(
+    //     obj_start_offset: 0
+    // ));
 
     // ---------------------------------------------------------
     // let mut state_instance_slot = None;
@@ -268,83 +283,21 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             // 注册工厂
             #[ctor::ctor]
             fn static_init() {
+                use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
                 crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
             }
-
-            // impl crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour for #struct_ident {
-            //     fn new(
-            //         settings: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
-            //         obj_start_offset: &mut u8,
-            //         var_start_offset: &mut u8,
-            //     ) -> Self
-            //     where
-            //         Self: Sized,
-            //     {
-            //         #instance_slot
-            //     }
-            // }
-
-            // impl crate::mirror::component::component_basic::NetworkBehaviourBasic for #struct_ident {
-            //     fn id(&self) -> String {
-            //         self.id.clone()
-            //     }
-            //
-            //     fn parent(&self) -> Option<Box<dyn crate::mirror::component::component::NetworkBehaviour>> {
-            //         #get_parent_slot
-            //     }
-            //
-            //
-            //     fn state_clear(&self) {
-            //         if let Some(parent) = self.parent() {
-            //             parent.state_clear();
-            //         }
-            //         // #state_clear_slot
-            //     }
-            // }
-
-            // #component_state_impl_slot
-            // impl crate::mirror::component::component_serializer::NetworkBehaviourOnSerializer for #struct_ident {
-            //     fn serialize_sync_objects(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
-            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-            //         if let Some(parent) = self.parent() {
-            //             parent.serialize_sync_objects(writer, initial);
-            //         }
-            //         // #object_serialize_slot
-            //     }
-            //
-            //     fn serialize_sync_variables(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
-            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-            //         if let Some(parent) = self.parent() {
-            //             parent.serialize_sync_variables(writer, initial);
-            //         }
-            //         // #variable_serialize_slot
-            //     }
-            // }
-            //
-            // impl crate::mirror::component::component_deserializer::NetworkBehaviourOnDeserializer for #struct_ident {
-            //     fn deserialize_sync_objects(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) -> u64 {
-            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-            //         let dirty_bit = if let Some(parent) = self.parent() {
-            //             parent.deserialize_sync_objects(reader, initial)
-            //         } else {
-            //             reader.read_blittable::<u64>()
-            //         };
-            //         // #object_deserialize_slot
-            //
-            //         dirty_bit
-            //     }
-            //
-            //     fn deserialize_sync_variables(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) {
-            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-            //         if let Some(parent) = self.parent() {
-            //             parent.deserialize_sync_variables(reader, initial);
-            //         }
-            //         // #variable_deserialize_slot
-            //     }
-            // }
         }
 
         pub use #this_struct_private_mod_ident::#struct_ident;
+
+        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
+        //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::unity_engine::mirror::NetworkBehaviour>, u8, u8)
+        //     where
+        //         Self: Sized
+        //     {
+        //         todo!()
+        //     }
+        // }
 
         // #namespace_slot
 

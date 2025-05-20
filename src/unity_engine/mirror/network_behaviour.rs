@@ -4,7 +4,6 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
     MetadataSyncMode,
 };
-use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
 use crate::unity_engine::mirror::NetworkIdentity;
 use crate::unity_engine::transform::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
@@ -66,17 +65,29 @@ impl MonoBehaviour for NetworkBehaviour {
         println!("NetworkBehaviour: awake");
     }
 }
-
 #[ctor::ctor]
 fn static_init() {
-    NetworkBehaviourFactory::register::<NetworkBehaviour>(NetworkBehaviour::instance);
+    use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+    crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<
+        NetworkBehaviour,
+    >(NetworkBehaviour::instance);
 }
 
-impl NetworkBehaviour {
-    pub fn instance(
+impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance
+    for NetworkBehaviour
+{
+    fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+    ) -> (
+        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        RevelWeak<NetworkBehaviour>,
+        u8,
+        u8,
+    )
+    where
+        Self: Sized,
+    {
         let config = metadata.get::<MetadataNetworkBehaviour>();
 
         let arc_network_behaviour = RevelArc::new(Box::new(NetworkBehaviour {
@@ -93,6 +104,25 @@ impl NetworkBehaviour {
             sync_object_dirty_bits: 0,
         }) as Box<dyn MonoBehaviour>);
 
-        vec![(arc_network_behaviour, TypeId::of::<NetworkBehaviour>())]
+        (
+            vec![(arc_network_behaviour, TypeId::of::<NetworkBehaviour>())],
+            RevelWeak::default(),
+            0,
+            0,
+        )
     }
 }
+
+// impl NetworkBehaviourSerializer for NetworkBehaviour {
+//     fn serialize(&self) {
+//         todo!()
+//     }
+// }
+//
+// impl NetworkBehaviourDeserializer for NetworkBehaviour {
+//     fn deserialize(&self) {
+//         todo!()
+//     }
+// }
+//
+// impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {}

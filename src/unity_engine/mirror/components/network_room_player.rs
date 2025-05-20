@@ -1,8 +1,11 @@
-use crate::unity_engine::mirror::network_behaviour_trait::{
-    NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
-};
+use std::any::TypeId;
+use crate::unity_engine::mirror::network_behaviour_trait::{NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourInstance, NetworkBehaviourSerializer};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use unity_mirror_macro::namespace;
+use crate::commons::revel_arc::RevelArc;
+use crate::commons::revel_weak::RevelWeak;
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::unity_engine::GameObject;
 use crate::unity_engine::mirror::components::network_animator::NetworkAnimator;
 
 // #[network_behaviour]
@@ -49,4 +52,15 @@ impl NetworkBehaviourDeserializer for NetworkRoomPlayer {
     fn deserialize(&self) {}
 }
 
-impl NetworkBehaviour for NetworkRoomPlayer {}
+impl NetworkBehaviourInstance for NetworkRoomPlayer {
+    fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::unity_engine::mirror::NetworkBehaviour>, u8, u8)
+    where
+        Self: Sized
+    {
+        todo!()
+    }
+}
+
+impl NetworkBehaviour for NetworkRoomPlayer {
+    
+}

@@ -71,7 +71,7 @@ impl NetworkIdentity {
         if let Some(game_object) = weak_game_object.get() {
             for metadata_network_behaviour_wrapper in settings.network_behaviours.iter() {
                 let final_full_name = metadata_network_behaviour_wrapper.get_final_full_name();
-                let network_behaviours = NetworkBehaviourFactory::create(
+                let (network_behaviours, _, _, _) = NetworkBehaviourFactory::create(
                     &final_full_name,
                     weak_game_object.clone(),
                     metadata_network_behaviour_wrapper,

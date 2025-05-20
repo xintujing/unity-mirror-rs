@@ -13,7 +13,12 @@ static mut NETWORK_BEHAVIOUR_FACTORY: Lazy<
         fn(
             weak_game_object: RevelWeak<GameObject>,
             metadata: &MetadataNetworkBehaviourWrapper,
-        ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        ) -> (
+            Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+            RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+            u8,
+            u8,
+        ),
     >,
 > = Lazy::new(|| HashMap::new());
 
@@ -23,7 +28,12 @@ impl NetworkBehaviourFactory {
         factory: fn(
             weak_game_object: RevelWeak<GameObject>,
             metadata: &MetadataNetworkBehaviourWrapper,
-        ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        ) -> (
+            Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+            RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+            u8,
+            u8,
+        ),
     ) {
         let full_name = T::get_full_name();
         #[allow(static_mut_refs)]
@@ -42,7 +52,12 @@ impl NetworkBehaviourFactory {
         full_name: &str,
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+    ) -> (
+        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+        u8,
+        u8,
+    ) {
         #[allow(static_mut_refs)]
         unsafe {
             if let Some(factory) = NETWORK_BEHAVIOUR_FACTORY.get(full_name) {

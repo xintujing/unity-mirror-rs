@@ -43,7 +43,6 @@ macro_rules! attribute_args {
     };
 }
 
-
 // #[proc_macro_attribute]
 // pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
 //     let mut item_struct = parse_macro_input!(item as syn::ItemStruct);
@@ -159,4 +158,9 @@ pub fn derive_metadata_settings_wrapper(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
     metadata_settings::wrapper_register::handler(input)
+}
+
+#[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
+pub fn derive_sync_state(_: TokenStream) -> TokenStream {
+    TokenStream::new()
 }

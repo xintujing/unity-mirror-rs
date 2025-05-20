@@ -4,7 +4,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::unity_engine::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
-use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
 use crate::unity_engine::mirror::NetworkBehaviour;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::transform::Transform;
@@ -79,15 +79,25 @@ impl MonoBehaviour for NetworkTransformBase {
 
 #[ctor::ctor]
 fn static_init() {
-    NetworkBehaviourFactory::register::<NetworkTransformBase>(NetworkTransformBase::instance);
+    crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<
+        NetworkTransformBase,
+    >(NetworkTransformBase::instance);
 }
 
-impl NetworkTransformBase {
-    pub fn instance(
+impl NetworkBehaviourInstance for NetworkTransformBase {
+    fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
-        let mut network_behaviour_chain =
+    ) -> (
+        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        RevelWeak<NetworkBehaviour>,
+        u8,
+        u8,
+    )
+    where
+        Self: Sized,
+    {
+        let (mut network_behaviour_chain, _, _, _) =
             NetworkBehaviour::instance(weak_game_object.clone(), metadata);
 
         let mut weak_network_behaviour = RevelWeak::new();
@@ -134,6 +144,6 @@ impl NetworkTransformBase {
             arc_network_transform_base,
             TypeId::of::<NetworkTransformBase>(),
         ));
-        network_behaviour_chain
+        (network_behaviour_chain, RevelWeak::default(), 0, 0)
     }
 }

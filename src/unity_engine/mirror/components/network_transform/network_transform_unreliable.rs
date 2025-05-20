@@ -5,6 +5,8 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::unity_engine::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::unity_engine::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+use crate::unity_engine::mirror::NetworkBehaviour;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::GameObject;
 use std::any::TypeId;
@@ -79,12 +81,20 @@ impl MonoBehaviour for NetworkTransformUnreliable {
     }
 }
 
-impl NetworkTransformUnreliable {
-    pub fn instance(
+impl NetworkBehaviourInstance for NetworkTransformUnreliable {
+    fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
-        let mut network_behaviour_chain =
+    ) -> (
+        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        RevelWeak<NetworkBehaviour>,
+        u8,
+        u8,
+    )
+    where
+        Self: Sized,
+    {
+        let (mut network_behaviour_chain, _, _, _) =
             NetworkTransformBase::instance(weak_game_object, metadata);
 
         let mut weak_network_transform_base = RevelWeak::default();
@@ -117,6 +127,6 @@ impl NetworkTransformUnreliable {
             TypeId::of::<NetworkTransformUnreliable>(),
         ));
 
-        network_behaviour_chain
+        (network_behaviour_chain, RevelWeak::default(), 0, 0)
     }
 }
