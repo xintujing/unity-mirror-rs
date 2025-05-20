@@ -1,11 +1,9 @@
 use crate::commons::revel_arc::RevelArc;
-use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
 use std::sync::{Arc, Weak};
 
-pub struct RevelWeak<T>(pub Weak<UnsafeCell<T>>);
+pub struct RevelWeak<T>(pub(super) Weak<UnsafeCell<T>>);
 
 impl<T> RevelWeak<T> {
     pub fn from_raw(ptr: *const UnsafeCell<T>) -> RevelWeak<T> {

@@ -90,9 +90,14 @@ impl NetworkTransformBase {
         let mut network_behaviour_chain =
             NetworkBehaviour::instance(weak_game_object.clone(), metadata);
 
-        let mut weak_network_behaviour = RevelWeak::default();
+        let mut weak_network_behaviour = RevelWeak::new();
         if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
-            weak_network_behaviour = arc_network_behaviour.downgrade().to::<NetworkBehaviour>()
+            if let Some(wnb) = arc_network_behaviour
+                .downgrade()
+                .downcast::<NetworkBehaviour>()
+            {
+                weak_network_behaviour = wnb.clone();
+            }
         }
 
         let config = metadata.get::<MetadataNetworkTransformBase>();
