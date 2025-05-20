@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use unity_mirror_macro::{namespace, settings_wrapper_register};
 
-#[namespace("Mirror", rename = "NetworkAnimator")]
+#[namespace(prefix = "Mirror", rename = "NetworkAnimator")]
 #[derive(Deserialize, Clone)]
 pub(crate) struct MetadataNetworkAnimator {
     #[serde(rename = "clientAuthority")]

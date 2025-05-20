@@ -17,7 +17,7 @@ fn static_init() {
     );
 }
 
-#[namespace("Mirror")]
+#[namespace(prefix = "Mirror")]
 // #[network_behaviour(parent(NetworkTransformBase))]
 pub struct NetworkTransformUnreliable {
     pub parent: RevelWeak<Box<NetworkTransformBase>>,

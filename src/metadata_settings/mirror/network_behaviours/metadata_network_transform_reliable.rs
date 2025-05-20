@@ -2,7 +2,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use serde::Deserialize;
 use unity_mirror_macro::{namespace, settings_wrapper_register};
 
-#[namespace("Mirror", rename = "NetworkTransformReliable")]
+#[namespace(prefix = "Mirror", rename = "NetworkTransformReliable")]
 #[derive(Deserialize, Debug, Clone)]
 pub struct MetadataNetworkTransformReliable {}
 settings_wrapper_register!(MetadataNetworkTransformReliable as MetadataNetworkBehaviourWrapper);

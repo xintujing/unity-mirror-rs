@@ -3,7 +3,7 @@ use crate::metadata_settings::unity::metadata_asset::MetadataAsset;
 use serde::Deserialize;
 use unity_mirror_macro::{namespace, settings_wrapper_register};
 
-#[namespace("Mirror", rename = "NetworkRoomManager")]
+#[namespace(prefix = "Mirror", rename = "NetworkRoomManager")]
 #[derive(Deserialize, Clone)]
 pub struct MetadataNetworkRootManager {
     #[serde(rename = "minPlayers")]

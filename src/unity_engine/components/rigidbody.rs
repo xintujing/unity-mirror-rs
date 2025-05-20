@@ -23,7 +23,7 @@ fn static_init() {
     });
 }
 
-#[namespace("UnityEngine", rename = "Rigidbody")]
+#[namespace(prefix = "UnityEngine", rename = "Rigidbody")]
 pub struct RigidBody {}
 
 impl MonoBehaviour for RigidBody {

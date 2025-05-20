@@ -5,7 +5,7 @@ use crate::metadata_settings::unity::metadata_component::MetadataComponentWrappe
 use serde::Deserialize;
 use unity_mirror_macro::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
 
-#[namespace("UnityEngine", rename = "Rigidbody")]
+#[namespace(prefix = "UnityEngine", rename = "Rigidbody")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataRigidBody {
     #[serde(rename = "instanceId")]

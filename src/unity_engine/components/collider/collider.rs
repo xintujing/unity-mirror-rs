@@ -23,7 +23,7 @@ fn static_init() {
     });
 }
 
-#[namespace("UnityEngine")]
+#[namespace(prefix = "UnityEngine")]
 pub struct Collider {}
 
 impl MonoBehaviour for Collider {

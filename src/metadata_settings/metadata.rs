@@ -1,11 +1,8 @@
-use std::collections::HashMap;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
-use crate::metadata_settings::unity::metadata_scene::MetadataScene;
-use indexmap::IndexMap;
-use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::fs;
 use std::sync::Arc;
 
@@ -42,19 +39,25 @@ pub struct Metadata {
 impl Metadata {
     pub(crate) fn get_scene(path: &str) -> Option<&HashMap<String, MetadataPrefab>> {
         #[allow(static_mut_refs)]
-        unsafe { METADATA.scenes.get(path) }
+        unsafe {
+            METADATA.scenes.get(path)
+        }
     }
 }
 
 impl Metadata {
     pub fn get_prefab(prefab_path: &str) -> Option<&MetadataPrefab> {
         #[allow(static_mut_refs)]
-        unsafe { METADATA.prefabs.get(prefab_path) }
+        unsafe {
+            METADATA.prefabs.get(prefab_path)
+        }
     }
 
     pub fn get_network_manager(prefab_path: &str) -> Option<&MetadataNetworkManagerWrapper> {
         #[allow(static_mut_refs)]
-        unsafe { METADATA.network_managers.get(prefab_path) }
+        unsafe {
+            METADATA.network_managers.get(prefab_path)
+        }
     }
 }
 

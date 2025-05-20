@@ -1,7 +1,6 @@
-use unity_mirror_rs::unity_engine::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use unity_mirror_rs::unity_engine::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
-use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
 use unity_mirror_rs::unity_engine::mirror::NetworkBehaviour;
+use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
 
 #[ctor::ctor]
 fn init_logger() {
@@ -41,11 +40,9 @@ fn main() {
 
     for root_game_object in root_game_objects.iter() {
         let game_object = root_game_object.get().unwrap();
-        let mut weak_game_object = game_object
-            .try_get_component::<NetworkBehaviour>()
-            .unwrap();
+        let weak_game_object = game_object.try_get_component::<NetworkBehaviour>().unwrap();
         let weak_network_transform_unreliable =
-            unsafe { weak_game_object.downcast::<NetworkTransformUnreliable>() };
+            weak_game_object.downcast::<NetworkTransformUnreliable>();
         let x = weak_network_transform_unreliable.unwrap();
         println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
     }

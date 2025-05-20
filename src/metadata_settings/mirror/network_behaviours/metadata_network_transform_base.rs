@@ -11,7 +11,7 @@ pub enum CoordinateSpace {
     World = 1,
 }
 
-#[namespace("Mirror", rename = "NetworkTransformBase")]
+#[namespace(prefix = "Mirror", rename = "NetworkTransformBase")]
 #[derive(Deserialize, Debug, Clone)]
 pub struct MetadataNetworkTransformBase {
     pub target: MetadataTransform,

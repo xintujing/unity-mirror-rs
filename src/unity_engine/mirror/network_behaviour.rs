@@ -43,7 +43,7 @@ impl Into<SyncMode> for MetadataSyncMode {
     }
 }
 // #[network_behaviour(namespace("Mirror"))]
-#[namespace("Mirror")]
+#[namespace(prefix = "Mirror")]
 pub struct NetworkBehaviour {
     sync_direction: SyncDirection,
     sync_mode: SyncMode,

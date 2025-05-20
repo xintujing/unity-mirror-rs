@@ -1,4 +1,3 @@
-use crate::namespace::NamespaceArgs;
 use crate::string_case::StringCase;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
@@ -10,14 +9,11 @@ use syn::{parse_quote, Field, Fields, Path};
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
-    pub namespace: Option<NamespaceArgs>,
 }
 
 impl Parse for NetworkBehaviourArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        // let mut state = None;
         let mut parent = None;
-        let mut namespace = None;
 
         while !input.is_empty() {
             {
@@ -29,24 +25,18 @@ impl Parse for NetworkBehaviourArgs {
                             parent = Some(path)
                         }
                     }
-                    "namespace" => {
-                        let content;
-                        syn::parenthesized!(content in input); // 捕获括号内的内容
-                        namespace = Some(content.parse::<NamespaceArgs>()?)
-                    }
                     _ => {}
                 }
             }
             let _ = input.parse::<Comma>();
         }
 
-        Ok(NetworkBehaviourArgs { parent, namespace })
+        Ok(NetworkBehaviourArgs { parent })
     }
 }
 
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let NetworkBehaviourArgs { parent, namespace } =
-        syn::parse_macro_input!(attr as NetworkBehaviourArgs);
+    let NetworkBehaviourArgs { parent } = syn::parse_macro_input!(attr as NetworkBehaviourArgs);
 
     let mut item_struct = syn::parse_macro_input!(item as syn::ItemStruct);
 
@@ -68,26 +58,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //     // #[derive(Debug)]
     // ));
 
-    // namespace
-    let namespace_slot = match namespace {
-        None => {
-            quote! {}
-        }
-        Some(namespace_args) => {
-            let namespace_string = namespace_args.get_full_name(struct_ident);
-            quote! {
-                impl crate::commons::object::Object for #struct_ident {
-                    fn get_full_name() -> &'static str
-                    where
-                        Self: Sized,
-                    {
-                       #namespace_string
-                    }
-                }
-            }
-        }
-    };
-
     // 扩展字段
     let mut fileds = Punctuated::<Field, Comma>::new();
     // 扩展字段实例
@@ -99,7 +69,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     if let Some(parent_path) = &parent {
         // 父组件字段
-        fileds.push(parse_quote! { parent: crate::commons::revel_weak::RevelWeak<#parent_path> });
+        fileds
+            .push(parse_quote! { pub parent: crate::commons::revel_weak::RevelWeak<#parent_path> });
         // 父组件实例
         // fields_instance.push(parse_quote! { parent });
 
@@ -294,6 +265,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             #item_struct
 
+            // 注册工厂
+            #[ctor::ctor]
+            fn static_init() {
+                crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
+            }
+
             // impl crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour for #struct_ident {
             //     fn new(
             //         settings: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
@@ -370,6 +347,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         pub use #this_struct_private_mod_ident::#struct_ident;
 
         // #namespace_slot
+
 
     })
 }

@@ -45,7 +45,7 @@ pub struct MetadataSnapshotSettings {
 }
 
 #[allow(unused)]
-#[namespace("Mirror", rename = "NetworkManager")]
+#[namespace(prefix = "Mirror", rename = "NetworkManager")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataNetworkManager {
     #[serde(rename = "dontDestroyOnLoad")]

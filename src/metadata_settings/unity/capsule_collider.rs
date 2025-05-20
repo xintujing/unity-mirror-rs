@@ -2,7 +2,7 @@ use crate::metadata_settings::unity::collider::MetadataColliderWrapper;
 use serde::Deserialize;
 use unity_mirror_macro::{namespace, settings_wrapper_register};
 
-#[namespace("UnityEngine", rename = "CapsuleCollider")]
+#[namespace(prefix = "UnityEngine", rename = "CapsuleCollider")]
 #[derive(Deserialize, Clone)]
 pub struct MetadataCapsuleCollider {
     pub center: [f32; 3],

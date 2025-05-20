@@ -31,7 +31,7 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
     }
 }
 
-#[namespace("Mirror")]
+#[namespace(prefix = "Mirror")]
 pub struct NetworkTransformBase {
     pub parent: RevelWeak<Box<NetworkBehaviour>>,
 

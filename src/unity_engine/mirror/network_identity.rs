@@ -38,7 +38,7 @@ fn static_init() {
     });
 }
 
-#[namespace("Mirror")]
+#[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkIdentity {
     net_id: u32,
@@ -68,7 +68,7 @@ impl NetworkIdentity {
             net_id: 12366,
             ..Default::default()
         };
-        if let Some(mut game_object) = weak_game_object.get() {
+        if let Some(game_object) = weak_game_object.get() {
             for metadata_network_behaviour_wrapper in settings.network_behaviours.iter() {
                 let final_full_name = metadata_network_behaviour_wrapper.get_final_full_name();
                 let network_behaviours = NetworkBehaviourFactory::create(

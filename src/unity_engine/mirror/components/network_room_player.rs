@@ -3,9 +3,10 @@ use crate::unity_engine::mirror::network_behaviour_trait::{
 };
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use unity_mirror_macro::namespace;
+use crate::unity_engine::mirror::components::network_animator::NetworkAnimator;
 
 // #[network_behaviour]
-#[namespace("Mirror")]
+#[namespace(prefix = "Mirror")]
 pub struct NetworkRoomPlayer {
     // #[sync_var]
     ready_to_begin: bool,

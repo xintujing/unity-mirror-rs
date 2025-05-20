@@ -16,7 +16,7 @@ pub enum MetadataSyncDirection {
     ClientToServer = 1,
 }
 
-#[namespace("Mirror", rename = "NetworkBehaviour")]
+#[namespace(prefix = "Mirror", rename = "NetworkBehaviour")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataNetworkBehaviour {
     #[serde(rename = "syncMode")]
