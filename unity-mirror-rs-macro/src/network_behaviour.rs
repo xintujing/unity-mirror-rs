@@ -64,10 +64,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     }
 
-    item_struct.attrs.push(parse_quote!(
-        #[derive(Debug)]
-    ));
+    // item_struct.attrs.push(parse_quote!(
+    //     // #[derive(Debug)]
+    // ));
 
+    // namespace
     let namespace_slot = match namespace {
         None => {
             quote! {}
@@ -87,45 +88,29 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
 
-    let mut named = Punctuated::<Field, Comma>::new();
-    let mut instance_fields = Punctuated::<Field, Comma>::new();
-    // 组件id字段
-    named.push(parse_quote! { id: String });
-    instance_fields.push(parse_quote! { id });
+    // 扩展字段
+    let mut fileds = Punctuated::<Field, Comma>::new();
+    // 扩展字段实例
+    let mut fields_instance = Punctuated::<Field, Comma>::new();
 
-    // ---------------------------------------------------------
-    // ---------------------------------------------------------
-
-    let mut parent_instance_slot = quote! {
-        let id: String = uuid::Uuid::new_v4().to_string().into();
-    };
-    let mut get_parent_slot = quote! { None };
-    let mut parent_component_on_serialize_slot = None;
-    let mut parent_component_on_deserialize_slot = None;
-
-    let is_root = parent.is_none();
+    let mut parent_instance_slot = quote! {};
+    // let mut parent_component_on_serialize_slot = None;
+    // let mut parent_component_on_deserialize_slot = None;
 
     if let Some(parent_path) = &parent {
         // 父组件字段
-        named.push(parse_quote! { parent: #parent_path });
-        instance_fields.push(parse_quote! { parent });
+        fileds.push(parse_quote! { parent: crate::commons::revel_weak::RevelWeak<#parent_path> });
+        // 父组件实例
+        // fields_instance.push(parse_quote! { parent });
 
-        parent_instance_slot = quote! {
-            use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-            let parent = #parent_path::new(settings, obj_start_offset, var_start_offset);
-            let id = parent.id().clone();
-        };
+        parent_instance_slot = quote! {};
 
-        get_parent_slot = quote! {
-            Some(Box::new(self.parent.clone()))
-        };
-
-        parent_component_on_serialize_slot = Some(quote! {
-            self.parent.on_serialize(writer, initial);
-        });
-        parent_component_on_deserialize_slot = Some(quote! {
-            self.parent.on_deserialize(reader, initial);
-        });
+        // parent_component_on_serialize_slot = Some(quote! {
+        //     self.parent.on_serialize(writer, initial);
+        // });
+        // parent_component_on_deserialize_slot = Some(quote! {
+        //     self.parent.on_deserialize(reader, initial);
+        // });
     }
 
     // ---------------------------------------------------------
@@ -275,9 +260,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut instance_slot = quote! {
         #parent_instance_slot
-        // #state_instance_slot
         let instance = Self {
-            #instance_fields
+            #fields_instance
         };
         instance
     };
@@ -290,7 +274,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     match &mut item_struct.fields {
         Fields::Named(fields_named) => {
-            fields_named.named.extend(named);
+            fields_named.named.extend(fileds);
         }
         _ => {}
     }
@@ -310,89 +294,82 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             #item_struct
 
-            impl crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour for #struct_ident {
-                fn new(
-                    settings: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
-                    obj_start_offset: &mut u8,
-                    var_start_offset: &mut u8,
-                ) -> Self
-                where
-                    Self: Sized,
-                {
-                    #instance_slot
-                }
-            }
+            // impl crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour for #struct_ident {
+            //     fn new(
+            //         settings: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
+            //         obj_start_offset: &mut u8,
+            //         var_start_offset: &mut u8,
+            //     ) -> Self
+            //     where
+            //         Self: Sized,
+            //     {
+            //         #instance_slot
+            //     }
+            // }
 
-            impl crate::mirror::component::component_basic::NetworkBehaviourBasic for #struct_ident {
-                fn id(&self) -> String {
-                    self.id.clone()
-                }
-
-                fn parent(&self) -> Option<Box<dyn crate::mirror::component::component::NetworkBehaviour>> {
-                    #get_parent_slot
-                }
-
-
-                fn state_clear(&self) {
-                    if let Some(parent) = self.parent() {
-                        parent.state_clear();
-                    }
-                    // #state_clear_slot
-                }
-            }
+            // impl crate::mirror::component::component_basic::NetworkBehaviourBasic for #struct_ident {
+            //     fn id(&self) -> String {
+            //         self.id.clone()
+            //     }
+            //
+            //     fn parent(&self) -> Option<Box<dyn crate::mirror::component::component::NetworkBehaviour>> {
+            //         #get_parent_slot
+            //     }
+            //
+            //
+            //     fn state_clear(&self) {
+            //         if let Some(parent) = self.parent() {
+            //             parent.state_clear();
+            //         }
+            //         // #state_clear_slot
+            //     }
+            // }
 
             // #component_state_impl_slot
-
-
-
-
-
-            impl crate::mirror::component::component_serializer::NetworkBehaviourOnSerializer for #struct_ident {
-                fn serialize_sync_objects(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
-                    use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-                    if let Some(parent) = self.parent() {
-                        parent.serialize_sync_objects(writer, initial);
-                    }
-                    // #object_serialize_slot
-                }
-
-                fn serialize_sync_variables(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
-                    use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-                    if let Some(parent) = self.parent() {
-                        parent.serialize_sync_variables(writer, initial);
-                    }
-                    // #variable_serialize_slot
-                }
-            }
-
-            impl crate::mirror::component::component_deserializer::NetworkBehaviourOnDeserializer for #struct_ident {
-                fn deserialize_sync_objects(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) -> u64 {
-                    use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-                    let dirty_bit = if let Some(parent) = self.parent() {
-                        parent.deserialize_sync_objects(reader, initial)
-                    } else {
-                        reader.read_blittable::<u64>()
-                    };
-                    // #object_deserialize_slot
-
-                    dirty_bit
-                }
-
-                fn deserialize_sync_variables(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) {
-                    use crate::mirror::component::component_basic::NetworkBehaviourBasic;
-                    if let Some(parent) = self.parent() {
-                        parent.deserialize_sync_variables(reader, initial);
-                    }
-                    // #variable_deserialize_slot
-                }
-            }
+            // impl crate::mirror::component::component_serializer::NetworkBehaviourOnSerializer for #struct_ident {
+            //     fn serialize_sync_objects(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
+            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
+            //         if let Some(parent) = self.parent() {
+            //             parent.serialize_sync_objects(writer, initial);
+            //         }
+            //         // #object_serialize_slot
+            //     }
+            //
+            //     fn serialize_sync_variables(&self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial: bool) {
+            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
+            //         if let Some(parent) = self.parent() {
+            //             parent.serialize_sync_variables(writer, initial);
+            //         }
+            //         // #variable_serialize_slot
+            //     }
+            // }
+            //
+            // impl crate::mirror::component::component_deserializer::NetworkBehaviourOnDeserializer for #struct_ident {
+            //     fn deserialize_sync_objects(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) -> u64 {
+            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
+            //         let dirty_bit = if let Some(parent) = self.parent() {
+            //             parent.deserialize_sync_objects(reader, initial)
+            //         } else {
+            //             reader.read_blittable::<u64>()
+            //         };
+            //         // #object_deserialize_slot
+            //
+            //         dirty_bit
+            //     }
+            //
+            //     fn deserialize_sync_variables(&self, reader: &mut crate::mirror::network_reader::NetworkReader, initial: bool) {
+            //         use crate::mirror::component::component_basic::NetworkBehaviourBasic;
+            //         if let Some(parent) = self.parent() {
+            //             parent.deserialize_sync_variables(reader, initial);
+            //         }
+            //         // #variable_deserialize_slot
+            //     }
+            // }
         }
 
         pub use #this_struct_private_mod_ident::#struct_ident;
 
-        #namespace_slot
-
-        // #this_component_state_trait_slot
+        // #namespace_slot
 
     })
 }
