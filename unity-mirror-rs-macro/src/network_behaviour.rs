@@ -59,7 +59,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[derive(Default, Debug, unity_mirror_macro::SyncState)]
     ));
 
-
     // 遍历 struct 的 fields
     for field in &mut item_struct.fields {
         for attr in &field.attrs {
@@ -279,10 +278,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
         _ => {}
     }
-
-    // if let Fields::Named(mut fields_named) = &mut item_struct.fields {
-    //     fields_named.named.extend(named);
-    // }
 
     let this_struct_private_mod_ident = format_ident!(
         "private_component_{}",
