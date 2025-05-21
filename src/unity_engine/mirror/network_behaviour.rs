@@ -140,4 +140,9 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
     }
 }
 
-impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {}
+impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {
+    fn clear_all_dirty_bits(&mut self) {
+        self.sync_var_dirty_bits = 0;
+        self.sync_object_dirty_bits = 0;
+    }
+}

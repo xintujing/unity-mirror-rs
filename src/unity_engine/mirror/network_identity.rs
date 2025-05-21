@@ -151,6 +151,11 @@ impl NetworkIdentity {
 
                     if !initial_state {
                         // component.clear_all_dirty_bits();
+                        if let Some(item) = network_behaviour.get(0) {
+                            if let Some(network_behaviour) = item.get() {
+                                // network_behaviour
+                            }
+                        }
                     }
                 }
             }
@@ -165,12 +170,6 @@ impl NetworkIdentity {
     ) {
     }
 }
-
-impl NetworkBehaviourSerializer for NetworkIdentity {}
-
-impl NetworkBehaviourDeserializer for NetworkIdentity {}
-
-impl NetworkBehaviour for NetworkIdentity {}
 
 impl NetworkIdentity {
     fn instance(

@@ -10,8 +10,9 @@ use std::any::TypeId;
 pub trait NetworkBehaviour:
     MonoBehaviour + NetworkBehaviourInstance + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
-    fn on_start_server(&self) {}
-    fn on_stop_server(&self) {}
+    fn on_start_server(&mut self) {}
+    fn on_stop_server(&mut self) {}
+    fn clear_all_dirty_bits(&mut self);
 }
 
 pub trait NetworkBehaviourInstance {
