@@ -54,9 +54,22 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     }
 
+    // 添加属性
     item_struct.attrs.push(parse_quote!(
         #[derive(Default, Debug, unity_mirror_macro::SyncState)]
     ));
+
+
+    // 遍历 struct 的 fields
+    for field in &mut item_struct.fields {
+        for attr in &field.attrs {
+            if attr.path().is_ident("sync_variable") {
+                // 修改字段的可见性
+                field.vis = syn::Visibility::Inherited;
+                break;
+            }
+        }
+    }
 
     // 扩展字段
     let mut fileds = Punctuated::<Field, Comma>::new();
