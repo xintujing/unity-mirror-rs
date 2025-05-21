@@ -4,13 +4,13 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
     MetadataSyncMode,
 };
-use crate::unity_engine::mirror::network_behaviour_trait::{
+use crate::mirror::network_behaviour_trait::{
     NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
 };
-use crate::unity_engine::mirror::network_reader::NetworkReader;
-use crate::unity_engine::mirror::network_writer::NetworkWriter;
-use crate::unity_engine::mirror::NetworkIdentity;
-use crate::unity_engine::transform::Transform;
+use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::NetworkIdentity;
+use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use std::any::TypeId;
 use unity_mirror_macro::namespace;
@@ -72,13 +72,13 @@ impl MonoBehaviour for NetworkBehaviour {
 }
 #[ctor::ctor]
 fn static_init() {
-    use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-    crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<
+    use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+    crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<
         NetworkBehaviour,
     >(NetworkBehaviour::instance);
 }
 
-impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance
+impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance
     for NetworkBehaviour
 {
     fn instance(
@@ -140,7 +140,7 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
     }
 }
 
-impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {
+impl crate::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {
     fn clear_all_dirty_bits(&mut self) {
         self.sync_var_dirty_bits = 0;
         self.sync_object_dirty_bits = 0;

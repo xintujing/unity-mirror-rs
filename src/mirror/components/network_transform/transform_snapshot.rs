@@ -1,6 +1,6 @@
 use nalgebra::{Quaternion, Vector3};
 use std::cmp::Ordering;
-use crate::unity_engine::mirror::snapshot_interpolation::snapshot::Snapshot;
+use crate::mirror::snapshot_interpolation::snapshot::Snapshot;
 
 #[derive(Clone, Debug, PartialEq, Copy, Default)]
 pub struct TransformSnapshot {

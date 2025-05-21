@@ -2,7 +2,7 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
-use crate::unity_engine::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
+use crate::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;

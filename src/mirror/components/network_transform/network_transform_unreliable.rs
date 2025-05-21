@@ -2,12 +2,13 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_unreliable::MetadataNetworkTransformUnreliable;
-use crate::unity_engine::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
-use crate::unity_engine::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
-use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-use crate::unity_engine::mirror::NetworkBehaviour;
-use crate::unity_engine::mono_behaviour::MonoBehaviour;
+use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
+use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
+use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+use crate::mirror::NetworkBehaviour;
+use crate::unity_engine::MonoBehaviour;
+use crate::unity_engine::Time;
 use crate::unity_engine::GameObject;
 use std::any::TypeId;
 use unity_mirror_macro::{namespace, network_behaviour};
@@ -48,13 +49,18 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         println!("Mirror: NetworkTransformUnreliable Start");
     }
     fn fixed_update(&mut self) {
-        println!("Mirror: NetworkTransformUnreliable FixedUpdate");
+        let elapsed = Time::unscaled_time().elapsed();
+        println!(
+            "Mirror: NetworkTransformUnreliable FixedUpdate {:?}",
+            elapsed
+        );
     }
     fn update(&mut self) {
         // if let Some(parent) = self.parent.get() {
         //     parent.update();
         // }
-        println!("Mirror: NetworkTransformUnreliable Update");
+        let elapsed = Time::unscaled_time().elapsed();
+        println!("Mirror: NetworkTransformUnreliable Update {:?}", elapsed);
 
         let game_object = &self.parent.get().unwrap().parent.get().unwrap().game_object;
 
@@ -77,7 +83,12 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         println!("{}", x1.buffer_reset_multiplier);
     }
     fn late_update(&mut self) {
-        println!("Mirror: NetworkTransformUnreliable LateUpdate");
+        let elapsed = Time::unscaled_time().elapsed();
+
+        println!(
+            "Mirror: NetworkTransformUnreliable LateUpdate {:?}",
+            elapsed
+        );
     }
 }
 
