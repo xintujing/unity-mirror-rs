@@ -3,20 +3,21 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer;
-use crate::unity_engine::mirror::{network_behaviour_trait, NetworkBehaviour};
+use crate::unity_engine::mirror::network_behaviour_trait;
+use crate::unity_engine::mirror::network_behaviour_trait::{
+    NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourInstance,
+    NetworkBehaviourSerializer,
+};
+use crate::unity_engine::mirror::network_reader::NetworkReader;
+use crate::unity_engine::mirror::network_writer::NetworkWriter;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
-use crate::unity_engine::world::WorldManager;
 use crate::unity_engine::GameObject;
-use indexmap::IndexMap;
 use std::any::{Any, TypeId};
-use std::cell::{RefCell, UnsafeCell};
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock, Weak};
 use unity_mirror_macro::namespace;
-// use unity_mirror_rs_macro::namespace;
 
 #[ctor::ctor]
 fn static_init() {
@@ -58,6 +59,37 @@ impl MonoBehaviour for NetworkIdentity {
         println!("Mirror: NetworkIdentity Destroyed");
     }
 }
+
+impl NetworkBehaviourInstance for NetworkIdentity {
+    fn instance(
+        weak_game_object: RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> (
+        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        RevelWeak<crate::unity_engine::mirror::NetworkBehaviour>,
+        u8,
+        u8,
+    )
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+}
+
+impl NetworkBehaviourSerializer for NetworkIdentity {
+    fn serialize(&self, writer: &mut NetworkWriter, initial_state: bool) {
+        
+    }
+}
+
+impl NetworkBehaviourDeserializer for NetworkIdentity {
+    fn deserialize(&self, reader: &mut NetworkReader, initial_state: bool) {
+        
+    }
+}
+
+impl NetworkBehaviour for NetworkIdentity {}
 
 impl NetworkIdentity {
     fn instance(
