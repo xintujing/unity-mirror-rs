@@ -1,8 +1,7 @@
 use crate::commons::to_hex_string::ToHexString;
+use crate::unity_engine::mirror::network_writer::NetworkWriter;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use std::string::FromUtf8Error;
-use crate::unity_engine::mirror::network_writer::NetworkWriter;
 
 trait ReadCompress {
     fn decompress(reader: &mut NetworkReader) -> Self
@@ -244,6 +243,9 @@ impl NetworkReader {
     }
     pub fn capacity(&self) -> usize {
         self.buffer.len()
+    }
+    pub fn reset(&mut self) {
+        self.position = 0;
     }
 }
 

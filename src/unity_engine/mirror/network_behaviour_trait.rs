@@ -29,7 +29,9 @@ pub trait NetworkBehaviourInstance {
 }
 
 pub trait NetworkBehaviourSerializer {
-    fn serialize(&self, writer: &mut NetworkWriter, initial_state: bool) {}
+    fn serialize(&self, writer: &mut NetworkWriter, initial_state: bool) {
+        
+    }
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
         self.serialize_sync_objects(writer, initial_state);
         self.serialize_sync_vars(writer, initial_state);

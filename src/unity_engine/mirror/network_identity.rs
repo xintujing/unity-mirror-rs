@@ -11,7 +11,7 @@ use crate::unity_engine::mirror::network_behaviour_trait::{
     NetworkBehaviourSerializer,
 };
 use crate::unity_engine::mirror::network_reader::NetworkReader;
-use crate::unity_engine::mirror::network_writer::NetworkWriter;
+use crate::unity_engine::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::GameObject;
@@ -77,14 +77,65 @@ impl NetworkBehaviourInstance for NetworkIdentity {
 }
 
 impl NetworkIdentity {
+    // ServerDirtyMasks
+    fn server_dirty_masks(&self, initial_state: bool) -> (u64, u64) {
+        let mut owner_mask = 0u64;
+        let mut observer_mask = 0u64;
+
+        // for (i, component) in self.network_behaviours.iter().enumerate() {
+        //     let nth_bit = 1u64 << (i as u8);
+        //
+        //     let dirty = component.is_dirty();
+        //
+        //     if initial_state || (dirty && (component.get_sync_direction() == SyncDirection::ServerToClient)) {
+        //         owner_mask |= nth_bit;
+        //     }
+        //
+        //     if (component.get_sync_mod() == SyncMode::Observers) && (initial_state || dirty) {
+        //         observer_mask |= nth_bit;
+        //     }
+        // }
+        (owner_mask, observer_mask)
+    }
+
+    fn is_dirty(&self, mask: u64, index: u8) -> bool {
+        (mask & (1u64 << index)) != 0
+    }
+
     pub(crate) fn serialize_server(
+        &self,
         initial_state: bool,
         owner_writer: &mut NetworkWriter,
         observers_writer: &mut NetworkWriter,
     ) {
+        let (owner_mask, observer_mask) = self.server_dirty_masks(initial_state);
+
+        if owner_mask != 0 {
+            owner_mask.serialize(owner_writer);
+        }
+        if observer_mask != 0 {
+            observer_mask.serialize(observers_writer);
+        }
+
+        if (owner_mask | observer_mask) != 0 {
+            for (network_behaviour_i, network_behaviour) in
+                self.network_behaviours.iter().enumerate()
+            {
+                let owner_dirty = self.is_dirty(owner_mask, network_behaviour_i as u8);
+                let observers_dirty = self.is_dirty(observer_mask, network_behaviour_i as u8);
+
+                if owner_dirty || observers_dirty {
+                    
+                    for (item_i, item) in network_behaviour.iter().enumerate() {
+                        
+                    }
+                }
+            }
+        }
     }
 
     pub(crate) fn deserialize_server(
+        &self,
         initial_state: bool,
         owner_reader: &mut NetworkReader,
         observers_reader: &mut NetworkReader,
