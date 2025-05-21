@@ -1,4 +1,4 @@
-use crate::unity_engine::mirror::snapshot_interpolation::snapshot::Snapshot;
+use crate::mirror::snapshot_interpolation::snapshot::Snapshot;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
 pub(crate) struct TimeSnapshot {

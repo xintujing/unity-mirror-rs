@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use std::sync::{Arc, Mutex};
-use crate::unity_engine::mirror::network_writer::NetworkWriter;
-use crate::unity_engine::mirror::pool::Pool;
+use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::pool::Pool;
 
 lazy_static! {
     static ref NETWORK_WRITER_POOL: Arc<Mutex<Pool<NetworkWriter>>> =

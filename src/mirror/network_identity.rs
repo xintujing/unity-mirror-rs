@@ -4,17 +4,17 @@ use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::unity_engine::mirror::network_behaviour_trait;
-use crate::unity_engine::mirror::network_behaviour_trait::{
+use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::mirror::network_behaviour_trait;
+use crate::mirror::network_behaviour_trait::{
     NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourInstance,
     NetworkBehaviourSerializer,
 };
-use crate::unity_engine::mirror::network_reader::NetworkReader;
-use crate::unity_engine::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
-use crate::unity_engine::mirror::network_writer_pool::NetworkWriterPool;
-use crate::unity_engine::mono_behaviour::MonoBehaviour;
-use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
+use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
+use crate::mirror::network_writer_pool::NetworkWriterPool;
+use crate::unity_engine::MonoBehaviour;
+use crate::unity_engine::MonoBehaviourFactory;
 use crate::unity_engine::GameObject;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
@@ -66,7 +66,7 @@ impl NetworkBehaviourInstance for NetworkIdentity {
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> (
         Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<crate::unity_engine::mirror::NetworkBehaviour>,
+        RevelWeak<crate::mirror::NetworkBehaviour>,
         u8,
         u8,
     )

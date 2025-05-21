@@ -145,7 +145,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //     });
     //
     //     // component_serialize_slot = Some(quote! {
-    //     //     if let Some(mut network_behaviour_state) = crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+    //     //     if let Some(mut network_behaviour_state) = crate::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
     //     //         if let Some(mut state) = Self::state_mut(&self.id) {
     //     //             use crate::mirror::component::state::State;
     //     //             state.on_serialize_sync_variable (
@@ -165,7 +165,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //     if parent.is_none() {
     //         object_serialize_slot = Some(quote! {
     //             if !initial {
-    //                 if let Some(mut network_behaviour_state) = crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+    //                 if let Some(mut network_behaviour_state) = crate::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
     //                      writer.write_blittable::<u64>(network_behaviour_state.sync_var_dirty_bit);
     //                 }
     //             }
@@ -175,7 +175,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //         // });
     //     } else {
     //         variable_serialize_slot = Some(quote! {
-    //             if let Some(mut network_behaviour_state) = crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+    //             if let Some(mut network_behaviour_state) = crate::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
     //                 if let Some(mut state) = Self::state_mut(&self.id) {
     //                     use crate::mirror::component::state::State;
     //                     state.on_serialize_sync_variable (
@@ -187,7 +187,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //             }
     //         });
     //         object_serialize_slot = Some(quote! {
-    //             if let Some(mut network_behaviour_state) = crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+    //             if let Some(mut network_behaviour_state) = crate::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
     //                 if let Some(mut state) = Self::state_mut(&self.id) {
     //                     use crate::mirror::component::state::State;
     //                     state.on_serialize_sync_object (
@@ -205,7 +205,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //             }
     //         });
     //         object_deserialize_slot = Some(quote! {
-    //             if let Some(mut network_behaviour_state) = crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+    //             if let Some(mut network_behaviour_state) = crate::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
     //                 if let Some(mut state) = Self::state_mut(&self.id) {
     //                     use crate::mirror::component::state::State;
     //                     state.on_deserialize_sync_object (
@@ -219,7 +219,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //     }
     //
     //     // component_deserialize_slot = Some(quote! {
-    //     //     if let Some(mut network_behaviour_state) = crate::unity_engine::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
+    //     //     if let Some(mut network_behaviour_state) = crate::mirror::network_behaviour::i_network_behaviour::NetworkBehaviour::state_mut(&self.id) {
     //     //         if let Some(mut state) = Self::state_mut(&self.id) {
     //     //             use crate::mirror::component::state::State;
     //     //             state.on_deserialize_sync_variable (
@@ -276,15 +276,15 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             // 注册工厂
             #[ctor::ctor]
             fn static_init() {
-                use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-                crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
+                use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+                crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
             }
         }
 
         pub use #this_struct_private_mod_ident::#struct_ident;
 
-        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
-        //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::unity_engine::mirror::NetworkBehaviour>, u8, u8)
+        // impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
+        //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::mirror::NetworkBehaviour>, u8, u8)
         //     where
         //         Self: Sized
         //     {
@@ -292,9 +292,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         //     }
         // }
 
-        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-        impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-            fn serialize_sync_objects(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
+        // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+        impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+            fn serialize_sync_objects(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
                 if initial_state {
                     self.serialize_objects_all(writer);
                 } else {
@@ -303,9 +303,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }
 
-        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-        impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-            fn deserialize_sync_objects(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
+        // impl crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+        impl crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+            fn deserialize_sync_objects(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {
                 if initial_state {
                     self.deserialize_objects_all(reader);
                 } else {

@@ -1,9 +1,9 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-use crate::unity_engine::mirror::NetworkBehaviour;
-use crate::unity_engine::mono_behaviour::MonoBehaviour;
+use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+use crate::mirror::NetworkBehaviour;
+use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::GameObject;
 use std::any::TypeId;
 use unity_mirror_macro::{namespace, network_behaviour};
