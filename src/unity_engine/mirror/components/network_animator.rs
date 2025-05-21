@@ -35,11 +35,11 @@ impl NetworkBehaviourInstance for NetworkAnimator {
             println!("{}", game_object.name);
         }
 
+        let animator = Self::default();
+
         (
             vec![(
-                RevelArc::new(Box::new(NetworkAnimator {
-                    parent: RevelWeak::new(),
-                })),
+                RevelArc::new(Box::new(animator)),
                 TypeId::of::<NetworkAnimator>(),
             )],
             RevelWeak::default(),

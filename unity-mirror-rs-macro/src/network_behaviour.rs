@@ -70,13 +70,15 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     // 它的父组件
     if let Some(parent_path) = &parent {
         // 父组件字段
-        fileds
-            .push(parse_quote! { pub parent: crate::commons::revel_weak::RevelWeak<#parent_path> });
-        // 父组件实例
-        // fields_instance.push(parse_quote! { parent });
+        fileds.push(parse_quote! {
+            parent: crate::commons::revel_weak::RevelWeak<#parent_path>
+        });
+        // 父组件默认实例
+        // fields_instance.push(parse_quote! {
+        //     crate::commons::revel_weak::RevelWeak::default()
+        // });
 
-        parent_instance_slot = quote! {};
-
+        // parent_instance_slot = quote! {};
         // parent_component_on_serialize_slot = Some(quote! {
         //     self.parent.on_serialize(writer, initial);
         // });
@@ -85,16 +87,16 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         // });
     }
 
-    // fileds.push(parse_quote!(
-    //     var_start_offset: u8
-    // ));
+    fileds.push(parse_quote!(
+        var_start_offset: u8
+    ));
     // fields_instance.push(parse_quote!(
     //     var_start_offset: 0
     // ));
 
-    // fileds.push(parse_quote!(
-    //     obj_start_offset: u8
-    // ));
+    fileds.push(parse_quote!(
+        obj_start_offset: u8
+    ));
     // fields_instance.push(parse_quote!(
     //     obj_start_offset: 0
     // ));
@@ -244,13 +246,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // ---------------------------------------------------------
 
-    let mut instance_slot = quote! {
-        #parent_instance_slot
-        let instance = Self {
-            #fields_instance
-        };
-        instance
-    };
+    // let mut instance_slot = quote! {
+    //     #parent_instance_slot
+    //     let instance = Self {
+    //         #fields_instance
+    //     };
+    //     instance
+    // };
     // ---------------------------------------------------------
 
     // item_struct.fields = Fields::Named(syn::FieldsNamed {
