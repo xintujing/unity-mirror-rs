@@ -78,6 +78,26 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         }
     }
+    let sync_var_count = sync_var_fields.len();
+
+    // //
+    // let mut serialize_sync_objs_all_ts = Vec::new();
+    // let mut serialize_sync_objs_delta_ts = Vec::new();
+    // let mut deserialize_sync_objs_all_ts = Vec::new();
+    // let mut deserialize_sync_objs_delta_ts = Vec::new();
+    // let mut clear_sync_objs_changes_ts = Vec::new();
+    //
+    // //
+    let mut serialize_sync_var_ts = Vec::new();
+    // let mut deserialize_sync_var_ts = Vec::new();
+
+    for (field_index, field) in sync_var_fields.iter().enumerate() {
+        serialize_sync_var_ts.push(quote! {
+            if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index))) != 0 {
+                self.#field.serialize(writer);
+            }
+        })
+    }
 
     // 扩展字段
     let mut ext_fields = Punctuated::<Field, Comma>::new();
@@ -285,6 +305,70 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
                 crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
             }
+
+            // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+            impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+                fn serialize_sync_objects(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
+                    if initial_state {
+                        self.serialize_objects_all(writer);
+                    } else {
+                        self.serialize_sync_object_delta(writer);
+                    }
+                }
+
+                fn serialize_objects_all(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter) {
+
+                }
+
+                fn serialize_sync_object_delta(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter) {
+
+                }
+
+                fn serialize_sync_vars(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
+                    if #sync_var_count == 0 {
+                        return;
+                    }
+
+                    if let Some(mut network_behaviour) = self.parent.get() {
+                        let dirty_bits = network_behaviour.sync_var_dirty_bits;
+                        if initial_state{
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+            impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+                fn deserialize_sync_objects(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
+                    if initial_state {
+                        self.deserialize_objects_all(reader);
+                    } else {
+                        self.deserialize_sync_object_delta(reader);
+                    }
+                }
+
+                fn deserialize_objects_all(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader) {
+
+                }
+
+                fn deserialize_sync_object_delta(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader) {
+
+                }
+
+                fn deserialize_sync_vars(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
+                    if #sync_var_count == 0 {
+                        return;
+                    }
+
+                    if let Some(mut network_behaviour) = self.parent.get() {
+                       network_behaviour.sync_var_dirty_bits = reader.read_blittable::<u64>();
+                        if initial_state{
+                            return;
+                        }
+                    }
+                }
+            }
         }
 
         pub use #this_struct_private_mod_ident::#struct_ident;
@@ -297,52 +381,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         //         todo!()
         //     }
         // }
-
-        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-        impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-            fn serialize_sync_objects(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
-                if initial_state {
-                    self.serialize_objects_all(writer);
-                } else {
-                    self.serialize_sync_object_delta(writer);
-                }
-            }
-
-            fn serialize_objects_all(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter) {
-
-            }
-
-            fn serialize_sync_object_delta(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter) {
-
-            }
-
-            fn serialize_sync_vars(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
-
-            }
-        }
-
-        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-        impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-            fn deserialize_sync_objects(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
-                if initial_state {
-                    self.deserialize_objects_all(reader);
-                } else {
-                    self.deserialize_sync_object_delta(reader);
-                }
-            }
-
-            fn deserialize_objects_all(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader) {
-
-            }
-
-            fn deserialize_sync_object_delta(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader) {
-
-            }
-
-            fn deserialize_sync_vars(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
-
-            }
-        }
 
         // #namespace_slot
 

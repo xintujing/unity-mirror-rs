@@ -61,8 +61,8 @@ pub struct NetworkBehaviour {
     pub game_object: RevelWeak<GameObject>,
     transform: RevelWeak<Transform>,
 
-    sync_var_dirty_bits: u64,
-    sync_object_dirty_bits: u64,
+    pub sync_var_dirty_bits: u64,
+    pub sync_object_dirty_bits: u64,
 }
 
 impl MonoBehaviour for NetworkBehaviour {
