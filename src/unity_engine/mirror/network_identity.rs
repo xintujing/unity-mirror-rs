@@ -76,9 +76,19 @@ impl NetworkBehaviourInstance for NetworkIdentity {
     }
 }
 
-impl NetworkIdentity{
-    pub(crate)fn serialize_server(initial_state: bool,owner_writer: &mut NetworkWriter,observers_writer: &mut NetworkWriter, ){
-        
+impl NetworkIdentity {
+    pub(crate) fn serialize_server(
+        initial_state: bool,
+        owner_writer: &mut NetworkWriter,
+        observers_writer: &mut NetworkWriter,
+    ) {
+    }
+
+    pub(crate) fn deserialize_server(
+        initial_state: bool,
+        owner_reader: &mut NetworkReader,
+        observers_reader: &mut NetworkReader,
+    ) {
     }
 }
 
