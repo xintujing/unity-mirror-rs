@@ -3,8 +3,8 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
 use crate::mirror::NetworkBehaviour;
-use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::GameObject;
+use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
 use unity_mirror_macro::{namespace, network_behaviour};
 
@@ -51,3 +51,5 @@ impl NetworkBehaviourInstance for NetworkAnimator {
         )
     }
 }
+
+impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
