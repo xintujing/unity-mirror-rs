@@ -59,11 +59,17 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[derive(Default, Debug, unity_mirror_macro::SyncState)]
     ));
 
-    // 同步变量
+    // 收集同步对象
+    let mut sync_obj_fields = Vec::new();
+    // 收集同步变量
     let mut sync_var_fields = Vec::new();
     // 遍历 struct 的 fields
     for field in &mut item_struct.fields {
         for attr in &field.attrs {
+            if attr.path().is_ident("sync_object") {
+                sync_obj_fields.push(field);
+                break;
+            }
             if attr.path().is_ident("sync_variable") {
                 // 修改字段的可见性
                 field.vis = syn::Visibility::Inherited;
