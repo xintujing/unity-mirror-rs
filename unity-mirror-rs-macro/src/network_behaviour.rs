@@ -67,13 +67,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     for field in &mut item_struct.fields {
         for attr in &field.attrs {
             if attr.path().is_ident("sync_object") {
-                sync_obj_fields.push(field);
+                sync_obj_fields.push(field.ident.clone().unwrap());
                 break;
             }
             if attr.path().is_ident("sync_variable") {
                 // 修改字段的可见性
                 field.vis = syn::Visibility::Inherited;
-                sync_var_fields.push(field);
+                sync_var_fields.push(field.ident.clone().unwrap());
                 break;
             }
         }
@@ -93,7 +93,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     for (field_index, field) in sync_var_fields.iter().enumerate() {
         serialize_sync_var_ts.push(quote! {
-            if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index))) != 0 {
+            if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
                 self.#field.serialize(writer);
             }
         })
@@ -330,10 +330,14 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
 
                     if let Some(mut network_behaviour) = self.parent.get() {
+                        use crate::unity_engine::mirror::network_writer::DataTypeSerializer;
                         let dirty_bits = network_behaviour.sync_var_dirty_bits;
                         if initial_state{
+                            #(#serialize_sync_var_ts)*
                             return;
                         }
+                        writer.write_blittable::<u64>(dirty_bits);
+                        #(#serialize_sync_var_ts)*
                     }
                 }
             }
