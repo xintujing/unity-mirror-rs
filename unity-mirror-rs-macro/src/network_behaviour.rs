@@ -292,8 +292,29 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         //     }
         // }
 
-        // #namespace_slot
+        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+        impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+            fn serialize_sync_objects(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
+                if initial_state {
+                    self.serialize_objects_all(writer);
+                } else {
+                    self.serialize_sync_object_delta(writer);
+                }
+            }
+        }
 
+        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+        impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+            fn deserialize_sync_objects(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
+                if initial_state {
+                    self.deserialize_objects_all(reader);
+                } else {
+                    self.deserialize_sync_object_delta(reader);
+                }
+            }
+        }
+
+        // #namespace_slot
 
     })
 }
