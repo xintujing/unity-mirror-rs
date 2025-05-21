@@ -45,7 +45,6 @@ pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn network_behaviour_trait::NetworkBehaviour>>>>,
-    // network_behaviours: Vec<WeakRwLock<Box<dyn MonoBehaviour>>>,
 }
 
 impl MonoBehaviour for NetworkIdentity {
@@ -77,17 +76,15 @@ impl NetworkBehaviourInstance for NetworkIdentity {
     }
 }
 
-impl NetworkBehaviourSerializer for NetworkIdentity {
-    fn serialize(&self, writer: &mut NetworkWriter, initial_state: bool) {
+impl NetworkIdentity{
+    pub(crate)fn serialize_server(initial_state: bool,owner_writer: &mut NetworkWriter,observers_writer: &mut NetworkWriter, ){
         
     }
 }
 
-impl NetworkBehaviourDeserializer for NetworkIdentity {
-    fn deserialize(&self, reader: &mut NetworkReader, initial_state: bool) {
-        
-    }
-}
+impl NetworkBehaviourSerializer for NetworkIdentity {}
+
+impl NetworkBehaviourDeserializer for NetworkIdentity {}
 
 impl NetworkBehaviour for NetworkIdentity {}
 
