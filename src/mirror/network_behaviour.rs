@@ -46,8 +46,9 @@ impl Into<SyncMode> for MetadataSyncMode {
         }
     }
 }
-// #[network_behaviour(namespace("Mirror"))]
+
 #[namespace(prefix = "Mirror")]
+#[derive(Default)]
 pub struct NetworkBehaviour {
     sync_direction: SyncDirection,
     sync_mode: SyncMode,
@@ -70,18 +71,16 @@ impl MonoBehaviour for NetworkBehaviour {
         println!("NetworkBehaviour: awake");
     }
 }
+
 #[ctor::ctor]
 fn static_init() {
-    use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-    crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<
-        NetworkBehaviour,
-    >(NetworkBehaviour::instance);
+    // crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkBehaviour>(
+    //     NetworkBehaviour::instance,
+    // );
 }
 
-impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance
-    for NetworkBehaviour
-{
-    fn instance(
+impl NetworkBehaviour {
+    pub fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> (
@@ -141,6 +140,13 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
 }
 
 impl crate::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
+    }
+
     fn clear_all_dirty_bits(&mut self) {
         self.sync_var_dirty_bits = 0;
         self.sync_object_dirty_bits = 0;

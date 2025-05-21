@@ -5,11 +5,10 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
 use crate::mirror::NetworkBehaviour;
+use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Transform;
-use crate::unity_engine::GameObject;
 use ordered_float::OrderedFloat;
 use std::any::TypeId;
 use std::collections::BTreeMap;
@@ -80,11 +79,11 @@ impl MonoBehaviour for NetworkTransformBase {
 
 #[ctor::ctor]
 fn static_init() {
-    NetworkBehaviourFactory::register::<NetworkTransformBase>(NetworkTransformBase::instance);
+    // NetworkBehaviourFactory::register::<NetworkTransformBase>(NetworkTransformBase::instance);
 }
 
-impl NetworkBehaviourInstance for NetworkTransformBase {
-    fn instance(
+impl NetworkTransformBase {
+    pub fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> (

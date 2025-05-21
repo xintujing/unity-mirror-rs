@@ -7,15 +7,14 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
 use crate::mirror::network_behaviour_trait;
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourInstance,
-    NetworkBehaviourSerializer,
+    NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
 use crate::mirror::network_writer_pool::NetworkWriterPool;
+use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
-use crate::unity_engine::GameObject;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use unity_mirror_macro::namespace;
@@ -57,23 +56,6 @@ impl MonoBehaviour for NetworkIdentity {
     }
     fn on_destroy(&mut self) {
         println!("Mirror: NetworkIdentity Destroyed");
-    }
-}
-
-impl NetworkBehaviourInstance for NetworkIdentity {
-    fn instance(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> (
-        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<crate::mirror::NetworkBehaviour>,
-        u8,
-        u8,
-    )
-    where
-        Self: Sized,
-    {
-        todo!()
     }
 }
 
@@ -183,7 +165,7 @@ impl NetworkIdentity {
         if let Some(game_object) = weak_game_object.get() {
             for metadata_network_behaviour_wrapper in settings.network_behaviours.iter() {
                 let final_full_name = metadata_network_behaviour_wrapper.get_final_full_name();
-                let (network_behaviours, _, _, _) = NetworkBehaviourFactory::create(
+                let network_behaviours = NetworkBehaviourFactory::create(
                     &final_full_name,
                     weak_game_object.clone(),
                     metadata_network_behaviour_wrapper,

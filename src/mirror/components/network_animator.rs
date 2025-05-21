@@ -1,7 +1,6 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
@@ -21,7 +20,7 @@ impl MonoBehaviour for NetworkAnimator {
     }
 }
 
-impl NetworkBehaviourInstance for NetworkAnimator {
+impl NetworkAnimator {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,

@@ -201,11 +201,24 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             #item_struct
 
+            impl #struct_ident {
+                pub fn factory(
+                    weak_game_object: crate::commons::revel_weak::RevelWeak<crate::unity_engine::GameObject>,
+                    metadata: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
+                    weak_network_behaviour: &mut crate::commons::revel_weak::RevelWeak<
+                        crate::mirror::network_behaviour::NetworkBehaviour,
+                    >,
+                    sync_object_offset: &mut u8,
+                    sync_var_offset: &mut u8,
+                ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+                    Vec::new()
+                }
+            }
+
             // 注册工厂
             #[ctor::ctor]
             fn static_init() {
-                use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-                crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
+                // crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
             }
 
             // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {

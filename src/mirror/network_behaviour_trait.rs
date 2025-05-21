@@ -1,32 +1,17 @@
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::unity_engine::MonoBehaviour;
-use crate::unity_engine::GameObject;
-use std::any::TypeId;
 
 pub trait NetworkBehaviour:
-    MonoBehaviour + NetworkBehaviourInstance + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
+    MonoBehaviour + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized;
     fn on_start_server(&mut self) {}
     fn on_stop_server(&mut self) {}
     fn clear_all_dirty_bits(&mut self);
-}
-
-pub trait NetworkBehaviourInstance {
-    fn instance(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> (
-        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
-        u8,
-        u8,
-    )
-    where
-        Self: Sized;
 }
 
 pub trait NetworkBehaviourSerializer {

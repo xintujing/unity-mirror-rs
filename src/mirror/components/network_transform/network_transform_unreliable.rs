@@ -5,19 +5,16 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
 use crate::mirror::NetworkBehaviour;
+use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Time;
-use crate::unity_engine::GameObject;
 use std::any::TypeId;
 use unity_mirror_macro::{namespace, network_behaviour};
 
 #[ctor::ctor]
 fn static_init() {
-    NetworkBehaviourFactory::register::<NetworkTransformUnreliable>(
-        NetworkTransformUnreliable::instance,
-    );
+    // NetworkBehaviourFactory::register::<NetworkTransformUnreliable>(NetworkTransformUnreliable::instance);
 }
 
 #[namespace(prefix = "Mirror")]
@@ -92,7 +89,7 @@ impl MonoBehaviour for NetworkTransformUnreliable {
     }
 }
 
-impl NetworkBehaviourInstance for NetworkTransformUnreliable {
+impl NetworkTransformUnreliable {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
