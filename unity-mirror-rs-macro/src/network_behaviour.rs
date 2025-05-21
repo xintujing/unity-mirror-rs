@@ -59,59 +59,40 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[derive(Default, Debug, unity_mirror_macro::SyncState)]
     ));
 
+    // 同步变量
+    let mut sync_var_fields = Vec::new();
     // 遍历 struct 的 fields
     for field in &mut item_struct.fields {
         for attr in &field.attrs {
             if attr.path().is_ident("sync_variable") {
                 // 修改字段的可见性
                 field.vis = syn::Visibility::Inherited;
+                sync_var_fields.push(field);
                 break;
             }
         }
     }
 
     // 扩展字段
-    let mut fileds = Punctuated::<Field, Comma>::new();
-    // 扩展字段实例
-    let mut fields_instance = Punctuated::<Field, Comma>::new();
-
-    let mut parent_instance_slot = quote! {};
-    // let mut parent_component_on_serialize_slot = None;
-    // let mut parent_component_on_deserialize_slot = None;
+    let mut ext_fields = Punctuated::<Field, Comma>::new();
 
     // 它的父组件
     if let Some(parent_path) = &parent {
         // 父组件字段
-        fileds.push(parse_quote! {
+        ext_fields.push(parse_quote! {
             parent: crate::commons::revel_weak::RevelWeak<#parent_path>
         });
-        // 父组件默认实例
-        // fields_instance.push(parse_quote! {
-        //     crate::commons::revel_weak::RevelWeak::default()
-        // });
-
-        // parent_instance_slot = quote! {};
-        // parent_component_on_serialize_slot = Some(quote! {
-        //     self.parent.on_serialize(writer, initial);
-        // });
-        // parent_component_on_deserialize_slot = Some(quote! {
-        //     self.parent.on_deserialize(reader, initial);
-        // });
     }
 
-    fileds.push(parse_quote!(
+    // var偏移
+    ext_fields.push(parse_quote!(
         var_start_offset: u8
     ));
-    // fields_instance.push(parse_quote!(
-    //     var_start_offset: 0
-    // ));
 
-    fileds.push(parse_quote!(
+    // obj偏移
+    ext_fields.push(parse_quote!(
         obj_start_offset: u8
     ));
-    // fields_instance.push(parse_quote!(
-    //     obj_start_offset: 0
-    // ));
 
     // ---------------------------------------------------------
     // let mut state_instance_slot = None;
@@ -274,7 +255,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     match &mut item_struct.fields {
         Fields::Named(fields_named) => {
-            fields_named.named.extend(fileds);
+            fields_named.named.extend(ext_fields);
         }
         _ => {}
     }
