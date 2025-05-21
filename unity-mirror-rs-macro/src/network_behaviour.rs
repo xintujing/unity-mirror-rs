@@ -310,13 +310,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             // 注册工厂
             #[ctor::ctor]
             fn static_init() {
-                use crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-                crate::unity_engine::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
+                use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+                crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
             }
 
-            // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-            impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-                fn serialize_sync_objects(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
+            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+            impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+                fn serialize_sync_objects(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
                     if initial_state {
                         self.serialize_objects_all(writer);
                     } else {
@@ -324,21 +324,21 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 }
 
-                fn serialize_objects_all(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter) {
+                fn serialize_objects_all(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter) {
 
                 }
 
-                fn serialize_sync_object_delta(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter) {
+                fn serialize_sync_object_delta(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter) {
 
                 }
 
-                fn serialize_sync_vars(&mut self, writer: &mut crate::unity_engine::mirror::network_writer::NetworkWriter, initial_state: bool) {
+                fn serialize_sync_vars(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
                     if #sync_var_count == 0 {
                         return;
                     }
 
                     if let Some(mut network_behaviour) = self.parent.get() {
-                        use crate::unity_engine::mirror::network_writer::DataTypeSerializer;
+                        use crate::mirror::network_writer::DataTypeSerializer;
                         let dirty_bits = network_behaviour.sync_var_dirty_bits;
                         if initial_state{
                             #(#serialize_sync_var_ts)*
@@ -350,9 +350,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-            impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-                fn deserialize_sync_objects(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
+            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+            impl crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+                fn deserialize_sync_objects(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {
                     if initial_state {
                         self.deserialize_objects_all(reader);
                     } else {
@@ -360,15 +360,15 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
                 }
 
-                fn deserialize_objects_all(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader) {
+                fn deserialize_objects_all(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader) {
 
                 }
 
-                fn deserialize_sync_object_delta(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader) {
+                fn deserialize_sync_object_delta(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader) {
 
                 }
 
-                fn deserialize_sync_vars(&mut self, reader: &mut crate::unity_engine::mirror::network_reader::NetworkReader, initial_state: bool) {
+                fn deserialize_sync_vars(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {
                     if #sync_var_count == 0 {
                         return;
                     }
@@ -385,8 +385,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         pub use #this_struct_private_mod_ident::#struct_ident;
 
-        // impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
-        //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::unity_engine::mirror::NetworkBehaviour>, u8, u8)
+        // impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
+        //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::mirror::NetworkBehaviour>, u8, u8)
         //     where
         //         Self: Sized
         //     {

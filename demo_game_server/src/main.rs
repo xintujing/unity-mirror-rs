@@ -1,6 +1,6 @@
 use unity_mirror_rs::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
 use unity_mirror_rs::mirror::NetworkBehaviour;
-use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
+use unity_mirror_rs::unity_engine::{LoadSceneMode, WorldManager};
 
 #[ctor::ctor]
 fn init_logger() {
