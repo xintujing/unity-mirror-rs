@@ -12,6 +12,7 @@ use crate::unity_engine::mirror::network_behaviour_trait::{
 };
 use crate::unity_engine::mirror::network_reader::NetworkReader;
 use crate::unity_engine::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
+use crate::unity_engine::mirror::network_writer_pool::NetworkWriterPool;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::GameObject;
@@ -111,10 +112,10 @@ impl NetworkIdentity {
         let (owner_mask, observer_mask) = self.server_dirty_masks(initial_state);
 
         if owner_mask != 0 {
-            owner_mask.serialize(owner_writer);
+            owner_writer.write_blittable_compress(observer_mask);
         }
         if observer_mask != 0 {
-            observer_mask.serialize(observers_writer);
+            observers_writer.write_blittable_compress(owner_mask);
         }
 
         if (owner_mask | observer_mask) != 0 {
@@ -125,9 +126,31 @@ impl NetworkIdentity {
                 let observers_dirty = self.is_dirty(observer_mask, network_behaviour_i as u8);
 
                 if owner_dirty || observers_dirty {
-                    
-                    for (item_i, item) in network_behaviour.iter().enumerate() {
-                        
+                    NetworkWriterPool::get_return(|writer| {
+                        // serialize obj
+                        for item in network_behaviour.iter() {
+                            if let Some(network_behaviour) = item.get() {
+                                network_behaviour.serialize_sync_objects(writer, initial_state);
+                            }
+                        }
+
+                        // serialize var
+                        for item in network_behaviour.iter() {
+                            if let Some(network_behaviour) = item.get() {
+                                network_behaviour.serialize_sync_vars(writer, initial_state);
+                            }
+                        }
+
+                        if owner_dirty {
+                            owner_writer.write_bytes(writer.to_array(), 0, writer.position);
+                        }
+                        if observers_dirty {
+                            observers_writer.write_bytes(writer.to_array(), 0, writer.position);
+                        }
+                    });
+
+                    if !initial_state {
+                        // component.clear_all_dirty_bits();
                     }
                 }
             }

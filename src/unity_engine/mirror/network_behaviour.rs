@@ -4,6 +4,11 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
     MetadataSyncMode,
 };
+use crate::unity_engine::mirror::network_behaviour_trait::{
+    NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
+};
+use crate::unity_engine::mirror::network_reader::NetworkReader;
+use crate::unity_engine::mirror::network_writer::NetworkWriter;
 use crate::unity_engine::mirror::NetworkIdentity;
 use crate::unity_engine::transform::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
@@ -113,16 +118,26 @@ impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviourInsta
     }
 }
 
-// impl NetworkBehaviourSerializer for NetworkBehaviour {
-//     fn serialize(&self) {
-//         todo!()
-//     }
-// }
-//
-// impl NetworkBehaviourDeserializer for NetworkBehaviour {
-//     fn deserialize(&self) {
-//         todo!()
-//     }
-// }
-//
-// impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {}
+impl NetworkBehaviourSerializer for NetworkBehaviour {
+    fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
+        if initial_state {
+            self.serialize_objects_all(writer);
+        } else {
+            writer.write_blittable::<u64>(self.sync_object_dirty_bits);
+            self.serialize_sync_object_delta(writer);
+        }
+    }
+}
+
+impl NetworkBehaviourDeserializer for NetworkBehaviour {
+    fn deserialize_sync_objects(&mut self, reader: &mut NetworkReader, initial_state: bool) {
+        if initial_state {
+            self.deserialize_objects_all(reader);
+        } else {
+            self.sync_object_dirty_bits = reader.read_blittable::<u64>();
+            self.deserialize_sync_object_delta(reader);
+        }
+    }
+}
+
+impl crate::unity_engine::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {}
