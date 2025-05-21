@@ -14,6 +14,7 @@ static METADATA_COMPONENT_REGISTERS: once_cell::sync::Lazy<
     >,
 > = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(HashMap::new()));
 
+#[derive(Clone)]
 pub struct MetadataComponentWrapper {
     value: HashMap<TypeId, Vec<Box<dyn Settings>>>,
     type_mapping: HashMap<TypeId, String>,
@@ -43,13 +44,10 @@ impl MetadataComponentWrapper {
         panic!("Component not found: {}", std::any::type_name::<T>());
     }
 
-    pub fn group_by_full_name(
-        &self,
-    ) -> Box<dyn Iterator<Item = (&str, &Box<dyn Settings>)> + '_> {
+    pub fn group_by_full_name(&self) -> Box<dyn Iterator<Item = (&str, &Box<dyn Settings>)> + '_> {
         Box::new(self.value.iter().flat_map(move |(type_id, values)| {
             let full_name = self.type_mapping.get(type_id).unwrap().as_str();
             values.iter().map(move |value| (full_name, value))
-
         }))
     }
 

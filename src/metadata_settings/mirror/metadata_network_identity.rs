@@ -7,6 +7,7 @@ use unity_mirror_macro::{namespace, settings_wrapper_register, MetadataSettingsW
 
 #[namespace(prefix = "Mirror", rename = "NetworkIdentity")]
 #[derive(Deserialize, MetadataSettingsWrapper)]
+#[derive(Clone)]
 pub struct MetadataNetworkIdentity {
     #[serde(rename = "assetId")]
     pub asset_id: u32,
