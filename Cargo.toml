@@ -13,7 +13,7 @@ exclude = []
 
 [dependencies]
 #unity-mirror-rs-macro = { path = "unity-mirror-rs-macro" }
-unity-mirror-macro = { path = "unity-mirror-macro" }
+unity-mirror-macro = { path = "unity-mirror-rs-macro" }
 lazy_static = "1.5.0"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_repr = "0.1.20"

@@ -6,10 +6,9 @@ use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{Field, Fields, Path, parse_quote};
+use syn::{parse_quote, Field, Fields, Path};
 
 struct NetworkBehaviourArgs {
-    // pub state: Option<Path>, // 存储 state 对应的路径
     pub parent: Option<Path>,
     pub namespace: Option<NamespaceArgs>,
 }
@@ -23,13 +22,6 @@ impl Parse for NetworkBehaviourArgs {
         while !input.is_empty() {
             {
                 match input.parse::<Ident>()?.to_string().as_str() {
-                    // "state" => {
-                    //     let content;
-                    //     syn::parenthesized!(content in input); // 捕获括号内的内容
-                    //     if let Ok(path) = content.parse::<Path>() {
-                    //         state = Some(path)
-                    //     }
-                    // }
                     "parent" => {
                         let content;
                         syn::parenthesized!(content in input); // 捕获括号内的内容
@@ -48,20 +40,13 @@ impl Parse for NetworkBehaviourArgs {
             let _ = input.parse::<Comma>();
         }
 
-        Ok(NetworkBehaviourArgs {
-            // state,
-            parent,
-            namespace,
-        })
+        Ok(NetworkBehaviourArgs { parent, namespace })
     }
 }
 
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let NetworkBehaviourArgs {
-        // state,
-        parent,
-        namespace,
-    } = syn::parse_macro_input!(attr as NetworkBehaviourArgs);
+    let NetworkBehaviourArgs { parent, namespace } =
+        syn::parse_macro_input!(attr as NetworkBehaviourArgs);
 
     let mut item_struct = syn::parse_macro_input!(item as syn::ItemStruct);
 
