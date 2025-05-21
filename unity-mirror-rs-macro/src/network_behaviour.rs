@@ -210,7 +210,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     >,
                     sync_object_offset: &mut u8,
                     sync_var_offset: &mut u8,
-                ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+                ) -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::unity_engine::MonoBehaviour>>,std::any::TypeId,)> {
                     use super::NetworkBehaviour;
                     Self::new(metadata);
                     Vec::new()
