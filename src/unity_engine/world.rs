@@ -32,7 +32,7 @@ impl World {
                     scene_path
                 )
             }
-            Some((scene_metadata)) => {
+            Some(scene_metadata) => {
                 let mut world = World {
                     scene_name: scene_path.to_string(),
                     scene_path: scene_path.to_string(),
