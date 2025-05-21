@@ -253,6 +253,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //     named,
     // });
 
+    // 扩展字段
     match &mut item_struct.fields {
         Fields::Named(fields_named) => {
             fields_named.named.extend(ext_fields);
@@ -260,6 +261,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         _ => {}
     }
 
+    // 私有模块
     let this_struct_private_mod_ident = format_ident!(
         "private_component_{}",
         struct_ident.to_string().to_snake_case().to_lowercase()
