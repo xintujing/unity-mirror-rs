@@ -1,7 +1,7 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::unity_engine::mono_behaviour::MonoBehaviour;
+use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::GameObject;
 use once_cell::sync::Lazy;
 use std::any::TypeId;
@@ -15,7 +15,7 @@ static mut NETWORK_BEHAVIOUR_FACTORY: Lazy<
             metadata: &MetadataNetworkBehaviourWrapper,
         ) -> (
             Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-            RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+            RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
             u8,
             u8,
         ),
@@ -30,7 +30,7 @@ impl NetworkBehaviourFactory {
             metadata: &MetadataNetworkBehaviourWrapper,
         ) -> (
             Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-            RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+            RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
             u8,
             u8,
         ),
@@ -54,7 +54,7 @@ impl NetworkBehaviourFactory {
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> (
         Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+        RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
         u8,
         u8,
     ) {

@@ -232,7 +232,7 @@ impl WorldManager {
 mod tests {
     use super::*;
     use crate::unity_engine::game_looper::GameLooper;
-    use crate::unity_engine::mirror::NetworkIdentity;
+    use crate::mirror::NetworkIdentity;
     use std::thread::spawn;
 
     #[test]

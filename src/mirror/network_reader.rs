@@ -1,5 +1,5 @@
 use crate::commons::to_hex_string::ToHexString;
-use crate::unity_engine::mirror::network_writer::NetworkWriter;
+use crate::mirror::network_writer::NetworkWriter;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 

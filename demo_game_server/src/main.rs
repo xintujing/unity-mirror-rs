@@ -1,5 +1,5 @@
-use unity_mirror_rs::unity_engine::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
-use unity_mirror_rs::unity_engine::mirror::NetworkBehaviour;
+use unity_mirror_rs::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
+use unity_mirror_rs::mirror::NetworkBehaviour;
 use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
 
 #[ctor::ctor]
@@ -47,5 +47,5 @@ fn main() {
         println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
     }
 
-    GameLooper::new().run();
+    // GameLooper::new().run();
 }

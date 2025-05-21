@@ -1,5 +1,5 @@
-use crate::unity_engine::mirror::snapshot_interpolation::snapshot::Snapshot;
-use crate::unity_engine::time::ExponentialMovingAverage;
+use crate::mirror::snapshot_interpolation::snapshot::Snapshot;
+use crate::unity_engine::ExponentialMovingAverage;
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
 

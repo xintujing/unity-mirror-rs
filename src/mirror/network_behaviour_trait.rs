@@ -1,9 +1,9 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::unity_engine::mirror::network_reader::NetworkReader;
-use crate::unity_engine::mirror::network_writer::NetworkWriter;
-use crate::unity_engine::mono_behaviour::MonoBehaviour;
+use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_writer::NetworkWriter;
+use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::GameObject;
 use std::any::TypeId;
 
@@ -21,7 +21,7 @@ pub trait NetworkBehaviourInstance {
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> (
         Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<crate::unity_engine::mirror::network_behaviour::NetworkBehaviour>,
+        RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
         u8,
         u8,
     )
