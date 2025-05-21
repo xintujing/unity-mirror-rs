@@ -5,7 +5,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataSyncMode,
 };
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
+    NetworkBehaviourDeserializer, NetworkBehaviourSerializer, NetworkBehaviourT,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -66,32 +66,21 @@ pub struct NetworkBehaviour {
     pub sync_object_dirty_bits: u64,
 }
 
-impl MonoBehaviour for NetworkBehaviour {
-    fn awake(&mut self) {
-        println!("NetworkBehaviour: awake");
-    }
-}
-
 #[ctor::ctor]
 fn static_init() {
-    // crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkBehaviour>(
-    //     NetworkBehaviour::instance,
-    // );
+    crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkBehaviour>(
+        NetworkBehaviour::factory,
+    );
 }
 
 impl NetworkBehaviour {
-    pub fn instance(
+    pub fn factory(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> (
-        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<NetworkBehaviour>,
-        u8,
-        u8,
-    )
-    where
-        Self: Sized,
-    {
+        weak_network_behaviour: &mut RevelWeak<NetworkBehaviour>,
+        sync_object_offset: &mut u8,
+        sync_var_offset: &mut u8,
+    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
         let config = metadata.get::<MetadataNetworkBehaviour>();
 
         let arc_network_behaviour = RevelArc::new(Box::new(NetworkBehaviour {
@@ -108,12 +97,29 @@ impl NetworkBehaviour {
             sync_object_dirty_bits: 0,
         }) as Box<dyn MonoBehaviour>);
 
-        (
-            vec![(arc_network_behaviour, TypeId::of::<NetworkBehaviour>())],
-            RevelWeak::default(),
-            0,
-            0,
-        )
+        // *weak_network_behaviour = arc_network_behaviour.downgrade();
+
+        vec![(arc_network_behaviour, TypeId::of::<NetworkBehaviour>())]
+    }
+}
+
+impl MonoBehaviour for NetworkBehaviour {
+    fn awake(&mut self) {
+        println!("NetworkBehaviour: awake");
+    }
+}
+
+impl NetworkBehaviourT for NetworkBehaviour {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
+    }
+
+    fn clear_all_dirty_bits(&mut self) {
+        self.sync_var_dirty_bits = 0;
+        self.sync_object_dirty_bits = 0;
     }
 }
 
@@ -136,19 +142,5 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
             self.sync_object_dirty_bits = reader.read_blittable::<u64>();
             self.deserialize_sync_object_delta(reader);
         }
-    }
-}
-
-impl crate::mirror::network_behaviour_trait::NetworkBehaviourT for NetworkBehaviour {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
-    where
-        Self: Sized,
-    {
-        Self::default()
-    }
-
-    fn clear_all_dirty_bits(&mut self) {
-        self.sync_var_dirty_bits = 0;
-        self.sync_object_dirty_bits = 0;
     }
 }

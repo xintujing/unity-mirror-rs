@@ -212,6 +212,14 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     sync_var_offset: &mut u8,
                 ) -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::unity_engine::MonoBehaviour>>,std::any::TypeId,)> {
                     use super::NetworkBehaviour;
+
+                    let mut network_behaviour_chain = #parent::factory(
+                        weak_game_object.clone(),
+                        metadata,
+                        weak_network_behaviour,
+                        sync_object_offset,
+                        sync_var_offset,
+                    );
                     Self::new(metadata);
                     Vec::new()
                 }
