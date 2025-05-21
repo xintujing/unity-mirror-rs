@@ -89,14 +89,22 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     //
     // //
     let mut serialize_sync_var_ts = Vec::new();
-    // let mut deserialize_sync_var_ts = Vec::new();
+    let mut deserialize_sync_var_ts = Vec::new();
 
     for (field_index, field) in sync_var_fields.iter().enumerate() {
+        let get_sync_field_ident = format_ident!("get_{}", field);
+        let set_sync_field_ident = format_ident!("set_{}", field);
         serialize_sync_var_ts.push(quote! {
             if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
                 self.#field.serialize(writer);
             }
-        })
+        });
+
+        deserialize_sync_var_ts.push(quote! {
+            if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
+                // self.#set_sync_field_ident(reader.deserialize());
+            }
+        });
     }
 
     // 扩展字段
@@ -366,10 +374,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     }
 
                     if let Some(mut network_behaviour) = self.parent.get() {
-                       network_behaviour.sync_var_dirty_bits = reader.read_blittable::<u64>();
                         if initial_state{
                             return;
                         }
+                        network_behaviour.sync_var_dirty_bits = reader.read_blittable::<u64>();
                     }
                 }
             }
