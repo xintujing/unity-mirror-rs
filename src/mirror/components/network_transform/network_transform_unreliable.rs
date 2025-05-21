@@ -89,52 +89,52 @@ impl MonoBehaviour for NetworkTransformUnreliable {
     }
 }
 
-impl NetworkTransformUnreliable {
-    fn instance(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> (
-        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<NetworkBehaviour>,
-        u8,
-        u8,
-    )
-    where
-        Self: Sized,
-    {
-        let (mut network_behaviour_chain, _, _, _) =
-            NetworkTransformBase::instance(weak_game_object, metadata);
-
-        let mut weak_network_transform_base = RevelWeak::default();
-        if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
-            if let Some(wnb) = arc_network_behaviour
-                .downgrade()
-                .downcast::<NetworkTransformBase>()
-            {
-                weak_network_transform_base = wnb.clone();
-            }
-        }
-        let config = metadata.get::<MetadataNetworkTransformUnreliable>();
-
-        let arc_mono_behaviour = RevelArc::new(Box::new(NetworkTransformUnreliable {
-            parent: weak_network_transform_base,
-            buffer_reset_multiplier: config.buffer_reset_multiplier,
-            position_sensitivity: config.position_sensitivity,
-            rotation_sensitivity: config.rotation_sensitivity,
-            scale_sensitivity: config.scale_sensitivity,
-            send_interval_counter: 0,
-            last_send_interval_time: 0.0,
-            last_snapshot: Default::default(),
-            cached_snapshot_comparison: false,
-            cached_changed_comparison: 0,
-            has_sent_unchanged_position: false,
-        }) as Box<dyn MonoBehaviour>);
-
-        network_behaviour_chain.push((
-            arc_mono_behaviour,
-            TypeId::of::<NetworkTransformUnreliable>(),
-        ));
-
-        (network_behaviour_chain, RevelWeak::default(), 0, 0)
-    }
-}
+// impl NetworkTransformUnreliable {
+//     fn instance(
+//         weak_game_object: RevelWeak<GameObject>,
+//         metadata: &MetadataNetworkBehaviourWrapper,
+//     ) -> (
+//         Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+//         RevelWeak<NetworkBehaviour>,
+//         u8,
+//         u8,
+//     )
+//     where
+//         Self: Sized,
+//     {
+//         let (mut network_behaviour_chain, _, _, _) =
+//             NetworkTransformBase::instance(weak_game_object, metadata);
+// 
+//         let mut weak_network_transform_base = RevelWeak::default();
+//         if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
+//             if let Some(wnb) = arc_network_behaviour
+//                 .downgrade()
+//                 .downcast::<NetworkTransformBase>()
+//             {
+//                 weak_network_transform_base = wnb.clone();
+//             }
+//         }
+//         let config = metadata.get::<MetadataNetworkTransformUnreliable>();
+// 
+//         let arc_mono_behaviour = RevelArc::new(Box::new(NetworkTransformUnreliable {
+//             parent: weak_network_transform_base,
+//             buffer_reset_multiplier: config.buffer_reset_multiplier,
+//             position_sensitivity: config.position_sensitivity,
+//             rotation_sensitivity: config.rotation_sensitivity,
+//             scale_sensitivity: config.scale_sensitivity,
+//             send_interval_counter: 0,
+//             last_send_interval_time: 0.0,
+//             last_snapshot: Default::default(),
+//             cached_snapshot_comparison: false,
+//             cached_changed_comparison: 0,
+//             has_sent_unchanged_position: false,
+//         }) as Box<dyn MonoBehaviour>);
+// 
+//         network_behaviour_chain.push((
+//             arc_mono_behaviour,
+//             TypeId::of::<NetworkTransformUnreliable>(),
+//         ));
+// 
+//         (network_behaviour_chain, RevelWeak::default(), 0, 0)
+//     }
+// }
