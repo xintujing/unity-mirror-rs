@@ -10,7 +10,7 @@ pub struct LayerMask {
 }
 
 #[namespace("UnityEngine", rename = "Collider")]
-#[derive(Deserialize, MetadataSettingsWrapper)]
+#[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataCollider {
     #[serde(rename = "instanceId")]
     pub instance_id: i32,

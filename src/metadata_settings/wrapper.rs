@@ -27,10 +27,28 @@ impl<T: Settings + Send + Sync + 'static> SettingsAny for T {
     }
 }
 
-pub trait Settings: Any + Send + Sync + SettingsParser + SettingsAny + Object {
+pub trait Settings:
+    Any + Send + Sync + SettingsParser + SettingsAny + Object + SettingsClone
+{
     // fn to<T>(&self) -> &'static T {
     //     self.as_any().downcast_ref::<T>().unwrap()
     // }
+}
+
+trait SettingsClone {
+    fn clone_box(&self) -> Box<dyn Settings>;
+}
+
+impl<T: Settings + Clone + 'static> SettingsClone for T {
+    fn clone_box(&self) -> Box<dyn Settings> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn Settings> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }
 
 // #[macro_export]

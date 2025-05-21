@@ -8,10 +8,34 @@ use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;
 use crate::unity_engine::WorldManager;
 use once_cell::race::OnceBool;
+use once_cell::sync::Lazy;
 use rand::RngCore;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::mem;
+
+static mut COMPONENT_LOADING: Lazy<Vec<(RevelWeak<GameObject>, MetadataComponentWrapper)>> =
+    Lazy::new(|| vec![]);
+
+fn append_component_loading(
+    weak_game_object: RevelWeak<GameObject>,
+    component: MetadataComponentWrapper,
+) {
+    #[allow(static_mut_refs)]
+    unsafe {
+        COMPONENT_LOADING.push((weak_game_object, component));
+    }
+}
+
+fn component_loading() {
+    #[allow(static_mut_refs)]
+    unsafe {
+        COMPONENT_LOADING.reverse();
+        while let Some((arc_game_object, metadata_prefab)) = COMPONENT_LOADING.pop() {
+            GameObject::load_component(arc_game_object, &metadata_prefab);
+        }
+    }
+}
 
 #[derive(Default)]
 pub struct GameObject {
@@ -36,6 +60,7 @@ impl GameObject {
     pub fn instance(metadata_prefab: &MetadataPrefab) -> RevelArc<GameObject> {
         let mut arc_game_object = Self::new(RevelWeak::default(), metadata_prefab);
         Self::recursive_children(arc_game_object.downgrade(), &metadata_prefab.children);
+        component_loading();
         arc_game_object.awake();
         arc_game_object
     }
@@ -53,7 +78,7 @@ impl GameObject {
     ) -> RevelArc<GameObject> {
         // 随机数
         let mut rng = rand::rng();
-
+        println!("new game object: {}", metadata_prefab.name);
         let mut game_object = GameObject {
             id: rng.next_u64(),
             name: metadata_prefab.name.clone(),
@@ -79,7 +104,10 @@ impl GameObject {
         game_object.transform = RevelArc::new(transform);
         let mut arc_game_object = RevelArc::new(game_object);
 
-        Self::load_component(arc_game_object.downgrade(), &metadata_prefab.components);
+        append_component_loading(
+            arc_game_object.downgrade(),
+            metadata_prefab.components.clone(),
+        );
 
         arc_game_object.transform.game_object = arc_game_object.downgrade();
         arc_game_object

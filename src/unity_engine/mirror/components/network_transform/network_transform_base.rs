@@ -107,7 +107,7 @@ impl NetworkTransformBase {
                 .downcast::<NetworkBehaviour>()
                 .unwrap()
                 .clone(),
-            target: weak_transform.unwrap_or(RevelWeak::default()),
+            target: weak_transform.unwrap(),//_or(RevelWeak::default()),
             server_snapshots: Default::default(),
             only_sync_on_change: config.only_sync_on_change,
             coordinate_space: config.coordinate_space.clone().into(),

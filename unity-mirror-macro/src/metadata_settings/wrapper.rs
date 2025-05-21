@@ -33,6 +33,7 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
         >> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashMap::new()));
         // 定义 Wrapper 结构体
 
+        #[derive(Clone)]
         pub struct #wrapper_struct_ident {
             value: std::collections::BTreeMap<std::any::TypeId, Box<dyn crate::metadata_settings::wrapper::Settings>>,
             final_type_id: std::any::TypeId,
