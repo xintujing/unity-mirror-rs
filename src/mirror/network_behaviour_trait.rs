@@ -3,7 +3,8 @@ use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::unity_engine::MonoBehaviour;
 
-pub trait NetworkBehaviour:
+pub trait BaseNetworkBehaviourT: NetworkBehaviourT {}
+pub trait NetworkBehaviourT:
     MonoBehaviour + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self

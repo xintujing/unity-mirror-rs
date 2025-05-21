@@ -7,7 +7,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
 use crate::mirror::network_behaviour_trait;
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviour, NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
+    NetworkBehaviourT, NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
@@ -44,7 +44,7 @@ fn static_init() {
 pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
-    network_behaviours: Vec<Vec<RevelWeak<Box<dyn network_behaviour_trait::NetworkBehaviour>>>>,
+    network_behaviours: Vec<Vec<RevelWeak<Box<dyn network_behaviour_trait::NetworkBehaviourT>>>>,
 }
 
 impl MonoBehaviour for NetworkIdentity {

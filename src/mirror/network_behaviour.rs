@@ -139,7 +139,7 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
     }
 }
 
-impl crate::mirror::network_behaviour_trait::NetworkBehaviour for NetworkBehaviour {
+impl crate::mirror::network_behaviour_trait::NetworkBehaviourT for NetworkBehaviour {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,

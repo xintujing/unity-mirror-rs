@@ -211,6 +211,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     sync_object_offset: &mut u8,
                     sync_var_offset: &mut u8,
                 ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
+                    use super::NetworkBehaviour;
+                    Self::new(metadata);
                     Vec::new()
                 }
             }
@@ -218,7 +220,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             // 注册工厂
             #[ctor::ctor]
             fn static_init() {
-                // crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkAnimator>(NetworkAnimator::instance);
+                crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<#struct_ident>(#struct_ident::factory);
             }
 
             // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
@@ -309,6 +311,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         impl #state_condition_ident for #struct_ident {}
+
+        // impl crate::mirror::network_behaviour_trait::BaseNetworkBehaviourT for #struct_ident {
+        impl crate::mirror::network_behaviour_trait::BaseNetworkBehaviourT for #struct_ident {
+        }
 
         // impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
         //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::mirror::NetworkBehaviour>, u8, u8)
