@@ -5,6 +5,8 @@ mod string_case;
 use proc_macro::TokenStream;
 
 mod metadata_settings;
+mod network_behaviour_state;
+
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
         #[derive(Default)]
@@ -161,6 +163,6 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
-pub fn derive_sync_state(_: TokenStream) -> TokenStream {
-    TokenStream::new()
+pub fn derive_sync_state(input: TokenStream) -> TokenStream {
+    network_behaviour_state::handler(input)
 }

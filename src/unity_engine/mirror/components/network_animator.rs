@@ -10,7 +10,10 @@ use unity_mirror_macro::{namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(parent(NetworkBehaviour))]
-pub struct NetworkAnimator {}
+pub struct NetworkAnimator {
+    #[sync_variable]
+    pub animator_speed: f32,
+}
 
 impl MonoBehaviour for NetworkAnimator {
     fn awake(&mut self) {
