@@ -4,8 +4,11 @@ mod string_case;
 
 use proc_macro::TokenStream;
 
+mod callback_processor;
+mod message;
 mod metadata_settings;
 mod network_behaviour_state;
+mod tools;
 
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
@@ -165,4 +168,14 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
 pub fn derive_sync_state(input: TokenStream) -> TokenStream {
     network_behaviour_state::handler(input)
+}
+
+#[proc_macro_derive(MessageRegistry)]
+pub fn message_registry(input: TokenStream) -> TokenStream {
+    message::message_registry_handler(input)
+}
+
+#[proc_macro_derive(CallbackProcessor)]
+pub fn callback_processor(input: TokenStream) -> TokenStream {
+    callback_processor::callback_processor_handler(input)
 }
