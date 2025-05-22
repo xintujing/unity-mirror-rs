@@ -7,7 +7,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
 use crate::mirror::network_behaviour_trait;
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourT, NetworkBehaviourDeserializer, NetworkBehaviourSerializer,
+    NetworkBehaviourDeserializer, NetworkBehaviourSerializer, NetworkBehaviourT,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
@@ -109,17 +109,28 @@ impl NetworkIdentity {
 
                 if owner_dirty || observers_dirty {
                     NetworkWriterPool::get_return(|writer| {
-                        // serialize obj
+                        // on_serialize
+                        let mut re_write = false;
                         for item in network_behaviour.iter() {
                             if let Some(network_behaviour) = item.get() {
-                                network_behaviour.serialize_sync_objects(writer, initial_state);
+                                re_write = network_behaviour.on_serialize(writer, initial_state);
                             }
                         }
 
-                        // serialize var
-                        for item in network_behaviour.iter() {
-                            if let Some(network_behaviour) = item.get() {
-                                network_behaviour.serialize_sync_vars(writer, initial_state);
+                        // 如果没有重写，需要走serialize_sync_objects和serialize_sync_vars
+                        if !re_write {
+                            // serialize obj
+                            for item in network_behaviour.iter() {
+                                if let Some(network_behaviour) = item.get() {
+                                    network_behaviour.serialize_sync_objects(writer, initial_state);
+                                }
+                            }
+
+                            // serialize var
+                            for item in network_behaviour.iter() {
+                                if let Some(network_behaviour) = item.get() {
+                                    network_behaviour.serialize_sync_vars(writer, initial_state);
+                                }
                             }
                         }
 

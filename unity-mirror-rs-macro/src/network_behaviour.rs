@@ -160,7 +160,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 它的祖先 ancestor
     ext_fields.push(parse_quote!(
-        ancestor: crate::commons::revel_weak::RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>
+        ancestor: crate::commons::revel_weak::RevelWeak<NetworkBehaviour>
     ));
 
     // 它的父组件

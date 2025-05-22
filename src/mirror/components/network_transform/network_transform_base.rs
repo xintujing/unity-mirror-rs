@@ -1,16 +1,12 @@
-use crate::commons::revel_arc::{RevelArc, VecRevelArc};
+use crate::commons::revel_arc::VecRevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
-use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+
 use crate::mirror::NetworkBehaviour;
-use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Transform;
 use ordered_float::OrderedFloat;
-use std::any::TypeId;
 use std::collections::BTreeMap;
 use unity_mirror_macro::namespace;
 
@@ -34,7 +30,6 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
 #[namespace(prefix = "Mirror")]
 pub struct NetworkTransformBase {
     pub parent: RevelWeak<Box<NetworkBehaviour>>,
-
     target: RevelWeak<Transform>,
     pub server_snapshots: BTreeMap<OrderedFloat<f64>, TransformSnapshot>,
     pub only_sync_on_change: bool,
@@ -97,19 +92,19 @@ fn static_init() {
 //     {
 //         let (mut network_behaviour_chain, _, _, _) =
 //             NetworkBehaviour::instance(weak_game_object.clone(), metadata);
-// 
+//
 //         let mut weak_network_behaviour = RevelWeak::default();
 //         if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
 //             weak_network_behaviour = arc_network_behaviour.downgrade();
 //         }
-// 
+//
 //         let config = metadata.get::<MetadataNetworkTransformBase>();
-// 
+//
 //         let weak_transform = weak_game_object
 //             .get()
 //             .unwrap()
 //             .find_transform(&config.target.instance_id);
-// 
+//
 //         let arc_network_transform_base = RevelArc::new(Box::new(NetworkTransformBase {
 //             parent: weak_network_behaviour
 //                 .downcast::<NetworkBehaviour>()
@@ -135,7 +130,7 @@ fn static_init() {
 //             send_interval_counter: 0,
 //             last_send_interval_time: 0.0,
 //         }) as Box<dyn MonoBehaviour>);
-// 
+//
 //         network_behaviour_chain.push((
 //             arc_network_transform_base,
 //             TypeId::of::<NetworkTransformBase>(),
