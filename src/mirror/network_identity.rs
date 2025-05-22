@@ -109,28 +109,24 @@ impl NetworkIdentity {
 
                 if owner_dirty || observers_dirty {
                     NetworkWriterPool::get_return(|writer| {
-                        // on_serialize
-                        let mut re_write = false;
+                        // serialize obj
                         for item in network_behaviour.iter() {
                             if let Some(network_behaviour) = item.get() {
-                                re_write = network_behaviour.on_serialize(writer, initial_state);
+                                network_behaviour.serialize_sync_objects(writer, initial_state);
                             }
                         }
 
-                        // 如果没有重写，需要走serialize_sync_objects和serialize_sync_vars
-                        if !re_write {
-                            // serialize obj
-                            for item in network_behaviour.iter() {
-                                if let Some(network_behaviour) = item.get() {
-                                    network_behaviour.serialize_sync_objects(writer, initial_state);
-                                }
+                        // serialize var
+                        for item in network_behaviour.iter() {
+                            if let Some(network_behaviour) = item.get() {
+                                network_behaviour.serialize_sync_vars(writer, initial_state);
                             }
+                        }
 
-                            // serialize var
-                            for item in network_behaviour.iter() {
-                                if let Some(network_behaviour) = item.get() {
-                                    network_behaviour.serialize_sync_vars(writer, initial_state);
-                                }
+                        // on_serialize
+                        for item in network_behaviour.iter() {
+                            if let Some(network_behaviour) = item.get() {
+                                network_behaviour.on_serialize(writer, initial_state);
                             }
                         }
 

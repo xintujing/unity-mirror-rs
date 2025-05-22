@@ -16,9 +16,7 @@ pub trait NetworkBehaviourT:
 }
 
 pub trait NetworkBehaviourSerializer {
-    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) -> bool {
-        false
-    }
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool)  {}
     fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
     fn serialize_objects_all(&mut self, writer: &mut NetworkWriter) {}
     fn serialize_sync_object_delta(&mut self, writer: &mut NetworkWriter) {}
