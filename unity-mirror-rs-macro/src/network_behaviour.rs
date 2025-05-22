@@ -83,6 +83,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 收集同步对象
     let mut sync_obj_fields = Vec::new();
+    let sync_obj_count = sync_obj_fields.len();
     // 收集同步变量
     let mut sync_var_fields = Vec::new();
     // 遍历 struct 的 fields
@@ -189,14 +190,14 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
     }
 
-    // var偏移
-    ext_fields.push(parse_quote!(
-        var_start_offset: u8
-    ));
-
     // obj偏移
     ext_fields.push(parse_quote!(
         obj_start_offset: u8
+    ));
+
+    // var偏移
+    ext_fields.push(parse_quote!(
+        var_start_offset: u8
     ));
 
     // 扩展字段
@@ -234,6 +235,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     let config = metadata.get::<#metadata>();
 
                     let mut this = Self::new(metadata);
+
+                    this.obj_start_offset = *sync_object_offset;
+                    this.var_start_offset = *sync_var_offset;
+
+                    *sync_object_offset += #sync_obj_count as u8;
+                    *sync_var_offset += #sync_var_count as u8;
 
                      // 祖先弱指针
                     if let Some((arc_nb, _)) = network_behaviour_chain.first() {
