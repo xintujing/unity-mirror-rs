@@ -237,17 +237,16 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                      // 祖先弱指针
                     if let Some((arc_nb, _)) = network_behaviour_chain.first() {
-                        if let Some(ancestor) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
-                            this.ancestor = ancestor.clone();
+                        if let Some(weak_nb) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
+                            this.ancestor = weak_nb.clone();
                         }
                     }
 
                     // 父亲弱指针
                     if let Some((arc_nb, _)) = network_behaviour_chain.last() {
-                        if let Some(parent) = arc_nb.downgrade().downcast
-                        :: < # parent > ()
+                        if let Some(weak_nb) = arc_nb.downgrade().downcast::<#parent>()
                         {
-                            this.parent = parent.clone();
+                            this.parent = weak_nb.clone();
                         }
                     }
 
