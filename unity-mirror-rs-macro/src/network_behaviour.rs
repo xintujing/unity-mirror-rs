@@ -9,11 +9,13 @@ use syn::{parse_quote, Field, Fields, Path};
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
+    pub metadata: Option<Path>,
 }
 
 impl Parse for NetworkBehaviourArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut parent = None;
+        let mut metadata = None;
 
         while !input.is_empty() {
             {
@@ -25,18 +27,34 @@ impl Parse for NetworkBehaviourArgs {
                             parent = Some(path)
                         }
                     }
+                    "metadata" => {
+                        let content;
+                        syn::parenthesized!(content in input); // 捕获括号内的内容
+                        if let Ok(path) = content.parse::<Path>() {
+                            metadata = Some(path)
+                        }
+                    }
                     _ => {}
                 }
             }
             let _ = input.parse::<Comma>();
         }
 
-        Ok(NetworkBehaviourArgs { parent })
+        Ok(NetworkBehaviourArgs { parent, metadata })
     }
 }
 
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let NetworkBehaviourArgs { parent } = syn::parse_macro_input!(attr as NetworkBehaviourArgs);
+    let NetworkBehaviourArgs { parent, metadata } =
+        syn::parse_macro_input!(attr as NetworkBehaviourArgs);
+
+    if parent.is_none() {
+        panic!("`handler` attribute can only be applied to parent network behaviour");
+    }
+
+    if metadata.is_none() {
+        panic!("`handler` attribute can only be applied to metadata network behaviour");
+    }
 
     let mut item_struct = syn::parse_macro_input!(item as syn::ItemStruct);
 
@@ -205,23 +223,40 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 pub fn factory(
                     weak_game_object: crate::commons::revel_weak::RevelWeak<crate::unity_engine::GameObject>,
                     metadata: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
-                    weak_network_behaviour: &mut crate::commons::revel_weak::RevelWeak<
-                        crate::mirror::network_behaviour::NetworkBehaviour,
-                    >,
+                    weak_network_behaviour: &mut crate::commons::revel_weak::RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
                     sync_object_offset: &mut u8,
                     sync_var_offset: &mut u8,
-                ) -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::unity_engine::MonoBehaviour>>,std::any::TypeId,)> {
+                ) -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::unity_engine::MonoBehaviour>>,std::any::TypeId)> {
                     use super::NetworkBehaviour;
 
-                    let mut network_behaviour_chain = #parent::factory(
-                        weak_game_object.clone(),
-                        metadata,
-                        weak_network_behaviour,
-                        sync_object_offset,
-                        sync_var_offset,
-                    );
-                    Self::new(metadata);
-                    Vec::new()
+                    let mut network_behaviour_chain = #parent::factory(weak_game_object.clone(), metadata, weak_network_behaviour, sync_object_offset, sync_var_offset);
+
+                    // 祖先弱指针
+                    let mut weak_ancestor = crate::commons::revel_weak::RevelWeak::default();
+                    if let Some((arc_nb, _)) = network_behaviour_chain.first() {
+                        if let Some(ancestor) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
+                            weak_ancestor = ancestor.clone();
+                        }
+                    }
+
+                    // 父亲弱指针
+                    let mut weak_parent = crate::commons::revel_weak::RevelWeak::default();
+                    if let Some((arc_nb, _)) = network_behaviour_chain.last() {
+                        if let Some(parent) = arc_nb.downgrade().downcast
+                        :: < # parent > ()
+                        {
+                            weak_parent = parent.clone();
+                        }
+                    }
+
+                    let config = metadata.get::<#metadata>();
+
+                    let this = Self::new(metadata);
+                    let arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::unity_engine::MonoBehaviour>);
+
+                    network_behaviour_chain.push((arc_this, std::any::TypeId::of::<Self>()));
+
+                    network_behaviour_chain
                 }
             }
 
@@ -263,6 +298,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         }
                         writer.write_blittable::<u64>(dirty_bits);
                         #(#serialize_sync_var_ts)*
+                    }
+                }
+
+                fn clear_all_dirty_bits(&mut self) {
+                    if let Some(mut network_behaviour) = self.ancestor.get() {
+                        network_behaviour.sync_var_dirty_bits = 0;
+                        network_behaviour.sync_object_dirty_bits = 0;
                     }
                 }
             }

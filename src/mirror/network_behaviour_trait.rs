@@ -12,7 +12,6 @@ pub trait NetworkBehaviourT:
         Self: Sized;
     fn on_start_server(&mut self) {}
     fn on_stop_server(&mut self) {}
-    fn clear_all_dirty_bits(&mut self);
 }
 
 pub trait NetworkBehaviourSerializer {
@@ -21,6 +20,7 @@ pub trait NetworkBehaviourSerializer {
     fn serialize_objects_all(&mut self, writer: &mut NetworkWriter) {}
     fn serialize_sync_object_delta(&mut self, writer: &mut NetworkWriter) {}
     fn serialize_sync_vars(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
+    fn clear_all_dirty_bits(&mut self);
 }
 
 pub trait NetworkBehaviourDeserializer {

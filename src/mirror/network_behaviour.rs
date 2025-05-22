@@ -116,11 +116,6 @@ impl NetworkBehaviourT for NetworkBehaviour {
     {
         Self::default()
     }
-
-    fn clear_all_dirty_bits(&mut self) {
-        self.sync_var_dirty_bits = 0;
-        self.sync_object_dirty_bits = 0;
-    }
 }
 
 impl NetworkBehaviourSerializer for NetworkBehaviour {
@@ -131,6 +126,10 @@ impl NetworkBehaviourSerializer for NetworkBehaviour {
             writer.write_blittable::<u64>(self.sync_object_dirty_bits);
             self.serialize_sync_object_delta(writer);
         }
+    }
+    fn clear_all_dirty_bits(&mut self) {
+        self.sync_var_dirty_bits = 0;
+        self.sync_object_dirty_bits = 0;
     }
 }
 

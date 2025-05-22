@@ -4,6 +4,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
@@ -30,7 +31,7 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
 }
 
 #[namespace(prefix = "Mirror")]
-#[network_behaviour(parent(NetworkBehaviour))]
+#[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkTransformBase))]
 pub struct NetworkTransformBase {
     // pub parent: RevelWeak<Box<NetworkBehaviour>>,
     target: RevelWeak<Transform>,
@@ -82,11 +83,7 @@ impl NetworkBehaviourT for NetworkTransformBase {
     where
         Self: Sized,
     {
-        todo!()
-    }
-
-    fn clear_all_dirty_bits(&mut self) {
-        todo!()
+       Self::default()
     }
 }
 
