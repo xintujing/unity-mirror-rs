@@ -83,7 +83,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 收集同步对象
     let mut sync_obj_fields = Vec::new();
-    let sync_obj_count = sync_obj_fields.len();
     // 收集同步变量
     let mut sync_var_fields = Vec::new();
     // 遍历 struct 的 fields
@@ -102,15 +101,42 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     }
     let sync_var_count = sync_var_fields.len();
+    let sync_obj_count = sync_obj_fields.len();
 
-    // //
-    // let mut serialize_sync_objs_all_ts = Vec::new();
-    // let mut serialize_sync_objs_delta_ts = Vec::new();
-    // let mut deserialize_sync_objs_all_ts = Vec::new();
-    // let mut deserialize_sync_objs_delta_ts = Vec::new();
-    // let mut clear_sync_objs_changes_ts = Vec::new();
-    //
-    // //
+    let mut init_sync_objs = Vec::new();
+    let mut serialize_sync_objs_all_ts = Vec::new();
+    let mut serialize_sync_objs_delta_ts = Vec::new();
+    let mut deserialize_sync_objs_all_ts = Vec::new();
+    let mut deserialize_sync_objs_delta_ts = Vec::new();
+    let mut clear_sync_objs_changes_ts = Vec::new();
+
+    for (field_index, field) in sync_obj_fields.iter().enumerate() {
+        init_sync_objs.push(quote! {
+            this.#field.set_network_behaviour(this.ancestor.clone());
+            this.#field.set_index(#field_index as u8 + this.obj_start_offset);
+        });
+
+        serialize_sync_objs_all_ts.push(quote! {
+            self.#field.on_serialize_all(writer);
+        });
+
+        serialize_sync_objs_delta_ts.push(quote! {
+            self.#field.on_serialize_delta(writer);
+        });
+
+        deserialize_sync_objs_all_ts.push(quote! {
+            self.#field.on_deserialize_all(reader);
+        });
+
+        deserialize_sync_objs_delta_ts.push(quote! {
+            self.#field.on_deserialize_delta(reader);
+        });
+
+        clear_sync_objs_changes_ts.push(quote! {
+            self.#field.clear_changes();
+        });
+    }
+
     let mut serialize_sync_var_ts = Vec::new();
     let mut deserialize_sync_var_ts = Vec::new();
     let mut sync_variable_getter_setter = vec![];
@@ -232,15 +258,16 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                     let mut network_behaviour_chain = #parent::factory(weak_game_object.clone(), metadata, weak_network_behaviour, sync_object_offset, sync_var_offset);
 
-                    let config = metadata.get::<#metadata>();
-
                     let mut this = Self::new(metadata);
 
-                    this.obj_start_offset = *sync_object_offset;
-                    this.var_start_offset = *sync_var_offset;
+                    // 同步偏移
+                    {
+                        this.obj_start_offset = *sync_object_offset;
+                        this.var_start_offset = *sync_var_offset;
 
-                    *sync_object_offset += #sync_obj_count as u8;
-                    *sync_var_offset += #sync_var_count as u8;
+                        *sync_object_offset += #sync_obj_count as u8;
+                        *sync_var_offset += #sync_var_count as u8;
+                    }
 
                      // 祖先弱指针
                     if let Some((arc_nb, _)) = network_behaviour_chain.first() {
@@ -255,6 +282,17 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         {
                             this.parent = weak_nb.clone();
                         }
+                    }
+
+                    // 初始化同步对象
+                    {
+                        use crate::mirror::sync_object::SyncObject;
+                        #(#init_sync_objs)*
+                    }
+
+                    // 应用配置
+                    {
+                        let config = metadata.get::<#metadata>();
                     }
 
                     let arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::unity_engine::MonoBehaviour>);
@@ -282,11 +320,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn serialize_objects_all(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter) {
-
+                    use crate::mirror::sync_object::SyncObject;
+                    #(#serialize_sync_objs_all_ts)*
                 }
 
                 fn serialize_sync_object_delta(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter) {
-
+                    use crate::mirror::sync_object::SyncObject;
+                    #(#serialize_sync_objs_delta_ts)*
                 }
 
                 fn serialize_sync_vars(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
@@ -325,11 +365,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn deserialize_objects_all(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader) {
-
+                    use crate::mirror::sync_object::SyncObject;
+                    #(#deserialize_sync_objs_all_ts)*
                 }
 
                 fn deserialize_sync_object_delta(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader) {
-
+                    use crate::mirror::sync_object::SyncObject;
+                    #(#deserialize_sync_objs_delta_ts)*
                 }
 
                 fn deserialize_sync_vars(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {

@@ -14,3 +14,5 @@ mod network_writer_pool;
 mod snapshot_interpolation;
 mod transport;
 mod pool;
+pub mod sync_object;
+pub mod sync_list;
