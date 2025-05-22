@@ -178,14 +178,14 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 它的祖先 ancestor
     ext_fields.push(parse_quote!(
-        pub(super) ancestor: crate::commons::revel_weak::RevelWeak<NetworkBehaviour>
+        pub(super) ancestor: crate::commons::revel_weak::RevelWeak<Box<NetworkBehaviour>>
     ));
 
     // 它的父组件
     if let Some(parent_path) = &parent {
         // 父组件字段
         ext_fields.push(parse_quote! {
-            pub(super) parent: crate::commons::revel_weak::RevelWeak<#parent_path>
+            pub(super) parent: crate::commons::revel_weak::RevelWeak<Box<#parent_path>>
         });
     }
 
@@ -231,27 +231,26 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                     let mut network_behaviour_chain = #parent::factory(weak_game_object.clone(), metadata, weak_network_behaviour, sync_object_offset, sync_var_offset);
 
-                    // 祖先弱指针
-                    let mut weak_ancestor = crate::commons::revel_weak::RevelWeak::default();
+                    let config = metadata.get::<#metadata>();
+
+                    let mut this = Self::new(metadata);
+
+                     // 祖先弱指针
                     if let Some((arc_nb, _)) = network_behaviour_chain.first() {
                         if let Some(ancestor) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
-                            weak_ancestor = ancestor.clone();
+                            this.ancestor = ancestor.clone();
                         }
                     }
 
                     // 父亲弱指针
-                    let mut weak_parent = crate::commons::revel_weak::RevelWeak::default();
                     if let Some((arc_nb, _)) = network_behaviour_chain.last() {
                         if let Some(parent) = arc_nb.downgrade().downcast
                         :: < # parent > ()
                         {
-                            weak_parent = parent.clone();
+                            this.parent = parent.clone();
                         }
                     }
 
-                    let config = metadata.get::<#metadata>();
-
-                    let this = Self::new(metadata);
                     let arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::unity_engine::MonoBehaviour>);
 
                     network_behaviour_chain.push((arc_this, std::any::TypeId::of::<Self>()));
