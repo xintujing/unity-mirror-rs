@@ -3,12 +3,14 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Transform;
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro::{namespace, network_behaviour};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 #[allow(unused)]
@@ -28,8 +30,9 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
 }
 
 #[namespace(prefix = "Mirror")]
+#[network_behaviour(parent(NetworkBehaviour))]
 pub struct NetworkTransformBase {
-    pub parent: RevelWeak<Box<NetworkBehaviour>>,
+    // pub parent: RevelWeak<Box<NetworkBehaviour>>,
     target: RevelWeak<Transform>,
     pub server_snapshots: BTreeMap<OrderedFloat<f64>, TransformSnapshot>,
     pub only_sync_on_change: bool,
@@ -69,6 +72,21 @@ impl MonoBehaviour for NetworkTransformBase {
     }
     fn late_update(&mut self) {
         println!("Mirror: NetworkTransformBase LateUpdate");
+    }
+}
+
+impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
+
+impl NetworkBehaviourT for NetworkTransformBase {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+
+    fn clear_all_dirty_bits(&mut self) {
+        todo!()
     }
 }
 

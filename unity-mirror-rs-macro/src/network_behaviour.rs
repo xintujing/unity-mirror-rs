@@ -160,14 +160,14 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 它的祖先 ancestor
     ext_fields.push(parse_quote!(
-        ancestor: crate::commons::revel_weak::RevelWeak<NetworkBehaviour>
+        pub(super) ancestor: crate::commons::revel_weak::RevelWeak<NetworkBehaviour>
     ));
 
     // 它的父组件
     if let Some(parent_path) = &parent {
         // 父组件字段
         ext_fields.push(parse_quote! {
-            parent: crate::commons::revel_weak::RevelWeak<#parent_path>
+            pub(super) parent: crate::commons::revel_weak::RevelWeak<#parent_path>
         });
     }
 

@@ -5,6 +5,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
@@ -18,10 +19,9 @@ fn static_init() {
 }
 
 #[namespace(prefix = "Mirror")]
-// #[network_behaviour(parent(NetworkTransformBase))]
+#[network_behaviour(parent(NetworkTransformBase))]
 pub struct NetworkTransformUnreliable {
-    pub parent: RevelWeak<Box<NetworkTransformBase>>,
-
+    // pub parent: RevelWeak<Box<NetworkTransformBase>>,
     pub buffer_reset_multiplier: f32,
     pub position_sensitivity: f32,
     pub rotation_sensitivity: f32,
@@ -59,7 +59,7 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         let elapsed = Time::unscaled_time().elapsed();
         println!("Mirror: NetworkTransformUnreliable Update {:?}", elapsed);
 
-        let game_object = &self.parent.get().unwrap().parent.get().unwrap().game_object;
+        let game_object = &self.ancestor.get().unwrap().game_object;
 
         // let game_object = root_game_object.get().unwrap();
         let weak_game_object = game_object
@@ -89,6 +89,21 @@ impl MonoBehaviour for NetworkTransformUnreliable {
     }
 }
 
+impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {}
+
+impl NetworkBehaviourT for NetworkTransformUnreliable {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+
+    fn clear_all_dirty_bits(&mut self) {
+        todo!()
+    }
+}
+
 // impl NetworkTransformUnreliable {
 //     fn instance(
 //         weak_game_object: RevelWeak<GameObject>,
@@ -104,7 +119,7 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 //     {
 //         let (mut network_behaviour_chain, _, _, _) =
 //             NetworkTransformBase::instance(weak_game_object, metadata);
-// 
+//
 //         let mut weak_network_transform_base = RevelWeak::default();
 //         if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
 //             if let Some(wnb) = arc_network_behaviour
@@ -115,7 +130,7 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 //             }
 //         }
 //         let config = metadata.get::<MetadataNetworkTransformUnreliable>();
-// 
+//
 //         let arc_mono_behaviour = RevelArc::new(Box::new(NetworkTransformUnreliable {
 //             parent: weak_network_transform_base,
 //             buffer_reset_multiplier: config.buffer_reset_multiplier,
@@ -129,12 +144,12 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 //             cached_changed_comparison: 0,
 //             has_sent_unchanged_position: false,
 //         }) as Box<dyn MonoBehaviour>);
-// 
+//
 //         network_behaviour_chain.push((
 //             arc_mono_behaviour,
 //             TypeId::of::<NetworkTransformUnreliable>(),
 //         ));
-// 
+//
 //         (network_behaviour_chain, RevelWeak::default(), 0, 0)
 //     }
 // }
