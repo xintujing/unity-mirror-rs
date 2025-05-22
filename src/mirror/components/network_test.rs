@@ -1,6 +1,6 @@
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::MetadataNetworkAnimator;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
+use crate::mirror::network_behaviour_trait::{NetworkBehaviourSerializer, NetworkBehaviourT};
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
@@ -31,3 +31,25 @@ impl NetworkBehaviourT for NetworkTest {
 }
 
 impl NetworkTestOnChangeCallback for NetworkTest {}
+
+#[test]
+fn test_network_test() {
+    let mut network_test = NetworkTest::default();
+
+    network_test.sync_obj_01.on_change = Some(|a, b, c| {
+        println!("SyncList changed: {:?} {:?} {:?}", a, b, c);
+    });
+
+    network_test.set_sync_var_01(1.0);
+    println!("{}", network_test.get_sync_var_01());
+
+    network_test.sync_obj_01.add(1);
+    network_test.sync_obj_01.add(2);
+    network_test.sync_obj_01.iter(|x| {
+        println!("{}", x);
+    })
+
+    // let writer = &mut NetworkWriter::new();
+    // network_test.serialize_sync_vars(writer, false);
+    // println!("{:?}", writer.to_array_segment());
+}
