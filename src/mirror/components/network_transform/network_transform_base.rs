@@ -87,6 +87,7 @@ impl NetworkBehaviourT for NetworkTransformBase {
         {
             let config = metadata.get::<MetadataNetworkTransformBase>();
             // TODO
+            config.target.instance_id;
             // base.target
         }
 

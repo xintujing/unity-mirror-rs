@@ -235,7 +235,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 它的祖先 ancestor
     ext_fields.push(parse_quote!(
-        pub(super) ancestor: crate::commons::revel_weak::RevelWeak<Box<NetworkBehaviour>>
+        pub(super) ancestor: crate::commons::revel_weak::RevelWeak<Box<crate::mirror::network_behaviour::NetworkBehaviour>>
     ));
 
     // 它的父组件
@@ -284,7 +284,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     sync_object_offset: &mut u8,
                     sync_var_offset: &mut u8,
                 ) -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::unity_engine::MonoBehaviour>>,std::any::TypeId)> {
-                    use super::NetworkBehaviour;
 
                     let mut network_behaviour_chain = #parent::factory(weak_game_object.clone(), metadata, weak_network_behaviour, sync_object_offset, sync_var_offset);
 
@@ -301,7 +300,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                      // 祖先弱指针
                     if let Some((arc_nb, _)) = network_behaviour_chain.first() {
-                        if let Some(weak_nb) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
+                        if let Some(weak_nb) = arc_nb.downgrade().downcast::<crate::mirror::network_behaviour::NetworkBehaviour>() {
                             this.ancestor = weak_nb.clone();
                         }
                     }
