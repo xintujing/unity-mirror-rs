@@ -1,7 +1,11 @@
-use unity_mirror_macro::namespace;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
+use crate::commons::object::Object;
+use crate::mirror::connect::Connection;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::stable_hash::StableHash;
+use crate::mirror::transport::TransportChannel;
+use unity_mirror_macro::{namespace, MessageRegistry};
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, Copy, MessageRegistry)]
@@ -31,7 +35,7 @@ impl MessageSerializer for NetworkPongMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
+        writer.write_blittable(Self::get_full_name().hash16());
         writer.write_blittable(self.local_time);
         writer.write_blittable(self.prediction_error_unadjusted);
         writer.write_blittable(self.prediction_error_adjusted);
@@ -52,4 +56,8 @@ impl MessageDeserializer for NetworkPongMessage {
             prediction_error_adjusted,
         }
     }
+}
+
+impl OnMessageHandler for NetworkPongMessage {
+    fn handle(&self, conn: &mut Connection, channel: TransportChannel) {}
 }

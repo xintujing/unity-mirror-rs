@@ -1,9 +1,9 @@
+use crate::commons::object::Object;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
-use crate::mirror::namespace::Namespace;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use dda_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, Message)]
@@ -21,7 +21,7 @@ impl MessageSerializer for ObjectSpawnStartedMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
+        writer.write_blittable(Self::get_full_name().hash16());
     }
 }
 

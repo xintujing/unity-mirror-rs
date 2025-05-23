@@ -124,9 +124,22 @@ impl NetworkReader {
         }
     }
 
-    pub fn set_buffer(&mut self, segment: Vec<u8>) {
+    pub fn set_vec(&mut self, segment: Vec<u8>) {
         self.buffer = segment;
         self.position = 0;
+    }
+
+    pub fn set_slice(&mut self, segment: &[u8]) {
+        self.buffer = segment.to_vec();
+        self.position = 0;
+    }
+
+    pub fn to_slice(&self) -> &[u8] {
+        &self.buffer[self.position..]
+    }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.buffer[self.position..].to_vec()
     }
 
     pub fn read_blittable<T>(&mut self) -> T {
@@ -170,52 +183,18 @@ impl NetworkReader {
     pub fn read_byte(&mut self) -> u8 {
         self.read_blittable()
     }
-
-    pub fn read_bytes(&mut self, bytes: &mut Vec<u8>, count: usize) -> Result<(), Box<dyn Error>> {
-        if count > bytes.len() {
-            return Err(format!(
-                "ReadBytes can't read {} bytes because the passed byte[] only has length {}",
-                count,
-                bytes.len()
-            )
-            .into());
-        }
-
-        if self.remaining() < count {
-            return Err(format!(
-                "ReadBytes can't read {} bytes because it would read past the end of the stream. {:?}",
-                count,
-                self
-            )
-            .into());
-        }
-
-        unsafe {
-            let src = self.buffer.as_ptr().add(self.position);
-            let dst = bytes.as_mut_ptr();
-            std::ptr::copy_nonoverlapping(src, dst, count);
-        }
-
-        self.position += count;
-
-        Ok(())
-    }
-
-    pub fn read_bytes_segment(&mut self, count: usize) -> Vec<u8> {
+    pub fn read_slice(&mut self, count: usize) -> &[u8] {
         if self.remaining() < count {
             log::error!(
                 "ReadBytesSegment can't read {} bytes because it would read past the end of the stream. {}",
                 count,
                 self
             );
-            return vec![];
+            return &[];
         }
-
-        let bytes_segment = self.buffer[self.position..self.position + count].to_vec();
         self.position += count;
-        bytes_segment
+        &self.buffer[self.position..self.position + count]
     }
-
     pub fn read_string(&mut self) -> String {
         let size = self.read_blittable::<u16>();
         if size == 0 {
@@ -232,13 +211,19 @@ impl NetworkReader {
             return "".to_string();
         }
 
-        let bytes_segment = self.read_bytes_segment(real_size as usize);
-        String::from_utf8(bytes_segment).unwrap_or_else(|err| {
+        let bytes_segment = self.read_slice(real_size as usize);
+        String::from_utf8(bytes_segment.to_vec()).unwrap_or_else(|err| {
             log::error!("NetworkReader.ReadString - Invalid UTF8: {}", err);
             "".to_string()
         })
     }
-
+    pub fn read_slice_and_size(&mut self) -> &[u8] {
+        let count: u32 = self.read_blittable_compress();
+        if count == 0 {
+            return &[];
+        }
+        self.read_slice(count as usize - 1)
+    }
     pub fn remaining(&self) -> usize {
         self.buffer.len() - self.position
     }

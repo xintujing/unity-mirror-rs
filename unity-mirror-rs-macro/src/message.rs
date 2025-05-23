@@ -22,12 +22,12 @@ pub(crate) fn message_registry_handler(input: TokenStream) -> TokenStream {
         #[ctor::ctor]
         fn #register_ident() {
             crate::mirror::messages::message::register_messages::<#struct_ident>();
-            use crate::mirror::namespace::Namespace;
+            use crate::commons::object::Object;
             use crate::mirror::stable_hash::StableHash;
             use colored::Colorize;
             log::info!("{} Registered for [{}] {} {}",
                 "[Message]".bright_cyan().to_string(),
-                #struct_ident::get_full_path().hash16(), stringify!(#struct_ident), #struct_ident::get_full_path());
+                #struct_ident::get_full_name().hash16(), stringify!(#struct_ident), #struct_ident::get_full_name());
 
         }
     };
@@ -36,11 +36,11 @@ pub(crate) fn message_registry_handler(input: TokenStream) -> TokenStream {
 
 pub(crate) fn message_handler(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    let name = &input.ident;
+    let struct_ident = &input.ident;
 
     let output = quote! {
 
-        impl crate::mirror::messages::message::Message for #name {
+        impl crate::mirror::messages::message::Message for #struct_ident {
 
         }
     };

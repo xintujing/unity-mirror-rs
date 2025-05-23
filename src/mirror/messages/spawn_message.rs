@@ -1,13 +1,11 @@
 #![allow(dead_code)]
-use crate::mirror::messages::message::{
-    MessageDeserializer, MessageSerializer, OnMessageHandler,
-};
-use crate::mirror::namespace::Namespace;
+use crate::commons::object::Object;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use dda_macro::{namespace, Message};
 use nalgebra::{Quaternion, Vector3};
+use unity_mirror_macro::{namespace, Message};
 
 #[derive(Clone, Debug, Default, PartialEq, Copy)]
 #[repr(u8)]
@@ -95,15 +93,15 @@ impl MessageSerializer for SpawnMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
-        writer.write_var_uint(self.net_id);
+        writer.write_blittable(Self::get_full_name().hash16());
+        writer.write_blittable_compress(self.net_id);
         writer.write_blittable(self.authority_flags);
-        writer.write_var_ulong(self.scene_id);
-        writer.write_var_uint(self.asset_id);
+        writer.write_blittable_compress(self.scene_id);
+        writer.write_blittable_compress(self.asset_id);
         writer.write_blittable(self.position);
         writer.write_blittable(self.rotation);
         writer.write_blittable(self.scale);
-        writer.write_array_segment_and_size(self.payload.as_slice());
+        writer.write_slice_and_size(self.payload.as_slice());
     }
 }
 
@@ -112,14 +110,14 @@ impl MessageDeserializer for SpawnMessage {
     where
         Self: Sized,
     {
-        let net_id = reader.read_var_uint();
+        let net_id = reader.read_blittable_compress();
         let authority_flags = reader.read_blittable();
-        let scene_id = reader.read_var_ulong();
-        let asset_id = reader.read_var_uint();
+        let scene_id = reader.read_blittable_compress();
+        let asset_id = reader.read_blittable_compress();
         let position = reader.read_blittable();
         let rotation = reader.read_blittable();
         let scale = reader.read_blittable();
-        let payload = reader.read_bytes_and_size();
+        let payload = reader.read_slice_and_size();
         Self {
             net_id,
             authority_flags,
@@ -128,7 +126,7 @@ impl MessageDeserializer for SpawnMessage {
             position,
             rotation,
             scale,
-            payload,
+            payload: payload.to_vec(),
         }
     }
 }

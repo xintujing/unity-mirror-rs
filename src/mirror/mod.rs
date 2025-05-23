@@ -6,7 +6,7 @@ mod network_identity;
 pub use network_identity::*;
 
 pub mod components;
-// mod messages;
+mod messages;
 mod network_behaviour_factory;
 mod network_reader;
 mod network_reader_pool;
@@ -17,3 +17,5 @@ mod snapshot_interpolation;
 pub mod sync_list;
 pub mod sync_object;
 pub mod transport;
+mod stable_hash;
+mod connect;

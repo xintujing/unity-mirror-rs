@@ -1,9 +1,11 @@
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
-use crate::mirror::namespace::Namespace;
+use crate::commons::object::Object;
+use crate::mirror::connect::Connection;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use dda_macro::{namespace, MessageRegistry};
+use crate::mirror::transport::TransportChannel;
+use unity_mirror_macro::{namespace, MessageRegistry};
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Copy, Default, MessageRegistry)]
@@ -21,7 +23,7 @@ impl MessageSerializer for TimeSnapshotMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
+        writer.write_blittable(Self::get_full_name().hash16());
     }
 }
 
@@ -32,4 +34,8 @@ impl MessageDeserializer for TimeSnapshotMessage {
     {
         Self
     }
+}
+
+impl OnMessageHandler for TimeSnapshotMessage {
+    fn handle(&self, conn: &mut Connection, channel: TransportChannel) {}
 }

@@ -117,11 +117,11 @@ impl NetworkWriter {
             self.buffer.resize(capacity, 0);
         }
     }
-    pub fn to_array(&self) -> &[u8] {
+    pub fn to_slice(&self) -> &[u8] {
         &self.buffer[0..self.position]
     }
 
-    pub fn to_array_segment(&self) -> Vec<u8> {
+    pub fn to_vec(&self) -> Vec<u8> {
         self.buffer[0..self.position].to_vec()
     }
 
@@ -152,7 +152,7 @@ impl NetworkWriter {
         self.write_blittable(value)
     }
 
-    pub fn write_bytes(&mut self, value: &[u8], offset: usize, count: usize) {
+    pub fn write_slice(&mut self, value: &[u8], offset: usize, count: usize) {
         self.ensure_capacity(self.position + count);
         unsafe {
             std::ptr::copy_nonoverlapping(
@@ -168,7 +168,7 @@ impl NetworkWriter {
         self.buffer.len()
     }
 
-    pub fn write_string(&mut self, value: &str) {
+    pub fn write_str(&mut self, value: &str) {
         if value.is_empty() {
             self.write_blittable(0u16);
             return;
@@ -196,6 +196,15 @@ impl NetworkWriter {
             self.write_blittable((written + 1) as u16);
             self.position += 2 + written;
         }
+    }
+    pub fn write_slice_and_size(&mut self, value: &[u8]) {
+        let count = value.len();
+        if count == 0 {
+            self.write_blittable_compress(0);
+            return;
+        }
+        self.write_blittable_compress(1 + count as u64);
+        self.write_slice(value, 0, count);
     }
 }
 
@@ -230,7 +239,7 @@ macro_rules! data_type_serialize {
 
 data_type_serialize!((i32, u32, i64, u64), |value, writer| writer
     .write_blittable_compress(*value));
-data_type_serialize!((String), |value, writer| writer.write_string(&value));
+data_type_serialize!((String), |value, writer| writer.write_str(&value));
 data_type_serialize!(
     (
         i8,

@@ -1,11 +1,9 @@
-use crate::mirror::messages::message::{
-    MessageDeserializer, MessageSerializer, OnMessageHandler,
-};
-use crate::mirror::namespace::Namespace;
+use crate::commons::object::Object;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use dda_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, Message)]
@@ -25,8 +23,8 @@ impl MessageSerializer for ObjectHideMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
-        writer.write_var_uint(self.net_id);
+        writer.write_blittable(Self::get_full_name().hash16());
+        writer.write_blittable_compress(self.net_id);
     }
 }
 
@@ -35,7 +33,7 @@ impl MessageDeserializer for ObjectHideMessage {
     where
         Self: Sized,
     {
-        let net_id = reader.read_var_uint();
+        let net_id = reader.read_blittable_compress();
         Self { net_id }
     }
 }

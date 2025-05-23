@@ -174,6 +174,12 @@ pub fn message_registry(input: TokenStream) -> TokenStream {
     message::message_registry_handler(input)
 }
 
+#[proc_macro_derive(Message)]
+pub fn message(input: TokenStream) -> TokenStream {
+    message::message_handler(input)
+}
+
+
 #[proc_macro_derive(CallbackProcessor)]
 pub fn callback_processor(input: TokenStream) -> TokenStream {
     callback_processor::callback_processor_handler(input)

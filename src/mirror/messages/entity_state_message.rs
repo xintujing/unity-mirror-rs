@@ -1,8 +1,11 @@
-use unity_mirror_macro::namespace;
+use crate::commons::object::Object;
+use crate::mirror::connect::Connection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
+use unity_mirror_macro::{namespace, MessageRegistry};
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
@@ -28,9 +31,9 @@ impl MessageSerializer for EntityStateMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
-        writer.write_var_uint(self.net_id);
-        writer.write_array_segment_and_size(self.payload.as_slice());
+        writer.write_blittable(Self::get_full_name().hash16());
+        writer.write_blittable_compress(self.net_id);
+        writer.write_slice_and_size(self.payload.as_slice());
     }
 }
 
@@ -39,16 +42,19 @@ impl MessageDeserializer for EntityStateMessage {
     where
         Self: Sized,
     {
-        let net_id = reader.read_var_uint();
-        let payload = reader.read_bytes_and_size();
-        Self { net_id, payload }
+        let net_id = reader.read_blittable_compress();
+        let payload = reader.read_slice_and_size();
+        Self {
+            net_id,
+            payload: payload.to_vec(),
+        }
     }
 }
 
 #[allow(unused)]
 impl OnMessageHandler for EntityStateMessage {
-    fn handle(&self, connection: &ArcUc<Connection>, channel: TransportChannel) {
-        println!("EntityStateMessage::handle");
-        NetworkServer::on_entity_state_message(self, connection)
+    fn handle(&self, uc_conn: &mut Connection, channel: TransportChannel) {
+        // println!("EntityStateMessage::handle");
+        // NetworkServer::on_entity_state_message(self, connection)
     }
 }

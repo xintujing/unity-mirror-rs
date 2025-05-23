@@ -45,7 +45,7 @@ impl NetworkReaderPool {
         if let Ok(mut pool) = NETWORK_READER_POOL.lock() {
             let mut reader = pool.get();
             reader.reset();
-            reader.set_buffer(bytes);
+            reader.set_vec(bytes);
             reader
         } else {
             println!("NetworkReaderPool::get_with_bytes() failed to lock NETWORK_READER_POOL");
@@ -66,7 +66,7 @@ impl NetworkReaderPool {
         if let Ok(mut pool) = NETWORK_READER_POOL.lock() {
             let mut reader = pool.get();
             reader.reset();
-            reader.set_buffer(array_segment.to_vec());
+            reader.set_vec(array_segment.to_vec());
             reader
         } else {
             println!(

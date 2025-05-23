@@ -1,9 +1,11 @@
+use crate::commons::object::Object;
+use crate::mirror::connect::Connection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
-use crate::commons::object::Object;
 
 pub trait MessageSerializer {
     fn serialize(&mut self, writer: &mut NetworkWriter)
@@ -18,12 +20,17 @@ pub trait MessageDeserializer {
 
 #[allow(unused)]
 pub trait OnMessageHandler {
-    fn handle(&self, connection: &ArcUc<Connection>, channel: TransportChannel) {}
+    fn handle(&self, conn: &mut Connection, channel: TransportChannel) {}
 }
 
-pub trait Message: Object + Default + MessageSerializer + MessageDeserializer + OnMessageHandler {}
+pub trait Message:
+    Object + Default + MessageSerializer + MessageDeserializer + OnMessageHandler
+{
+}
 
-static mut ON_MESSAGE_HANDLER_REGISTERS: Lazy<HashMap<u16, fn(&ArcUc<Connection>, &mut NetworkReader, TransportChannel)>> = Lazy::new(|| HashMap::new());
+static mut ON_MESSAGE_HANDLER_REGISTERS: Lazy<
+    HashMap<u16, fn(&mut Connection, &mut NetworkReader, TransportChannel)>,
+> = Lazy::new(|| HashMap::new());
 
 pub fn register_messages<M>()
 where
@@ -55,7 +62,7 @@ where
 }
 
 pub fn unpack_message(
-    uc_conn: &ArcUc<Connection>,
+    conn: &mut Connection,
     reader: &mut NetworkReader,
     channel: TransportChannel,
 ) -> bool {
@@ -64,10 +71,13 @@ pub fn unpack_message(
 
     #[allow(static_mut_refs)]
     if let Some(f) = unsafe { ON_MESSAGE_HANDLER_REGISTERS.get(&message_id) } {
-        f(uc_conn, reader, channel);
+        f(conn, reader, channel);
         return true;
     }
-    log::error!("ON_MESSAGE_HANDLER_REGISTERS not found `message_id: {:02X}",message_id);
+    log::error!(
+        "ON_MESSAGE_HANDLER_REGISTERS not found `message_id: {:02X}",
+        message_id
+    );
     false
 }
 

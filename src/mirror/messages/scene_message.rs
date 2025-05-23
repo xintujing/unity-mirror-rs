@@ -1,11 +1,9 @@
-use crate::mirror::messages::message::{
-    MessageDeserializer, MessageSerializer, OnMessageHandler,
-};
-use crate::mirror::namespace::Namespace;
+use crate::commons::object::Object;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use dda_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, Message};
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 #[repr(u8)]
@@ -57,7 +55,7 @@ impl MessageSerializer for SceneMessage {
     where
         Self: Sized,
     {
-        writer.write_blittable(Self::get_full_path().hash16());
+        writer.write_blittable(Self::get_full_name().hash16());
         writer.write_str(self.scene_name.as_str());
         writer.write_blittable(self.operation.to_u8());
         writer.write_blittable(self.custom_handling);

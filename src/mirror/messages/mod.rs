@@ -1,4 +1,3 @@
-
 pub mod add_player_message;
 pub mod change_owner_message;
 pub mod command_message;

@@ -111,10 +111,10 @@ impl NetworkIdentity {
                             }
                         }
                         if owner_dirty {
-                            owner_writer.write_bytes(writer.to_array(), 0, writer.position);
+                            owner_writer.write_slice(writer.to_slice(), 0, writer.position);
                         }
                         if observers_dirty {
-                            observers_writer.write_bytes(writer.to_array(), 0, writer.position);
+                            observers_writer.write_slice(writer.to_slice(), 0, writer.position);
                         }
                     });
 

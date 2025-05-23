@@ -1,9 +1,11 @@
-use unity_mirror_macro::namespace;
 use crate::commons::object::Object;
+use crate::mirror::connect::Connection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
+use unity_mirror_macro::{namespace, MessageRegistry};
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
@@ -36,7 +38,7 @@ impl MessageDeserializer for AddPlayerMessage {
 }
 
 impl OnMessageHandler for AddPlayerMessage {
-    fn handle(&self, uc_conn: &ArcUc<Connection>, _: TransportChannel) {
-        NetworkManager::on_server_add_player_internal(uc_conn, self);
+    fn handle(&self, conn: &mut Connection, _: TransportChannel) {
+        // NetworkManager::on_server_add_player_internal(uc_conn, self);
     }
 }
