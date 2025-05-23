@@ -1,6 +1,5 @@
 use crate::commons::revel_weak::RevelWeak;
 use crate::unity_engine::MonoBehaviour;
-use std::any::TypeId;
 use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};

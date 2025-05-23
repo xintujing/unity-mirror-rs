@@ -1,7 +1,7 @@
 use crate::commons::to_hex_string::ToHexString;
 use std::fmt::{Display, Formatter};
 
-trait WriteCompress {
+pub trait WriteCompress {
     fn compress(&self, writer: &mut NetworkWriter);
 }
 impl WriteCompress for i32 {

@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use std::sync::atomic::Ordering::SeqCst;
-use std::sync::atomic::{AtomicU16, AtomicU64, AtomicU8};
+use std::sync::atomic::{AtomicU16, AtomicU64};
 use std::time::{Duration, Instant};
 
 static mut START_INSTANT: Lazy<Option<Instant>> = Lazy::new(|| None); // 游戏开始时的时间

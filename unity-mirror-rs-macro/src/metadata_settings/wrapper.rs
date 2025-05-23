@@ -12,7 +12,7 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
     let struct_ident = &input.ident;
 
     // snake_case struct name
-    let register_ident = format_ident!("__{}_register", struct_ident.to_string().to_snake_case());
+    // let register_ident = format_ident!("__{}_register", struct_ident.to_string().to_snake_case());
 
     // struct wrapper name
     let wrapper_struct_ident = format_ident!("{}Wrapper", struct_ident);

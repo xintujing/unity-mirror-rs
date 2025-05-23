@@ -3,7 +3,7 @@ use crate::mirror::network_writer::NetworkWriter;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-trait ReadCompress {
+pub trait ReadCompress {
     fn decompress(reader: &mut NetworkReader) -> Self
     where
         Self: Sized;
