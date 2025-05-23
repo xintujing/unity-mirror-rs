@@ -347,10 +347,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn clear_all_dirty_bits(&mut self) {
-                    if let Some(mut network_behaviour) = self.ancestor.get() {
-                        // network_behaviour.last_sync_time = crate::unity_engine::Time::time();
-                        network_behaviour.sync_var_dirty_bits = 0;
-                        network_behaviour.sync_object_dirty_bits = 0;
+                    if let Some(mut parent) = self.parent.get() {
+                        parent.clear_all_dirty_bits();
                     }
                     #(#clear_sync_objs_changes_ts)*
                 }
