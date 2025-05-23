@@ -44,7 +44,7 @@ fn static_init() {
 pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
-    network_behaviours: Vec<Vec<RevelWeak<Box<dyn network_behaviour_trait::NetworkBehaviourT>>>>,
+    network_behaviours: Vec<Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>>,
 }
 
 impl MonoBehaviour for NetworkIdentity {
