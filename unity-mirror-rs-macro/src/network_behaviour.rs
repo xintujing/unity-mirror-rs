@@ -266,7 +266,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 pub fn factory(
                     weak_game_object: crate::commons::revel_weak::RevelWeak<crate::unity_engine::GameObject>,
                     metadata: &crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper,
-                    weak_network_behaviour: &mut crate::commons::revel_weak::RevelWeak<crate::mirror::network_behaviour::NetworkBehaviour>,
+                    weak_network_behaviour: &mut crate::commons::revel_weak::RevelWeak<Box<crate::mirror::network_behaviour::NetworkBehaviour>>,
                     sync_object_offset: &mut u8,
                     sync_var_offset: &mut u8,
                 ) -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::unity_engine::MonoBehaviour>>,std::any::TypeId)> {

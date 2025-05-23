@@ -14,7 +14,7 @@ static mut NETWORK_BEHAVIOUR_FACTORY: Lazy<
             weak_game_object: RevelWeak<GameObject>,
             metadata: &MetadataNetworkBehaviourWrapper,
             weak_network_behaviour: &mut RevelWeak<
-                crate::mirror::network_behaviour::NetworkBehaviour,
+                Box<crate::mirror::network_behaviour::NetworkBehaviour>,
             >,
             sync_object_offset: &mut u8,
             sync_var_offset: &mut u8,
@@ -29,7 +29,7 @@ impl NetworkBehaviourFactory {
             weak_game_object: RevelWeak<GameObject>,
             metadata: &MetadataNetworkBehaviourWrapper,
             weak_network_behaviour: &mut RevelWeak<
-                crate::mirror::network_behaviour::NetworkBehaviour,
+                Box<crate::mirror::network_behaviour::NetworkBehaviour>,
             >,
             sync_object_offset: &mut u8,
             sync_var_offset: &mut u8,

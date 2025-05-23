@@ -78,29 +78,34 @@ impl NetworkBehaviour {
     pub fn factory(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
-        weak_network_behaviour: &mut RevelWeak<NetworkBehaviour>,
-        sync_object_offset: &mut u8,
-        sync_var_offset: &mut u8,
+        weak_network_behaviour: &mut RevelWeak<Box<NetworkBehaviour>>,
+        _: &mut u8,
+        _: &mut u8,
     ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
-        let config = metadata.get::<MetadataNetworkBehaviour>();
+        let mut network_behaviour = Self::new(metadata);
 
-        let arc_network_behaviour = RevelArc::new(Box::new(NetworkBehaviour {
-            sync_direction: config.sync_direction.clone().into(),
-            sync_mode: config.sync_mode.clone().into(),
-            sync_interval: config.sync_interval,
-            last_sync_time: 0.0,
-            net_id: 0,
-            component_index: 0,
-            network_identity: RevelWeak::default(),
-            game_object: weak_game_object.clone(),
-            transform: weak_game_object.get().unwrap().transform.downgrade(),
-            sync_var_dirty_bits: 0,
-            sync_object_dirty_bits: 0,
-        }) as Box<dyn MonoBehaviour>);
+        {
+            let config = metadata.get::<MetadataNetworkBehaviour>();
+            network_behaviour.sync_direction = config.sync_direction.clone().into();
+            network_behaviour.sync_mode = config.sync_mode.clone().into();
+            network_behaviour.sync_interval = config.sync_interval;
+            network_behaviour.game_object = weak_game_object.clone();
+            if let Some(game_object) = weak_game_object.get() {
+                network_behaviour.transform = game_object.transform.downgrade();
+            }
+        }
 
-        // *weak_network_behaviour = arc_network_behaviour.downgrade();
+        let arc_box_network_behaviour =
+            RevelArc::new(Box::new(network_behaviour) as Box<dyn MonoBehaviour>);
 
-        vec![(arc_network_behaviour, TypeId::of::<NetworkBehaviour>())]
+        if let Some(value) = arc_box_network_behaviour
+            .downgrade()
+            .downcast::<NetworkBehaviour>()
+        {
+            *weak_network_behaviour = value.clone();
+        }
+
+        vec![(arc_box_network_behaviour, TypeId::of::<NetworkBehaviour>())]
     }
 }
 
@@ -111,7 +116,7 @@ impl MonoBehaviour for NetworkBehaviour {
 }
 
 impl NetworkBehaviourT for NetworkBehaviour {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(_: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
