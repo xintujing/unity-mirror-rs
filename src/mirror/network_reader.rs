@@ -1,3 +1,4 @@
+#![allow(unused)]
 use crate::commons::to_hex_string::ToHexString;
 use crate::mirror::network_writer::NetworkWriter;
 use std::error::Error;
