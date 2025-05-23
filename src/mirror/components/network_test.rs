@@ -3,7 +3,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::network_behaviour_trait::{NetworkBehaviourSerializer, NetworkBehaviourT};
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
-use crate::unity_engine::{GameObject, MonoBehaviour};
+use crate::unity_engine::MonoBehaviour;
 use unity_mirror_macro::{namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
@@ -42,7 +42,7 @@ impl NetworkBehaviourT for NetworkTest {
         }
 
         test.set_sync_var_01(888.0);
-        
+
         test
     }
 }
