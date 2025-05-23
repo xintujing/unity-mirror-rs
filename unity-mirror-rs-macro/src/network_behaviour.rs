@@ -10,14 +10,14 @@ use syn::{parse_quote, Field, Fields, Path};
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
     pub metadata: Option<Path>,
-    pub impl_nos: bool,
+    pub not_impl_nos: bool,
 }
 
 impl Parse for NetworkBehaviourArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut parent = None;
         let mut metadata = None;
-        let mut inos = true;
+        let mut not_impl_nos = false;
 
         while !input.is_empty() {
             {
@@ -36,12 +36,8 @@ impl Parse for NetworkBehaviourArgs {
                             metadata = Some(path)
                         }
                     }
-                    "inos" => {
-                        let content;
-                        syn::parenthesized!(content in input); // 捕获括号内的内容
-                        if let Ok(value) = content.parse::<Ident>() {
-                            inos = value.to_string().to_lowercase() == "true"
-                        }
+                    "not_impl_nos" => {
+                        not_impl_nos = true;
                     }
                     _ => {}
                 }
@@ -52,7 +48,7 @@ impl Parse for NetworkBehaviourArgs {
         Ok(NetworkBehaviourArgs {
             parent,
             metadata,
-            impl_nos: inos,
+            not_impl_nos,
         })
     }
 }
@@ -61,7 +57,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let NetworkBehaviourArgs {
         parent,
         metadata,
-        impl_nos,
+        not_impl_nos,
     } = syn::parse_macro_input!(attr as NetworkBehaviourArgs);
 
     if parent.is_none() {
@@ -96,6 +92,24 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     item_struct.attrs.push(parse_quote!(
         #[derive(Default, Debug, unity_mirror_macro::SyncState)]
     ));
+
+    let mut on_serialize_ts = Vec::new();
+    if !not_impl_nos {
+        on_serialize_ts.push(quote! {
+            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+            impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+                fn on_serialize(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
+                    if let Some(mut parent) = self.parent.get() {
+                        use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
+                        parent.on_serialize(writer, initial_state);
+                    }
+                    use crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer;
+                    self.serialize_sync_objects(writer, initial_state);
+                    self.serialize_sync_vars(writer, initial_state);
+                }
+            }
+        });
+    }
 
     // 收集同步对象
     let mut sync_obj_fields = Vec::new();
@@ -325,18 +339,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<#struct_ident>(#struct_ident::factory);
             }
 
-             // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
-             impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
-                fn on_serialize(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
-                    if let Some(mut parent) = self.parent.get() {
-                        use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
-                        parent.on_serialize(writer, initial_state);
-                    }
-                    use crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer;
-                    self.serialize_sync_objects(writer, initial_state);
-                    self.serialize_sync_vars(writer, initial_state);
-                }
-             }
+            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+            #(#on_serialize_ts)*
 
             // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
             impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
@@ -441,17 +445,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         // impl crate::mirror::network_behaviour_trait::BaseNetworkBehaviourT for #struct_ident {
         impl crate::mirror::network_behaviour_trait::BaseNetworkBehaviourT for #struct_ident {
         }
-
-        // impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance for #struct_ident {
-        //     fn instance(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> (Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>, RevelWeak<crate::mirror::NetworkBehaviour>, u8, u8)
-        //     where
-        //         Self: Sized
-        //     {
-        //         todo!()
-        //     }
-        // }
-
-        // #namespace_slot
 
     })
 }
