@@ -139,9 +139,9 @@ impl NetworkIdentity {
                     });
 
                     if !initial_state {
-                        if let Some(item) = network_behaviour.get(0) {
+                        for item in network_behaviour.iter() {
                             if let Some(network_behaviour) = item.get() {
-                                network_behaviour.clear_all_dirty_bits()
+                                network_behaviour.clear_all_dirty_bits();
                             }
                         }
                     }
