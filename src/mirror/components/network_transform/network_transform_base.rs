@@ -33,8 +33,7 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkTransformBase))]
 pub struct NetworkTransformBase {
-    // pub parent: RevelWeak<Box<NetworkBehaviour>>,
-    target: RevelWeak<Transform>,
+    pub target: RevelWeak<Transform>,
     pub server_snapshots: BTreeMap<OrderedFloat<f64>, TransformSnapshot>,
     pub only_sync_on_change: bool,
     pub coordinate_space: CoordinateSpace,
@@ -83,6 +82,14 @@ impl NetworkBehaviourT for NetworkTransformBase {
     where
         Self: Sized,
     {
-        Self::default()
+        let mut base = Self::default();
+
+        {
+            let config = metadata.get::<MetadataNetworkTransformBase>();
+            // TODO
+            // base.target
+        }
+
+        base
     }
 }
