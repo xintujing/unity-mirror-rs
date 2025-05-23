@@ -2,7 +2,8 @@
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::MetadataNetworkAnimator;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourOnSerializer, NetworkBehaviourSerializer, NetworkBehaviourT,
+    NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, NetworkBehaviourSerializer,
+    NetworkBehaviourT,
 };
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
@@ -57,6 +58,7 @@ impl NetworkBehaviourT for NetworkTest {
 impl NetworkTestOnChangeCallback for NetworkTest {}
 
 impl NetworkBehaviourOnSerializer for NetworkTest {}
+impl NetworkBehaviourOnDeserializer for NetworkTest {}
 
 #[test]
 fn test_network_test() {

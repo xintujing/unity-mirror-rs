@@ -5,8 +5,8 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataSyncMode,
 };
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourDeserializer, NetworkBehaviourOnSerializer, NetworkBehaviourSerializer,
-    NetworkBehaviourT,
+    NetworkBehaviourDeserializer, NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer,
+    NetworkBehaviourSerializer, NetworkBehaviourT,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -124,7 +124,12 @@ impl NetworkBehaviourT for NetworkBehaviour {
     }
 }
 
-impl NetworkBehaviourOnSerializer for NetworkBehaviour {}
+impl NetworkBehaviourOnSerializer for NetworkBehaviour {
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
+        self.serialize_sync_objects(writer, initial_state);
+        self.serialize_sync_vars(writer, initial_state);
+    }
+}
 
 impl NetworkBehaviourSerializer for NetworkBehaviour {
     fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
@@ -138,6 +143,13 @@ impl NetworkBehaviourSerializer for NetworkBehaviour {
     fn clear_all_dirty_bits(&mut self) {
         self.sync_var_dirty_bits = 0;
         self.sync_object_dirty_bits = 0;
+    }
+}
+
+impl NetworkBehaviourOnDeserializer for NetworkBehaviour {
+    fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
+        self.deserialize_sync_objects(reader, initial_state);
+        self.deserialize_sync_vars(reader, initial_state);
     }
 }
 

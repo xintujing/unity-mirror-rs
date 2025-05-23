@@ -25,8 +25,11 @@ pub trait NetworkBehaviourSerializer: NetworkBehaviourOnSerializer {
     fn clear_all_dirty_bits(&mut self);
 }
 
-pub trait NetworkBehaviourDeserializer {
+pub trait NetworkBehaviourOnDeserializer {
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
+}
+
+pub trait NetworkBehaviourDeserializer: NetworkBehaviourOnDeserializer {
     fn deserialize_sync_objects(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
     fn deserialize_objects_all(&mut self, reader: &mut NetworkReader) {}
     fn deserialize_sync_object_delta(&mut self, reader: &mut NetworkReader) {}

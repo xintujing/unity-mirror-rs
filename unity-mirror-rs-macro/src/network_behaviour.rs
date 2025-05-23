@@ -108,6 +108,20 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     self.serialize_sync_vars(writer, initial_state);
                 }
             }
+
+            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer for #struct_ident
+            impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer for #struct_ident {
+                fn on_deserialize(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {
+                    if let Some(mut parent) = self.parent.get() {
+                        use crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer;
+                        parent.on_deserialize(reader, initial_state);
+                    }
+                    use crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer;
+                    self.deserialize_sync_objects(reader, initial_state);
+                    self.deserialize_sync_vars(reader, initial_state);
+                }
+            }
+
         });
     }
 
