@@ -10,12 +10,14 @@ use syn::{parse_quote, Field, Fields, Path};
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
     pub metadata: Option<Path>,
+    pub impl_nos: bool,
 }
 
 impl Parse for NetworkBehaviourArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut parent = None;
         let mut metadata = None;
+        let mut inos = true;
 
         while !input.is_empty() {
             {
@@ -34,19 +36,33 @@ impl Parse for NetworkBehaviourArgs {
                             metadata = Some(path)
                         }
                     }
+                    "inos" => {
+                        let content;
+                        syn::parenthesized!(content in input); // 捕获括号内的内容
+                        if let Ok(value) = content.parse::<Ident>() {
+                            inos = value.to_string().to_lowercase() == "true"
+                        }
+                    }
                     _ => {}
                 }
             }
             let _ = input.parse::<Comma>();
         }
 
-        Ok(NetworkBehaviourArgs { parent, metadata })
+        Ok(NetworkBehaviourArgs {
+            parent,
+            metadata,
+            impl_nos: inos,
+        })
     }
 }
 
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let NetworkBehaviourArgs { parent, metadata } =
-        syn::parse_macro_input!(attr as NetworkBehaviourArgs);
+    let NetworkBehaviourArgs {
+        parent,
+        metadata,
+        impl_nos,
+    } = syn::parse_macro_input!(attr as NetworkBehaviourArgs);
 
     if parent.is_none() {
         panic!("`handler` attribute can only be applied to parent network behaviour");
@@ -308,6 +324,19 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             fn static_init() {
                 crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<#struct_ident>(#struct_ident::factory);
             }
+
+             // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+             impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+                fn on_serialize(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
+                    if let Some(mut parent) = self.parent.get() {
+                        use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
+                        parent.on_serialize(writer, initial_state);
+                    }
+                    use crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer;
+                    self.serialize_sync_objects(writer, initial_state);
+                    self.serialize_sync_vars(writer, initial_state);
+                }
+             }
 
             // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
             impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {

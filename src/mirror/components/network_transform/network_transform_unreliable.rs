@@ -6,7 +6,6 @@ use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Time;
-use std::collections::HashMap;
 use unity_mirror_macro::{namespace, network_behaviour};
 
 #[ctor::ctor]

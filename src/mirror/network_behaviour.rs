@@ -5,7 +5,8 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataSyncMode,
 };
 use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourDeserializer, NetworkBehaviourSerializer, NetworkBehaviourT,
+    NetworkBehaviourDeserializer, NetworkBehaviourOnSerializer, NetworkBehaviourSerializer,
+    NetworkBehaviourT,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -117,6 +118,8 @@ impl NetworkBehaviourT for NetworkBehaviour {
         Self::default()
     }
 }
+
+impl NetworkBehaviourOnSerializer for NetworkBehaviour {}
 
 impl NetworkBehaviourSerializer for NetworkBehaviour {
     fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {

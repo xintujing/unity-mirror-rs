@@ -13,9 +13,10 @@ pub trait NetworkBehaviourT:
     fn on_start_server(&mut self) {}
     fn on_stop_server(&mut self) {}
 }
-
-pub trait NetworkBehaviourSerializer {
-    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool)  {}
+pub trait NetworkBehaviourOnSerializer {
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
+}
+pub trait NetworkBehaviourSerializer: NetworkBehaviourOnSerializer {
     fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
     fn serialize_objects_all(&mut self, writer: &mut NetworkWriter) {}
     fn serialize_sync_object_delta(&mut self, writer: &mut NetworkWriter) {}

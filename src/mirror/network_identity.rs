@@ -1,16 +1,11 @@
-use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::mirror::network_behaviour_trait;
-use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourDeserializer, NetworkBehaviourSerializer, NetworkBehaviourT,
-};
+use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
 use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
+use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
@@ -101,7 +96,7 @@ impl NetworkIdentity {
         }
 
         if (owner_mask | observer_mask) != 0 {
-            for (network_behaviour_i, network_behaviour) in
+            for (network_behaviour_i, network_behaviour_chain) in
                 self.network_behaviours.iter().enumerate()
             {
                 let owner_dirty = self.is_dirty(owner_mask, network_behaviour_i as u8);
@@ -109,27 +104,12 @@ impl NetworkIdentity {
 
                 if owner_dirty || observers_dirty {
                     NetworkWriterPool::get_return(|writer| {
-                        // serialize obj
-                        for item in network_behaviour.iter() {
-                            if let Some(network_behaviour) = item.get() {
-                                network_behaviour.serialize_sync_objects(writer, initial_state);
+                        // serialize
+                        if let Some(last) = network_behaviour_chain.last() {
+                            if let Some(comp) = last.get() {
+                                comp.on_serialize(writer, initial_state);
                             }
                         }
-
-                        // serialize var
-                        for item in network_behaviour.iter() {
-                            if let Some(network_behaviour) = item.get() {
-                                network_behaviour.serialize_sync_vars(writer, initial_state);
-                            }
-                        }
-
-                        // on_serialize
-                        for item in network_behaviour.iter() {
-                            if let Some(network_behaviour) = item.get() {
-                                network_behaviour.on_serialize(writer, initial_state);
-                            }
-                        }
-
                         if owner_dirty {
                             owner_writer.write_bytes(writer.to_array(), 0, writer.position);
                         }
@@ -139,9 +119,9 @@ impl NetworkIdentity {
                     });
 
                     if !initial_state {
-                        for item in network_behaviour.iter() {
-                            if let Some(network_behaviour) = item.get() {
-                                network_behaviour.clear_all_dirty_bits();
+                        if let Some(last) = network_behaviour_chain.last() {
+                            if let Some(comp) = last.get() {
+                                comp.clear_all_dirty_bits();
                             }
                         }
                     }
