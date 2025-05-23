@@ -3,7 +3,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::network_behaviour_trait::{NetworkBehaviourSerializer, NetworkBehaviourT};
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
-use crate::unity_engine::MonoBehaviour;
+use crate::unity_engine::{GameObject, MonoBehaviour};
 use unity_mirror_macro::{namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
@@ -26,7 +26,24 @@ impl NetworkBehaviourT for NetworkTest {
     where
         Self: Sized,
     {
-        Self::default()
+        let mut test = Self::default();
+
+        match test.ancestor.get() {
+            None => {}
+            Some(network_behaviour) => {
+                match network_behaviour.game_object.get() {
+                    None => {}
+                    Some(value) => {
+                        println!("Mirror: Got another game object");
+                    }
+                }
+                println!("Mirror: Got another game object");
+            }
+        }
+
+        test.set_sync_var_01(888.0);
+        
+        test
     }
 }
 
