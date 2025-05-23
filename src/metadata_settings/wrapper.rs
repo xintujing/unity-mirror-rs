@@ -35,7 +35,7 @@ pub trait Settings:
     // }
 }
 
-trait SettingsClone {
+pub trait SettingsClone {
     fn clone_box(&self) -> Box<dyn Settings>;
 }
 

@@ -1,14 +1,20 @@
 #![allow(unused)]
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::MetadataNetworkAnimator;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour_trait::{NetworkBehaviourSerializer, NetworkBehaviourT};
+use crate::mirror::network_behaviour_trait::{
+    NetworkBehaviourOnSerializer, NetworkBehaviourSerializer, NetworkBehaviourT,
+};
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use unity_mirror_macro::{namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
-#[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkAnimator))]
+#[network_behaviour(
+    parent(NetworkBehaviour),
+    metadata(MetadataNetworkAnimator),
+    not_impl_nos
+)]
 pub struct NetworkTest {
     #[sync_variable]
     pub sync_var_01: f32,
@@ -49,6 +55,8 @@ impl NetworkBehaviourT for NetworkTest {
 }
 
 impl NetworkTestOnChangeCallback for NetworkTest {}
+
+impl NetworkBehaviourOnSerializer for NetworkTest {}
 
 #[test]
 fn test_network_test() {
