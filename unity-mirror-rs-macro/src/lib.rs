@@ -7,7 +7,6 @@ use proc_macro::TokenStream;
 mod callback_processor;
 mod message;
 mod metadata_settings;
-mod network_behaviour_state;
 mod tools;
 
 macro_rules! attribute_args {
@@ -166,8 +165,8 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
-pub fn derive_sync_state(input: TokenStream) -> TokenStream {
-    network_behaviour_state::handler(input)
+pub fn derive_sync_state(_: TokenStream) -> TokenStream {
+    TokenStream::new()
 }
 
 #[proc_macro_derive(MessageRegistry)]
