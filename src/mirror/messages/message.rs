@@ -87,7 +87,6 @@ pub fn max_message_size(channel: TransportChannel) -> usize {
     max_content_size(channel) + ID_SIZE
 }
 
-#[allow(unused)]
 pub fn max_content_size(channel: TransportChannel) -> usize {
     1500
 }
