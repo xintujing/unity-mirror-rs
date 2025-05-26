@@ -1,5 +1,5 @@
 use crate::metadata_settings::wrapper::Settings;
-use std::any::{Any, TypeId};
+use std::any::TypeId;
 use std::collections::HashMap;
 
 static METADATA_COMPONENT_REGISTERS: once_cell::sync::Lazy<

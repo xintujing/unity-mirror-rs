@@ -1,5 +1,4 @@
 use crate::metadata_settings::unity::collider::{MetadataCollider, MetadataColliderWrapper};
-use crate::metadata_settings::unity::rigid_body::MetadataRigidBodyWrapper;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use std::any::Any;

@@ -1,4 +1,3 @@
-use crate::commons::object::Object;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use serde::Deserialize;

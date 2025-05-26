@@ -143,11 +143,6 @@ macro_rules! attribute_args {
 //     TokenStream::from(quote! {})
 // }
 
-#[proc_macro_attribute]
-pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
-    network_behaviour::handler(attr, item)
-}
-
 attribute_args!(NamespaceArgs, prefix, rename);
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -164,9 +159,24 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
     metadata_settings::wrapper_register::handler(input)
 }
 
+#[proc_macro_attribute]
+pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::handler(attr, item)
+}
+
 #[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
 pub fn derive_sync_state(_: TokenStream) -> TokenStream {
     TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn ancestor_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::ancestor_on_serialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn ancestor_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::ancestor_on_deserialize(attr, item)
 }
 
 #[proc_macro_derive(MessageRegistry)]
@@ -178,7 +188,6 @@ pub fn message_registry(input: TokenStream) -> TokenStream {
 pub fn message(input: TokenStream) -> TokenStream {
     message::message_handler(input)
 }
-
 
 #[proc_macro_derive(CallbackProcessor)]
 pub fn callback_processor(input: TokenStream) -> TokenStream {

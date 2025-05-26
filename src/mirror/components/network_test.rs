@@ -5,10 +5,14 @@ use crate::mirror::network_behaviour_trait::{
     NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, NetworkBehaviourSerializer,
     NetworkBehaviourT,
 };
+use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
-use unity_mirror_macro::{namespace, network_behaviour};
+use unity_mirror_macro::{
+    ancestor_on_deserialize, ancestor_on_serialize, namespace, network_behaviour,
+};
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(
@@ -57,8 +61,24 @@ impl NetworkBehaviourT for NetworkTest {
 
 impl NetworkTestOnChangeCallback for NetworkTest {}
 
-impl NetworkBehaviourOnSerializer for NetworkTest {}
-impl NetworkBehaviourOnDeserializer for NetworkTest {}
+impl NetworkBehaviourOnSerializer for NetworkTest {
+    #[ancestor_on_serialize]
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
+        println!(
+            "NetworkTest: on_serialize called with initial_state: {}",
+            initial_state
+        );
+    }
+}
+impl NetworkBehaviourOnDeserializer for NetworkTest {
+    #[ancestor_on_deserialize]
+    fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
+        println!(
+            "NetworkTest: on_deserialize called with initial_state: {}",
+            initial_state
+        );
+    }
+}
 
 #[test]
 fn test_network_test() {
