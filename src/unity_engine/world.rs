@@ -66,7 +66,8 @@ impl World {
     }
 
     pub fn add_game_object(&mut self, arc_game_object: RevelArc<GameObject>) {
-        self.game_objects.insert(arc_game_object.id, arc_game_object);
+        self.game_objects
+            .insert(arc_game_object.id, arc_game_object);
     }
 }
 
@@ -197,6 +198,9 @@ impl WorldManager {
     pub(super) fn fixed_update() {
         #[allow(static_mut_refs)]
         unsafe {
+            for (_, game_object) in DONT_DESTROY_OBJECT.iter_mut() {
+                game_object.fixed_update();
+            }
             for world in WORLDS.iter_mut() {
                 for (_, game_object) in world.game_objects.iter_mut() {
                     game_object.fixed_update();
@@ -208,6 +212,9 @@ impl WorldManager {
     pub(super) fn update() {
         #[allow(static_mut_refs)]
         unsafe {
+            for (_, game_object) in DONT_DESTROY_OBJECT.iter_mut() {
+                game_object.update();
+            }
             for world in WORLDS.iter_mut() {
                 for (_, game_object) in world.game_objects.iter_mut() {
                     game_object.update();
@@ -231,8 +238,8 @@ impl WorldManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::unity_engine::game_looper::GameLooper;
     use crate::mirror::NetworkIdentity;
+    use crate::unity_engine::game_looper::GameLooper;
     use std::thread::spawn;
 
     #[test]

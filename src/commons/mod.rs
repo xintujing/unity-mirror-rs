@@ -4,3 +4,7 @@ pub mod revel_weak;
 pub mod string_case;
 pub mod to_hex_string;
 pub mod trace;
+
+pub mod virtual_helper;
+
+pub mod delegate;

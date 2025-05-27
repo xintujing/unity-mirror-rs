@@ -1,4 +1,3 @@
-use crate::string_case::StringCase;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::{format_ident, quote};
@@ -6,6 +5,7 @@ use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{parse_quote, Field, Fields, Path};
+use crate::utils::string_case::StringCase;
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,

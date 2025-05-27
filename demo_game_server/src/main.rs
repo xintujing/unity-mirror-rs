@@ -1,6 +1,6 @@
+use unity_mirror_rs::mirror::{NetworkBehaviour, NetworkManager, NetworkManagerCallbacks, NetworkRoomManager};
 use unity_mirror_rs::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
-use unity_mirror_rs::mirror::NetworkBehaviour;
-use unity_mirror_rs::unity_engine::{LoadSceneMode, WorldManager};
+use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, MonoBehaviour, WorldManager};
 
 #[ctor::ctor]
 fn init_logger() {
@@ -34,18 +34,24 @@ fn init_logger() {
 }
 
 fn main() {
-    WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
+    NetworkManager::start("Assets/Prefabs/NetworkRoomManager.prefab");
 
-    let root_game_objects = WorldManager::root_game_objects();
+    // NetworkManager::singleton::<NetworkRoomManager>(|network_room_manager| {
+    //     network_room_manager.awake()
+    // });
 
-    for root_game_object in root_game_objects.iter() {
-        let game_object = root_game_object.get().unwrap();
-        let weak_game_object = game_object.try_get_component::<NetworkBehaviour>().unwrap();
-        let weak_network_transform_unreliable =
-            weak_game_object.downcast::<NetworkTransformUnreliable>();
-        let x = weak_network_transform_unreliable.unwrap();
-        println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
-    }
+    // WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
+    //
+    // let root_game_objects = WorldManager::root_game_objects();
+    //
+    // for root_game_object in root_game_objects.iter() {
+    //     let game_object = root_game_object.get().unwrap();
+    //     let weak_game_object = game_object.try_get_component::<NetworkBehaviour>().unwrap();
+    //     let weak_network_transform_unreliable =
+    //         weak_game_object.downcast::<NetworkTransformUnreliable>();
+    //     let x = weak_network_transform_unreliable.unwrap();
+    //     println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
+    // }
 
-    // GameLooper::new().run();
+    GameLooper::new().run();
 }

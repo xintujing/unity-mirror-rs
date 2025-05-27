@@ -73,14 +73,12 @@ impl MonoBehaviour for NetworkBehaviour {
 #[ctor::ctor]
 fn static_init() {
     use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
-    crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<
-        NetworkBehaviour,
-    >(NetworkBehaviour::instance);
+    crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkBehaviour>(
+        NetworkBehaviour::instance,
+    );
 }
 
-impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance
-    for NetworkBehaviour
-{
+impl crate::mirror::network_behaviour_trait::NetworkBehaviourInstance for NetworkBehaviour {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,

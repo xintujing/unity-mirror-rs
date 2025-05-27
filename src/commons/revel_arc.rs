@@ -66,11 +66,11 @@ impl<T> RevelArc<T> {
         self.ptr_eq(&Self(other.0.upgrade().unwrap()))
     }
 
-    pub fn to<TT>(&self) -> RevelArc<Box<TT>> {
-        let ptr = Arc::as_ptr(&self.0);
-        let n_ptr = ptr as *const UnsafeCell<Box<TT>>;
-        unsafe { RevelArc(Arc::from_raw(n_ptr)) }
-    }
+    // pub fn to<TT>(&self) -> RevelArc<Box<TT>> {
+    //     let ptr = Arc::as_ptr(&self.0);
+    //     let n_ptr = ptr as *const UnsafeCell<Box<TT>>;
+    //     unsafe { RevelArc(Arc::from_raw(n_ptr)) }
+    // }
 
     pub unsafe fn ptr_eq_value(&self, other: &T) -> bool {
         let a_ptr = other as *const T;

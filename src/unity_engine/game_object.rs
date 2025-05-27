@@ -61,7 +61,6 @@ impl GameObject {
         let mut arc_game_object = Self::new(RevelWeak::default(), metadata_prefab);
         Self::recursive_children(arc_game_object.downgrade(), &metadata_prefab.children);
         component_loading();
-        arc_game_object.awake();
         arc_game_object
     }
 
@@ -69,6 +68,13 @@ impl GameObject {
         let arc_game_object = Self::instance(metadata_prefab);
         if let Some(world) = WorldManager::active_world().get() {
             world.add_game_object(arc_game_object);
+        }
+    }
+
+    pub fn default() -> GameObject {
+        Self {
+            id: rand::rng().next_u64(),
+            ..Default::default()
         }
     }
 
@@ -165,7 +171,7 @@ impl GameObject {
 impl GameObject {
     pub fn add_component(
         &mut self,
-        mono_behaviour_chain: Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
+        mono_behaviour_chain: Vec<(RevelArc<Box<dyn MonoBehaviour + 'static>>, TypeId)>,
     ) {
         if mono_behaviour_chain.len() == 0 {
             panic!("MonoBehaviourChain is empty");
@@ -181,6 +187,9 @@ impl GameObject {
                     mapping.push(index);
                 };
             }
+        }
+        if let Some(mono_behaviour) = arc_mono_behaviours.last_mut() {
+            mono_behaviour.awake();
         }
         self.components.push(arc_mono_behaviours);
     }
@@ -207,6 +216,23 @@ impl GameObject {
                 .downgrade(),
         )
     }
+
+    // pub fn find_component<T: MonoBehaviour>(
+    //     &self,
+    //     t: impl Any,
+    // ) -> Option<RevelWeak<Box<dyn MonoBehaviour>>> {
+    //     let x = t as *const dyn MonoBehaviour;
+    //     // let x1 = x.eq(&self.components.as_ptr());
+    //
+    //     for component in self.components.iter() {
+    //         let x2 = component.last().unwrap().as_ref();
+    //         let x3 = x2 as *const dyn MonoBehaviour;
+    //         if x == x3 {
+    //             return Some(component.last().unwrap().downgrade());
+    //         }
+    //     }
+    //     None
+    // }
 
     pub fn find_transform(&self, instance_id: &i32) -> Option<RevelWeak<Transform>> {
         if self.transform.instance_id == *instance_id {

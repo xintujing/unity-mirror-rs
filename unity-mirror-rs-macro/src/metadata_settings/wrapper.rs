@@ -1,7 +1,7 @@
-use crate::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, DeriveInput};
+use crate::utils::string_case::StringCase;
 
 pub(crate) fn handler(input: TokenStream) -> TokenStream {
     let mut output = TokenStream::new();

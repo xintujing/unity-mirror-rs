@@ -61,26 +61,26 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         // }
         let elapsed = Time::unscaled_time().elapsed();
         println!("Mirror: NetworkTransformUnreliable Update {:?}", elapsed);
-
-        let game_object = &self.parent.get().unwrap().parent.get().unwrap().game_object;
-
-        // let game_object = root_game_object.get().unwrap();
-        let weak_game_object = game_object
-            .get()
-            .unwrap()
-            .try_get_component::<NetworkTransformUnreliable>()
-            .unwrap();
-
-        let x = weak_game_object
-            .downcast::<NetworkTransformUnreliable>()
-            .unwrap();
-
-        let x1 = x.get().unwrap();
-
-        // let weak_network_transform_unreliable =
-        //     weak_game_object.to::<NetworkTransformUnreliable>();
-        // let x = weak_network_transform_unreliable.get().unwrap();
-        println!("{}", x1.buffer_reset_multiplier);
+        //
+        // let game_object = &self.parent.get().unwrap().parent.get().unwrap().game_object;
+        //
+        // // let game_object = root_game_object.get().unwrap();
+        // let weak_game_object = game_object
+        //     .get()
+        //     .unwrap()
+        //     .try_get_component::<NetworkTransformUnreliable>()
+        //     .unwrap();
+        //
+        // let x = weak_game_object
+        //     .downcast::<NetworkTransformUnreliable>()
+        //     .unwrap();
+        //
+        // let x1 = x.get().unwrap();
+        //
+        // // let weak_network_transform_unreliable =
+        // //     weak_game_object.to::<NetworkTransformUnreliable>();
+        // // let x = weak_network_transform_unreliable.get().unwrap();
+        // println!("{}", x1.buffer_reset_multiplier);
     }
     fn late_update(&mut self) {
         let elapsed = Time::unscaled_time().elapsed();

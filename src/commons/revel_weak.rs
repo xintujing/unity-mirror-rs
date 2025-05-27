@@ -3,7 +3,9 @@ use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
 use std::sync::{Arc, Weak};
 
-pub struct RevelWeak<T>(pub(super) Weak<UnsafeCell<T>>);
+pub struct RevelWeak<T: ?Sized>(pub Weak<UnsafeCell<T>>)
+where
+    T: Sized;
 
 impl<T> RevelWeak<T> {
     pub fn from_raw(ptr: *const UnsafeCell<T>) -> RevelWeak<T> {
@@ -48,6 +50,10 @@ impl<T: 'static> RevelWeak<T> {
     }
 
     pub fn as_ptr(&self) -> *const UnsafeCell<T> {
+        self.0.as_ptr()
+    }
+
+    pub fn inner_ptr(&self) -> *const UnsafeCell<T> {
         self.0.as_ptr()
     }
 
