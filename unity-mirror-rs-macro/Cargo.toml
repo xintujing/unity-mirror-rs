@@ -11,4 +11,3 @@ syn = { version = "2.0.98", features = ["full"] }
 quote = "1.0.38"
 proc-macro2 = "1.0.93"
 rand = "0.9.1"
-uuid = { version = "1.15.1", features = ["v4"] }

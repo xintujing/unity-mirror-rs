@@ -1,8 +1,8 @@
-use crate::string_case::StringCase;
-use crate::tools::generate_unique_string;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, DeriveInput};
+use crate::utils::random_string::random_string;
+use crate::utils::string_case::StringCase;
 
 pub(crate) fn message_registry_handler(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -10,7 +10,7 @@ pub(crate) fn message_registry_handler(input: TokenStream) -> TokenStream {
     let register_ident = format_ident!(
         "__{}_register_{}",
         struct_ident.to_string().to_snake_case(),
-        generate_unique_string(5).to_lowercase()
+        random_string(5).to_lowercase()
     );
 
     let output = quote! {

@@ -1,13 +1,11 @@
 mod namespace;
 mod network_behaviour;
-mod string_case;
 
 use proc_macro::TokenStream;
 
 mod callback_processor;
 mod message;
 mod metadata_settings;
-mod tools;
 
 mod network_manager;
 
@@ -135,5 +133,5 @@ pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn callbacks(attr: TokenStream, item: TokenStream) -> TokenStream {
-    callbacks::handler(attr,item)
+    callbacks::handler(attr, item)
 }

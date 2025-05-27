@@ -2,7 +2,7 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, DeriveInput, GenericArgument, PathArguments, Type, TypePath};
-use crate::string_case::StringCase;
+use crate::utils::string_case::StringCase;
 
 pub(crate) fn callback_processor_handler(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
