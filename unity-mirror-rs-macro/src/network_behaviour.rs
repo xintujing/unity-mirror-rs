@@ -493,3 +493,35 @@ pub(crate) fn ancestor_on_deserialize(_: TokenStream, item: TokenStream) -> Toke
         #item_fn
     })
 }
+
+pub(crate) fn parent_on_serialize(_: TokenStream, item: TokenStream) -> TokenStream {
+    let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+
+    item_fn.block.stmts.insert(
+        0,
+        parse_quote!(if let Some(mut parent) = self.parent.get() {
+            use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
+            parent.on_serialize(writer, initial_state);
+        }),
+    );
+
+    TokenStream::from(quote! {
+        #item_fn
+    })
+}
+
+pub(crate) fn parent_on_deserialize(_: TokenStream, item: TokenStream) -> TokenStream {
+    let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
+
+    item_fn.block.stmts.insert(
+        0,
+        parse_quote!(if let Some(mut parent) = self.parent.get() {
+            use crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer;
+            parent.on_deserialize(reader, initial_state);
+        }),
+    );
+
+    TokenStream::from(quote! {
+        #item_fn
+    })
+}
