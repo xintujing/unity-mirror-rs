@@ -1,4 +1,3 @@
-use nalgebra::{Quaternion, Vector3};
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug, Default)]
@@ -20,4 +19,3 @@ pub struct MetadataTransform {
     #[serde(rename = "assetPath")]
     pub asset_path: String,
 }
-

@@ -1,12 +1,8 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviour, NetworkBehaviourInstance
-    ,
-};
-use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::GameObject;
+use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
 use unity_mirror_macro::namespace;
 
@@ -44,7 +40,7 @@ impl MonoBehaviour for NetworkRoomPlayer {
     }
 }
 
-impl NetworkBehaviourInstance for NetworkRoomPlayer {
+impl NetworkRoomPlayer {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,

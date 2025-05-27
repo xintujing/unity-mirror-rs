@@ -1,10 +1,13 @@
 mod namespace;
 mod network_behaviour;
+mod string_case;
 
 use proc_macro::TokenStream;
 
+mod callback_processor;
+mod message;
 mod metadata_settings;
-mod network_behaviour_state;
+mod tools;
 
 mod network_manager;
 
@@ -76,8 +79,43 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
-pub fn derive_sync_state(input: TokenStream) -> TokenStream {
-    network_behaviour_state::handler(input)
+pub fn derive_sync_state(_: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn ancestor_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::ancestor_on_serialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn ancestor_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::ancestor_on_deserialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn parent_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::parent_on_serialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn parent_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::parent_on_deserialize(attr, item)
+}
+
+#[proc_macro_derive(MessageRegistry)]
+pub fn message_registry(input: TokenStream) -> TokenStream {
+    message::message_registry_handler(input)
+}
+
+#[proc_macro_derive(Message)]
+pub fn message(input: TokenStream) -> TokenStream {
+    message::message_handler(input)
+}
+
+#[proc_macro_derive(CallbackProcessor)]
+pub fn callback_processor(input: TokenStream) -> TokenStream {
+    callback_processor::callback_processor_handler(input)
 }
 
 #[proc_macro_attribute]

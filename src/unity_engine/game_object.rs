@@ -2,17 +2,14 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
-use crate::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;
 use crate::unity_engine::WorldManager;
-use once_cell::race::OnceBool;
 use once_cell::sync::Lazy;
 use rand::RngCore;
-use std::any::{Any, TypeId};
+use std::any::TypeId;
 use std::collections::HashMap;
-use std::mem;
 
 static mut COMPONENT_LOADING: Lazy<Vec<(RevelWeak<GameObject>, MetadataComponentWrapper)>> =
     Lazy::new(|| vec![]);
@@ -161,7 +158,7 @@ impl GameObject {
                 mono_behaviours.push((arc_mono_behaviour, type_id));
             }
 
-            if let Some(mut game_object) = weak_game_object.get() {
+            if let Some(game_object) = weak_game_object.get() {
                 game_object.add_component(mono_behaviours);
             }
         }

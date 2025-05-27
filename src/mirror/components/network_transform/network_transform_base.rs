@@ -1,19 +1,16 @@
-use crate::commons::revel_arc::{RevelArc, VecRevelArc};
 use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
-use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::mirror::network_behaviour_trait::NetworkBehaviourInstance;
+
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
+use crate::mirror::network_behaviour::NetworkBehaviourT;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Transform;
-use crate::unity_engine::GameObject;
 use ordered_float::OrderedFloat;
-use std::any::TypeId;
 use std::collections::BTreeMap;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro::{namespace, network_behaviour};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 #[allow(unused)]
@@ -33,10 +30,9 @@ impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace 
 }
 
 #[namespace(prefix = "Mirror")]
+#[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkTransformBase))]
 pub struct NetworkTransformBase {
-    pub parent: RevelWeak<Box<NetworkBehaviour>>,
-
-    target: RevelWeak<Transform>,
+    pub target: RevelWeak<Transform>,
     pub server_snapshots: BTreeMap<OrderedFloat<f64>, TransformSnapshot>,
     pub only_sync_on_change: bool,
     pub coordinate_space: CoordinateSpace,
@@ -78,69 +74,22 @@ impl MonoBehaviour for NetworkTransformBase {
     }
 }
 
-#[ctor::ctor]
-fn static_init() {
-    NetworkBehaviourFactory::register::<NetworkTransformBase>(NetworkTransformBase::instance);
-}
+impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
-impl NetworkBehaviourInstance for NetworkTransformBase {
-    fn instance(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> (
-        Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-        RevelWeak<NetworkBehaviour>,
-        u8,
-        u8,
-    )
+impl NetworkBehaviourT for NetworkTransformBase {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
-        let (mut network_behaviour_chain, _, _, _) =
-            NetworkBehaviour::instance(weak_game_object.clone(), metadata);
+        let mut base = Self::default();
 
-        let mut weak_network_behaviour = RevelWeak::default();
-        if let Some((arc_network_behaviour, _)) = network_behaviour_chain.last() {
-            weak_network_behaviour = arc_network_behaviour.downgrade();
+        {
+            let config = metadata.get::<MetadataNetworkTransformBase>();
+            // TODO
+            config.target.instance_id;
+            // base.target
         }
 
-        let config = metadata.get::<MetadataNetworkTransformBase>();
-
-        let weak_transform = weak_game_object
-            .get()
-            .unwrap()
-            .find_transform(&config.target.instance_id);
-
-        let arc_network_transform_base = RevelArc::new(Box::new(NetworkTransformBase {
-            parent: weak_network_behaviour
-                .downcast::<NetworkBehaviour>()
-                .unwrap()
-                .clone(),
-            target: weak_transform.unwrap(), //_or(RevelWeak::default()),
-            server_snapshots: Default::default(),
-            only_sync_on_change: config.only_sync_on_change,
-            coordinate_space: config.coordinate_space.clone().into(),
-            is_client_with_authority: false,
-            time_stamp_adjustment: 0.0,
-            offset: 0.0,
-            sync_position: config.sync_position,
-            sync_rotation: config.compress_rotation,
-            sync_scale: config.sync_scale,
-            compress_rotation: config.compress_rotation,
-            interpolate_position: config.interpolate_position,
-            interpolate_rotation: config.interpolate_rotation,
-            interpolate_scale: config.interpolate_scale,
-            send_interval_multiplier: 1,
-            timeline_offset: config.timeline_offset,
-            buffer_reset_multiplier: 3,
-            send_interval_counter: 0,
-            last_send_interval_time: 0.0,
-        }) as Box<dyn MonoBehaviour>);
-
-        network_behaviour_chain.push((
-            arc_network_transform_base,
-            TypeId::of::<NetworkTransformBase>(),
-        ));
-        (network_behaviour_chain, RevelWeak::default(), 0, 0)
+        base
     }
 }
