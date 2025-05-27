@@ -2,6 +2,7 @@
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::{SyncDirection, SyncMode};
 use crate::unity_engine::MonoBehaviour;
 
 pub trait BaseNetworkBehaviourT: NetworkBehaviourT {}
@@ -13,6 +14,17 @@ pub trait NetworkBehaviourT:
         Self: Sized;
     fn on_start_server(&mut self) {}
     fn on_stop_server(&mut self) {}
+
+    fn is_dirty(&self) -> bool {
+        false
+    }
+    fn get_sync_direction(&self) -> &SyncDirection {
+        &SyncDirection::ServerToClient
+    }
+    
+    fn get_sync_mod(&self) -> &SyncMode {
+        &SyncMode::Observers
+    }
 }
 pub trait NetworkBehaviourOnSerializer {
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}

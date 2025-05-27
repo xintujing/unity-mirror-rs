@@ -11,8 +11,8 @@ use crate::mirror::network_behaviour_trait::{
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::NetworkIdentity;
-use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
+use crate::unity_engine::{Time, Transform};
 use std::any::TypeId;
 use unity_mirror_macro::namespace;
 
@@ -121,6 +121,19 @@ impl NetworkBehaviourT for NetworkBehaviour {
         Self: Sized,
     {
         Self::default()
+    }
+
+    fn is_dirty(&self) -> bool {
+        (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64
+            && Time::unscaled_time_f64() - self.last_sync_time > self.sync_interval as f64
+    }
+
+    fn get_sync_direction(&self) -> &SyncDirection {
+        &self.sync_direction
+    }
+
+    fn get_sync_mod(&self) -> &SyncMode {
+        &self.sync_mode
     }
 }
 

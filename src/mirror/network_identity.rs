@@ -7,6 +7,7 @@ use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
+use crate::mirror::{SyncDirection, SyncMode};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -60,19 +61,27 @@ impl NetworkIdentity {
         let mut owner_mask = 0u64;
         let mut observer_mask = 0u64;
 
-        // for (i, component) in self.network_behaviours.iter().enumerate() {
-        //     let nth_bit = 1u64 << (i as u8);
-        //
-        //     let dirty = component.is_dirty();
-        //
-        //     if initial_state || (dirty && (component.get_sync_direction() == SyncDirection::ServerToClient)) {
-        //         owner_mask |= nth_bit;
-        //     }
-        //
-        //     if (component.get_sync_mod() == SyncMode::Observers) && (initial_state || dirty) {
-        //         observer_mask |= nth_bit;
-        //     }
-        // }
+        for (i, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
+            if let Some(network_behaviour) = network_behaviour_chain.first().and_then(|x| x.get()) {
+                let nth_bit = 1u64 << (i as u8);
+                let dirty = network_behaviour.is_dirty();
+
+                if initial_state
+                    || (dirty
+                        && (network_behaviour
+                            .get_sync_direction()
+                            .eq(&SyncDirection::ServerToClient)))
+                {
+                    owner_mask |= nth_bit;
+                }
+
+                if (network_behaviour.get_sync_mod().eq(&SyncMode::Observers))
+                    && (initial_state || dirty)
+                {
+                    observer_mask |= nth_bit;
+                }
+            }
+        }
         (owner_mask, observer_mask)
     }
 
