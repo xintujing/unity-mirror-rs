@@ -96,27 +96,27 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut on_serialize_ts = Vec::new();
     if !not_impl_nos {
         on_serialize_ts.push(quote! {
-            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
-            impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+            // impl crate::mirror::network_behaviour::NetworkBehaviourOnSerializer for #struct_ident {
+            impl crate::mirror::network_behaviour::NetworkBehaviourOnSerializer for #struct_ident {
                 fn on_serialize(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
                     if let Some(mut parent) = self.parent.get() {
-                        use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
+                        use crate::mirror::network_behaviour::NetworkBehaviourOnSerializer;
                         parent.on_serialize(writer, initial_state);
                     }
-                    use crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer;
+                    use crate::mirror::network_behaviour::NetworkBehaviourSerializer;
                     self.serialize_sync_objects(writer, initial_state);
                     self.serialize_sync_vars(writer, initial_state);
                 }
             }
 
-            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer for #struct_ident
-            impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer for #struct_ident {
+            // impl crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer for #struct_ident
+            impl crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer for #struct_ident {
                 fn on_deserialize(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {
                     if let Some(mut parent) = self.parent.get() {
-                        use crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer;
+                        use crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer;
                         parent.on_deserialize(reader, initial_state);
                     }
-                    use crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer;
+                    use crate::mirror::network_behaviour::NetworkBehaviourDeserializer;
                     self.deserialize_sync_objects(reader, initial_state);
                     self.deserialize_sync_vars(reader, initial_state);
                 }
@@ -352,11 +352,43 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<#struct_ident>(#struct_ident::factory);
             }
 
-            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer for #struct_ident {
+            // impl crate::mirror::network_behaviour::NetworkBehaviourOnSerializer for #struct_ident {
             #(#on_serialize_ts)*
 
-            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
-            impl crate::mirror::network_behaviour_trait::NetworkBehaviourSerializer for #struct_ident {
+
+            // impl crate::mirror::network_behaviour::NetworkBehaviourBase for #struct_ident {
+            impl crate::mirror::network_behaviour::NetworkBehaviourBase for #struct_ident {
+                fn is_dirty(&self) -> bool {
+                    if let Some(ancestor) = self.ancestor.get() {
+                        return ancestor.is_dirty();
+                    }
+                    false
+                }
+
+                fn get_sync_direction(&self) -> &crate::mirror::SyncDirection {
+                    if let Some(ancestor) = self.ancestor.get() {
+                        return ancestor.get_sync_direction();
+                    }
+                    &crate::mirror::SyncDirection::ServerToClient
+                }
+
+                fn get_sync_mod(&self) -> &crate::mirror::SyncMode {
+                    if let Some(ancestor) = self.ancestor.get() {
+                        return ancestor.get_sync_mod();
+                    }
+                    &crate::mirror::SyncMode::Observers
+                }
+
+                fn clear_all_dirty_bits(&mut self) {
+                    if let Some(mut parent) = self.parent.get() {
+                        parent.clear_all_dirty_bits();
+                    }
+                    #(#clear_sync_objs_changes_ts)*
+                }
+            }
+
+            // impl crate::mirror::network_behaviour::NetworkBehaviourSerializer for #struct_ident {
+            impl crate::mirror::network_behaviour::NetworkBehaviourSerializer for #struct_ident {
                 fn serialize_sync_objects(&mut self, writer: &mut crate::mirror::network_writer::NetworkWriter, initial_state: bool) {
                     if initial_state {
                         self.serialize_objects_all(writer);
@@ -391,17 +423,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         #(#serialize_sync_var_ts)*
                     }
                 }
-
-                fn clear_all_dirty_bits(&mut self) {
-                    if let Some(mut parent) = self.parent.get() {
-                        parent.clear_all_dirty_bits();
-                    }
-                    #(#clear_sync_objs_changes_ts)*
-                }
             }
 
-            // impl crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
-            impl crate::mirror::network_behaviour_trait::NetworkBehaviourDeserializer for #struct_ident {
+            // impl crate::mirror::network_behaviour::NetworkBehaviourDeserializer for #struct_ident {
+            impl crate::mirror::network_behaviour::NetworkBehaviourDeserializer for #struct_ident {
                 fn deserialize_sync_objects(&mut self, reader: &mut crate::mirror::network_reader::NetworkReader, initial_state: bool) {
                     if initial_state {
                         self.deserialize_objects_all(reader);
@@ -455,8 +480,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         impl #state_condition_ident for #struct_ident {}
 
-        // impl crate::mirror::network_behaviour_trait::BaseNetworkBehaviourT for #struct_ident {
-        impl crate::mirror::network_behaviour_trait::BaseNetworkBehaviourT for #struct_ident {
+        // impl crate::mirror::network_behaviour::BaseNetworkBehaviourT for #struct_ident {
+        impl crate::mirror::network_behaviour::BaseNetworkBehaviourT for #struct_ident {
         }
 
     })
@@ -468,7 +493,7 @@ pub(crate) fn ancestor_on_serialize(_: TokenStream, item: TokenStream) -> TokenS
     item_fn.block.stmts.insert(
         0,
         parse_quote!(if let Some(mut ancestor) = self.ancestor.get() {
-            use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
+            use crate::mirror::network_behaviour::NetworkBehaviourOnSerializer;
             ancestor.on_serialize(writer, initial_state);
         }),
     );
@@ -484,7 +509,7 @@ pub(crate) fn ancestor_on_deserialize(_: TokenStream, item: TokenStream) -> Toke
     item_fn.block.stmts.insert(
         0,
         parse_quote!(if let Some(mut ancestor) = self.ancestor.get() {
-            use crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer;
+            use crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer;
             ancestor.on_deserialize(reader, initial_state);
         }),
     );
@@ -500,7 +525,7 @@ pub(crate) fn parent_on_serialize(_: TokenStream, item: TokenStream) -> TokenStr
     item_fn.block.stmts.insert(
         0,
         parse_quote!(if let Some(mut parent) = self.parent.get() {
-            use crate::mirror::network_behaviour_trait::NetworkBehaviourOnSerializer;
+            use crate::mirror::network_behaviour::NetworkBehaviourOnSerializer;
             parent.on_serialize(writer, initial_state);
         }),
     );
@@ -516,7 +541,7 @@ pub(crate) fn parent_on_deserialize(_: TokenStream, item: TokenStream) -> TokenS
     item_fn.block.stmts.insert(
         0,
         parse_quote!(if let Some(mut parent) = self.parent.get() {
-            use crate::mirror::network_behaviour_trait::NetworkBehaviourOnDeserializer;
+            use crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer;
             parent.on_deserialize(reader, initial_state);
         }),
     );

@@ -4,10 +4,6 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
     MetadataSyncMode,
 };
-use crate::mirror::network_behaviour_trait::{
-    NetworkBehaviourDeserializer, NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer,
-    NetworkBehaviourSerializer, NetworkBehaviourT,
-};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::NetworkIdentity;
@@ -122,7 +118,9 @@ impl NetworkBehaviourT for NetworkBehaviour {
     {
         Self::default()
     }
+}
 
+impl NetworkBehaviourBase for NetworkBehaviour {
     fn is_dirty(&self) -> bool {
         (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64
             && Time::unscaled_time_f64() - self.last_sync_time > self.sync_interval as f64
@@ -134,6 +132,10 @@ impl NetworkBehaviourT for NetworkBehaviour {
 
     fn get_sync_mod(&self) -> &SyncMode {
         &self.sync_mode
+    }
+    fn clear_all_dirty_bits(&mut self) {
+        self.sync_var_dirty_bits = 0;
+        self.sync_object_dirty_bits = 0;
     }
 }
 
@@ -153,10 +155,6 @@ impl NetworkBehaviourSerializer for NetworkBehaviour {
             self.serialize_sync_object_delta(writer);
         }
     }
-    fn clear_all_dirty_bits(&mut self) {
-        self.sync_var_dirty_bits = 0;
-        self.sync_object_dirty_bits = 0;
-    }
 }
 
 impl NetworkBehaviourOnDeserializer for NetworkBehaviour {
@@ -175,4 +173,42 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
             self.deserialize_sync_object_delta(reader);
         }
     }
+}
+
+
+pub trait BaseNetworkBehaviourT: NetworkBehaviourT {}
+pub trait NetworkBehaviourT:
+MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
+{
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized;
+    fn on_start_server(&mut self) {}
+    fn on_stop_server(&mut self) {}
+}
+pub trait NetworkBehaviourBase {
+    fn is_dirty(&self) -> bool;
+    fn get_sync_direction(&self) -> &SyncDirection;
+    fn get_sync_mod(&self) -> &SyncMode;
+    fn clear_all_dirty_bits(&mut self);
+}
+pub trait NetworkBehaviourOnSerializer {
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
+}
+pub trait NetworkBehaviourSerializer: NetworkBehaviourOnSerializer {
+    fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
+    fn serialize_objects_all(&mut self, writer: &mut NetworkWriter) {}
+    fn serialize_sync_object_delta(&mut self, writer: &mut NetworkWriter) {}
+    fn serialize_sync_vars(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
+}
+
+pub trait NetworkBehaviourOnDeserializer {
+    fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
+}
+
+pub trait NetworkBehaviourDeserializer: NetworkBehaviourOnDeserializer {
+    fn deserialize_sync_objects(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
+    fn deserialize_objects_all(&mut self, reader: &mut NetworkReader) {}
+    fn deserialize_sync_object_delta(&mut self, reader: &mut NetworkReader) {}
+    fn deserialize_sync_vars(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
 }

@@ -1,7 +1,7 @@
 #![allow(unused)]
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::MetadataNetworkAnimator;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour_trait::{
+use crate::mirror::network_behaviour::{
     NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, NetworkBehaviourSerializer,
     NetworkBehaviourT,
 };

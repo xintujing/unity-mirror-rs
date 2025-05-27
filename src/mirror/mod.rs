@@ -1,6 +1,5 @@
 mod network_behaviour;
 pub use network_behaviour::*;
-pub mod network_behaviour_trait;
 
 mod network_identity;
 pub use network_identity::*;

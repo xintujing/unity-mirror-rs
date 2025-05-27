@@ -7,9 +7,9 @@ use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;
 use crate::unity_engine::WorldManager;
 use once_cell::sync::Lazy;
+use rand::RngCore;
 use std::any::TypeId;
 use std::collections::HashMap;
-use rand::RngCore;
 
 static mut COMPONENT_LOADING: Lazy<Vec<(RevelWeak<GameObject>, MetadataComponentWrapper)>> =
     Lazy::new(|| vec![]);
@@ -152,7 +152,7 @@ impl GameObject {
                 mono_behaviours.push((arc_mono_behaviour, type_id));
             }
 
-            if let Some(mut game_object) = weak_game_object.get() {
+            if let Some(game_object) = weak_game_object.get() {
                 game_object.add_component(mono_behaviours);
             }
         }

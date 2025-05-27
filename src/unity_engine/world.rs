@@ -62,7 +62,8 @@ impl World {
     }
 
     pub fn add_game_object(&mut self, arc_game_object: RevelArc<GameObject>) {
-        self.game_objects.insert(arc_game_object.id, arc_game_object);
+        self.game_objects
+            .insert(arc_game_object.id, arc_game_object);
     }
 }
 
@@ -227,9 +228,6 @@ impl WorldManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::unity_engine::game_looper::GameLooper;
-    use crate::mirror::NetworkIdentity;
-    use std::thread::spawn;
 
     #[test]
     fn test_change_scene() {

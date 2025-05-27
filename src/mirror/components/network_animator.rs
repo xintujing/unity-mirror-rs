@@ -1,6 +1,6 @@
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::MetadataNetworkAnimator;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour_trait::NetworkBehaviourT;
+use crate::mirror::network_behaviour::NetworkBehaviourT;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use unity_mirror_macro::{namespace, network_behaviour};
