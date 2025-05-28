@@ -7,34 +7,20 @@ use once_cell::sync::Lazy;
 use std::any::TypeId;
 use std::collections::HashMap;
 
-static mut NETWORK_BEHAVIOUR_FACTORY: Lazy<
-    HashMap<
-        String,
-        fn(
-            weak_game_object: RevelWeak<GameObject>,
-            metadata: &MetadataNetworkBehaviourWrapper,
-            weak_network_behaviour: &mut RevelWeak<
-                Box<crate::mirror::network_behaviour::NetworkBehaviour>,
-            >,
-            sync_object_offset: &mut u8,
-            sync_var_offset: &mut u8,
-        ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-    >,
-> = Lazy::new(|| HashMap::new());
+pub type NetworkBehaviourFactoryType = fn(
+    weak_game_object: RevelWeak<GameObject>,
+    metadata: &MetadataNetworkBehaviourWrapper,
+    weak_network_behaviour: &mut RevelWeak<Box<crate::mirror::network_behaviour::NetworkBehaviour>>,
+    sync_object_offset: &mut u8,
+    sync_var_offset: &mut u8,
+) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>;
+
+static mut NETWORK_BEHAVIOUR_FACTORY: Lazy<HashMap<String, NetworkBehaviourFactoryType>> =
+    Lazy::new(|| HashMap::new());
 
 pub struct NetworkBehaviourFactory;
 impl NetworkBehaviourFactory {
-    pub fn register<T: MonoBehaviour + 'static>(
-        factory: fn(
-            weak_game_object: RevelWeak<GameObject>,
-            metadata: &MetadataNetworkBehaviourWrapper,
-            weak_network_behaviour: &mut RevelWeak<
-                Box<crate::mirror::network_behaviour::NetworkBehaviour>,
-            >,
-            sync_object_offset: &mut u8,
-            sync_var_offset: &mut u8,
-        ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
-    ) {
+    pub fn register<T: MonoBehaviour + 'static>(factory: NetworkBehaviourFactoryType) {
         let full_name = T::get_full_name();
         #[allow(static_mut_refs)]
         unsafe {
