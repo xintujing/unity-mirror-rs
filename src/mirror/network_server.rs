@@ -141,6 +141,19 @@ impl NetworkServer {
         TranSport.active().init(processor);
     }
 
+    fn remove_transport_handlers(&self) {
+        let processor = CallbackProcessor {
+            on_server_connected: |_| {},
+            on_server_connected_with_address: |_, _| {},
+            on_server_data_received: |_, _, _| {},
+            on_server_data_sent: |_, _, _| {},
+            on_server_error: |_, _, _| {},
+            on_server_transport_exception: |_, _| {},
+            on_server_disconnected: |_| {},
+        };
+        TranSport.active().init(processor);
+    }
+
     fn on_transport_connected(conn_id: u64) {
         Self::on_transport_connected_with_address(
             conn_id,
@@ -176,6 +189,8 @@ impl NetworkServer {
         if self.initialized {
             self.disconnect_all();
             TranSport.active().server_stop();
+
+            self.remove_transport_handlers();
 
             self.initialized = false;
         }
