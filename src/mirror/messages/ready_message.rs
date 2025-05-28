@@ -6,6 +6,7 @@ use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
 use unity_mirror_macro::{namespace, MessageRegistry};
+use crate::commons::revel_arc::RevelArc;
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
@@ -30,7 +31,7 @@ impl MessageDeserializer for ReadyMessage {
 }
 
 impl OnMessageHandler for ReadyMessage {
-    fn handle(&self, conn: &mut NetworkConnection, _channel: TransportChannel) {
+    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, _channel: TransportChannel) {
         // NetworkManager::on_server_ready_message_internal(connection, self.clone());
 
         // log::info!(

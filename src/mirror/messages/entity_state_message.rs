@@ -6,6 +6,7 @@ use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
 use unity_mirror_macro::{namespace, MessageRegistry};
+use crate::commons::revel_arc::RevelArc;
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
@@ -53,7 +54,7 @@ impl MessageDeserializer for EntityStateMessage {
 
 #[allow(unused)]
 impl OnMessageHandler for EntityStateMessage {
-    fn handle(&self, uc_conn: &mut NetworkConnection, channel: TransportChannel) {
+    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
         // println!("EntityStateMessage::handle");
         // NetworkServer::on_entity_state_message(self, connection)
     }

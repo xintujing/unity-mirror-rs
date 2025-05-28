@@ -1,4 +1,5 @@
 use crate::commons::object::Object;
+use crate::commons::revel_arc::RevelArc;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -20,7 +21,7 @@ pub trait MessageDeserializer {
 
 #[allow(unused)]
 pub trait OnMessageHandler {
-    fn handle(&self, conn: &mut NetworkConnection, channel: TransportChannel) {}
+    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {}
 }
 
 pub trait Message:
@@ -29,7 +30,7 @@ pub trait Message:
 }
 
 static mut ON_MESSAGE_HANDLER_REGISTERS: Lazy<
-    HashMap<u16, fn(&mut NetworkConnection, &mut NetworkReader, TransportChannel)>,
+    HashMap<u16, fn(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>,
 > = Lazy::new(|| HashMap::new());
 
 pub fn register_messages<M>()
@@ -62,7 +63,7 @@ where
 }
 
 pub fn unpack_message(
-    conn: &mut NetworkConnection,
+    conn: &mut RevelArc<NetworkConnection>,
     reader: &mut NetworkReader,
     channel: TransportChannel,
 ) -> bool {
@@ -87,6 +88,6 @@ pub fn max_message_size(channel: TransportChannel) -> usize {
     max_content_size(channel) + ID_SIZE
 }
 
-pub fn max_content_size(channel: TransportChannel) -> usize {
+pub fn max_content_size(_channel: TransportChannel) -> usize {
     1500
 }

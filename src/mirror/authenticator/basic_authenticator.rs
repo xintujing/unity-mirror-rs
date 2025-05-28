@@ -7,6 +7,7 @@ use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
 use unity_mirror_macro::{namespace, Message, MessageRegistry};
+use crate::commons::revel_arc::RevelArc;
 
 #[namespace(prefix = "Mirror.Authenticators.BasicAuthenticator+")]
 #[derive(Default, Clone, MessageRegistry)]
@@ -33,7 +34,7 @@ impl Authenticator for AuthRequestMessage {
 }
 
 impl OnMessageHandler for AuthRequestMessage {
-    fn handle(&self, conn: &mut NetworkConnection, channel: TransportChannel) {
+    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
         match authenticator_factory() {
             None => {
                 conn.send_message(

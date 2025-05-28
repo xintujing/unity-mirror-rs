@@ -6,6 +6,7 @@ use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
 use unity_mirror_macro::{namespace, MessageRegistry};
+use crate::commons::revel_arc::RevelArc;
 
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
@@ -38,7 +39,7 @@ impl CommandMessage {
 }
 #[allow(unused)]
 impl OnMessageHandler for CommandMessage {
-    fn handle(&self, uc_conn: &mut NetworkConnection, channel: TransportChannel) {
+    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
         // let requires_authority =
         //     RemoteProcedureCalls::command_requires_authority(&self.function_hash);
 
