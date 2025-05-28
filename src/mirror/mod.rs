@@ -21,7 +21,6 @@ mod network_room_manager;
 mod network_manager_factory;
 
 pub use network_room_manager::*;
-mod connect;
 pub use network_server::*;
 pub mod sync_list;
 pub mod sync_object;

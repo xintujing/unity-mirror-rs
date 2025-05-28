@@ -1,7 +1,6 @@
 use crate::commons::action::{Action, ActionWrapper, Arguments};
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::commons::self_action::SelfAction;
 use crate::metadata_settings::metadata::Metadata;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::mirror::network_manager_factory::NetworkManagerFactory;
