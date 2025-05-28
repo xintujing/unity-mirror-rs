@@ -8,6 +8,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicBool;
+use crate::commons::revel_weak::RevelWeak;
 
 lazy_static! {
     static ref ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -74,7 +75,7 @@ pub struct NetworkServerConfig {
     pub client_snapshot_settings: SnapshotInterpolationSettings,
 
     pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
-    pub spawned: HashMap<u32, RevelArc<Box<NetworkIdentity>>>,
+    pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
 }
 
 pub struct NetworkServer;
