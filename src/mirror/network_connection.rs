@@ -9,7 +9,7 @@ use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInterpolation;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
-use crate::mirror::transport::{transport_manager, TransportChannel};
+use crate::mirror::transport::{TranSport, TransportChannel};
 use crate::mirror::{NetworkIdentity, NetworkServer};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
@@ -163,9 +163,9 @@ impl NetworkConnection {
         for (channel, batcher) in self.batches.iter_mut() {
             NetworkWriterPool::get_return(|writer| {
                 while batcher.get_batcher_writer(writer) {
-                    if let Some(transport) = transport_manager() {
-                        transport.server_send(self.id, writer.to_slice(), *channel);
-                    }
+                    TranSport
+                        .active()
+                        .server_send(self.id, writer.to_slice(), *channel);
                     writer.reset();
                 }
             });
@@ -173,9 +173,7 @@ impl NetworkConnection {
     }
     pub fn disconnect(&mut self) {
         self.is_ready = false;
-        if let Some(transport) = transport_manager() {
-            transport.server_disconnect(self.id);
-        }
+        TranSport.active().server_disconnect(self.id);
     }
 
     pub fn add_to_observing(&mut self, weak_identity: RevelWeak<Box<NetworkIdentity>>) {

@@ -3,6 +3,7 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
+use crate::mirror::transport::TranSport;
 use crate::mirror::NetworkIdentity;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -10,6 +11,11 @@ use std::ops::{Deref, DerefMut};
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
+    initialized: bool,
+    address: &'static str,
+    port: u16,
+    listen: bool,
+    pub max_connections: i32,
     // 发送速率
     pub tick_rate: u32,
     // 完整更新持续时间
@@ -37,6 +43,11 @@ pub struct NetworkServerStatic {
 }
 
 static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
+    initialized: false,
+    address: "0.0.0.0",
+    port: 7777,
+    listen: true,
+    max_connections: 0,
     tick_rate: 30,
     full_update_duration: TimeSample::new(30),
     late_send_time: 0.0,
@@ -92,6 +103,26 @@ impl NetworkServer {
             true => 1.0 / self.tick_rate as f64,
             false => 0.0,
         }
+    }
+}
+
+impl NetworkServer {
+    pub fn listen(&mut self, max_connections: i32) {
+        if self.initialized {
+            log::warn!("NetworkServer is already initialized.");
+            return;
+        }
+        self.connections.clear();
+        self.initialized = true;
+
+        self.early_update_duration = TimeSample::new(self.send_rate() as u32);
+        self.late_update_duration = TimeSample::new(self.send_rate() as u32);
+        self.full_update_duration = TimeSample::new(self.send_rate() as u32);
+        self.max_connections = max_connections;
+        if self.listen {
+            TranSport.active().server_start((self.address, self.port));
+        }
+        self.active = true;
     }
 }
 

@@ -54,6 +54,19 @@ impl Display for TransportError {
     }
 }
 
+pub struct TranSport;
+
+impl TranSport {
+    pub fn active(&self) -> &'static mut Box<dyn Transport> {
+        #[allow(static_mut_refs)]
+        unsafe {
+            TRANSPORT.as_mut().unwrap_or_else(|| {
+                panic!("Transport not initialized. Call init_transport_manager first.")
+            })
+        }
+    }
+}
+
 pub fn init_transport_manager(
     mut transport: Box<dyn Transport>,
     on_server_connected: fn(u64),
@@ -76,13 +89,6 @@ pub fn init_transport_manager(
     unsafe { TRANSPORT = Some(transport) }
 }
 
-pub fn transport_manager() -> Option<&'static mut Box<dyn Transport>> {
-    #[allow(static_mut_refs)]
-    unsafe {
-        TRANSPORT.as_mut()
-    }
-}
-
 pub struct CallbackProcessor {
     pub on_server_connected: fn(u64),
     pub on_server_connected_with_address: fn(u64, &str),
@@ -93,7 +99,7 @@ pub struct CallbackProcessor {
     pub on_server_disconnected: fn(u64),
 }
 
-pub trait Transport: Send + Sync {
+pub trait Transport {
     fn init(&mut self, callback_processor: CallbackProcessor);
     /// <summary>此传输在当前平台可用吗？</summary>
     fn available(&self) -> bool;
