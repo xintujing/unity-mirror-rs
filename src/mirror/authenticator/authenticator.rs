@@ -1,13 +1,13 @@
 #![allow(dead_code)]
 
-use crate::mirror::connect::Connection;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use once_cell::sync::Lazy;
 use std::any::Any;
 
 static mut AUTHENTICATOR_REGISTERS: Lazy<Option<fn() -> Box<dyn Authenticator>>> =
     Lazy::new(|| None);
-static mut ON_SERVER_AUTHENTICATED: Lazy<Option<fn(&mut Connection)>> = Lazy::new(|| None);
+static mut ON_SERVER_AUTHENTICATED: Lazy<Option<fn(&mut NetworkConnection)>> = Lazy::new(|| None);
 
 pub fn register<T: Authenticator>() {
     #[allow(static_mut_refs)]
@@ -60,7 +60,7 @@ pub trait Authenticator: AuthenticatorAnyMut + MessageSerializer + MessageDeseri
         Self: Sized;
     fn on_start_server(&self) {}
     fn on_stop_server(&self) {}
-    fn set_on_server_authenticated(&mut self, f: fn(connection: &mut Connection)) {
+    fn set_on_server_authenticated(&mut self, f: fn(connection: &mut NetworkConnection)) {
         #[allow(static_mut_refs)]
         unsafe {
             if ON_SERVER_AUTHENTICATED.is_some() {
@@ -69,19 +69,19 @@ pub trait Authenticator: AuthenticatorAnyMut + MessageSerializer + MessageDeseri
             *ON_SERVER_AUTHENTICATED = Some(f);
         }
     }
-    fn get_on_server_authenticated(&self) -> Option<&fn(&mut Connection)> {
+    fn get_on_server_authenticated(&self) -> Option<&fn(&mut NetworkConnection)> {
         #[allow(static_mut_refs)]
         unsafe {
             ON_SERVER_AUTHENTICATED.as_ref()
         }
     }
-    fn server_accept(&self, connection: &mut Connection) {
+    fn server_accept(&self, connection: &mut NetworkConnection) {
         if let Some(f) = self.get_on_server_authenticated() {
             f(connection);
         }
     }
-    fn on_server_authenticate(&self, _conn: &mut Connection) {}
-    fn server_reject(&self, conn: &mut Connection) {
+    fn on_server_authenticate(&self, _conn: &mut NetworkConnection) {}
+    fn server_reject(&self, conn: &mut NetworkConnection) {
         conn.disconnect()
     }
 }

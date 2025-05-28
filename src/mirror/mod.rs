@@ -25,7 +25,7 @@ pub mod sync_list;
 pub mod sync_object;
 pub mod transport;
 mod stable_hash;
-mod connect;
+mod network_connection;
 mod network_server;
 mod authenticator;
 mod batching;

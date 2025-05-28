@@ -1,5 +1,5 @@
 use crate::commons::object::Object;
-use crate::mirror::connect::Connection;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -53,7 +53,7 @@ impl MessageDeserializer for EntityStateMessage {
 
 #[allow(unused)]
 impl OnMessageHandler for EntityStateMessage {
-    fn handle(&self, uc_conn: &mut Connection, channel: TransportChannel) {
+    fn handle(&self, uc_conn: &mut NetworkConnection, channel: TransportChannel) {
         // println!("EntityStateMessage::handle");
         // NetworkServer::on_entity_state_message(self, connection)
     }

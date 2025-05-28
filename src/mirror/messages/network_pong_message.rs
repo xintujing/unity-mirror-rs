@@ -1,5 +1,5 @@
 use crate::commons::object::Object;
-use crate::mirror::connect::Connection;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -59,5 +59,5 @@ impl MessageDeserializer for NetworkPongMessage {
 }
 
 impl OnMessageHandler for NetworkPongMessage {
-    fn handle(&self, conn: &mut Connection, channel: TransportChannel) {}
+    fn handle(&self, conn: &mut NetworkConnection, channel: TransportChannel) {}
 }

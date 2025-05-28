@@ -1,6 +1,6 @@
 use crate::commons::object::Object;
 use crate::mirror::authenticator::authenticator::{authenticator_factory, Authenticator};
-use crate::mirror::connect::Connection;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -27,13 +27,13 @@ impl Authenticator for AuthRequestMessage {
 
     fn on_stop_server(&self) {}
 
-    fn on_server_authenticate(&self, _connection: &mut Connection) {
+    fn on_server_authenticate(&self, _connection: &mut NetworkConnection) {
         // do nothing...wait for AuthRequestMessage from client
     }
 }
 
 impl OnMessageHandler for AuthRequestMessage {
-    fn handle(&self, conn: &mut Connection, channel: TransportChannel) {
+    fn handle(&self, conn: &mut NetworkConnection, channel: TransportChannel) {
         match authenticator_factory() {
             None => {
                 conn.send_message(
