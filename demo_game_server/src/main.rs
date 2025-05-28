@@ -1,6 +1,5 @@
-use unity_mirror_rs::mirror::{NetworkBehaviour, NetworkManager, NetworkManagerCallbacks, NetworkRoomManager};
-use unity_mirror_rs::mirror::components::network_transform::network_transform_unreliable::NetworkTransformUnreliable;
-use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, MonoBehaviour, WorldManager};
+use unity_mirror_rs::mirror::NetworkManager;
+use unity_mirror_rs::unity_engine::{GameLooper, MonoBehaviour};
 
 #[ctor::ctor]
 fn init_logger() {
@@ -35,6 +34,8 @@ fn init_logger() {
 
 fn main() {
     NetworkManager::start("Assets/Prefabs/NetworkRoomManager.prefab");
+
+    // NetworkServer.aaa();
 
     // NetworkManager::singleton::<NetworkRoomManager>(|network_room_manager| {
     //     network_room_manager.awake()

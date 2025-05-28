@@ -1,5 +1,7 @@
+use crate::commons::action::{Action, ActionWrapper, Arguments};
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::commons::self_action::SelfAction;
 use crate::metadata_settings::metadata::Metadata;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::mirror::network_manager_factory::NetworkManagerFactory;
@@ -17,13 +19,27 @@ use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFa
     on_start_server(&mut self);
     on_stop_server(&mut self);
 })]
-pub struct NetworkManager {}
+pub struct NetworkManager {
+    pub on_client_scene_changed: Option<Box<dyn SelfAction<()>>>,
+}
+// impl NetworkManager {
+//     pub fn set_callbacks(
+//         &mut self,
+//         callbacks: crate::commons::revel_weak::RevelWeak<Box<dyn NetworkManagerCallbacks>>,
+//     ) {
+//         self.callbacks = callbacks;
+//     }
+// }
 
 impl MonoBehaviour for NetworkManager {
     fn awake(&mut self) {
         println!("Mirror: NetworkManager Awake");
     }
     fn update(&mut self) {
+        if let Some(ref mut on_client_scene_changed) = self.on_client_scene_changed {
+            on_client_scene_changed.invoke(());
+        }
+
         println!("Mirror: NetworkManager Update");
         if let Some(callbacks) = self.callbacks.get() {
             callbacks.on_start_server();

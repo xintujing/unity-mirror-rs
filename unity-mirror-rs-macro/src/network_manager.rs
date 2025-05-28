@@ -122,6 +122,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     self.parent.get().unwrap()
                 }
             }
+
+            impl core::ops::DerefMut for #struct_ident {
+                fn deref_mut(&mut self) -> &mut Self::Target {
+                    self.parent.get().unwrap()
+                }
+            }
         });
 
         parent_instance = Some(quote! {

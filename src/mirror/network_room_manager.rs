@@ -1,3 +1,5 @@
+use crate::commons::action;
+use crate::commons::action::ActionWrapper;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
@@ -7,7 +9,7 @@ use crate::unity_engine::MonoBehaviour;
 use std::any::Any;
 use std::cell::UnsafeCell;
 use std::mem;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Weak};
 use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFactory};
 
@@ -21,9 +23,7 @@ impl NetworkManagerCallbacks for NetworkRoomManager {
         self.qwer()
     }
 
-    fn on_stop_server(&mut self) {
-        todo!()
-    }
+    fn on_stop_server(&mut self) {}
 }
 
 impl MonoBehaviour for NetworkRoomManager {
@@ -50,12 +50,19 @@ impl MonoBehaviour for NetworkRoomManager {
 }
 
 impl NetworkRoomManagerInitialize for NetworkRoomManager {
-    fn initialize(&mut self, metadata: &MetadataNetworkManagerWrapper) {}
+    fn initialize(&mut self, metadata: &MetadataNetworkManagerWrapper) {
+        self.on_client_scene_changed = Some(ActionWrapper::new(Self::on_client_scene_changed));
+    }
 }
 
 impl NetworkRoomManager {
     pub fn qwer(&self) {
         // self.qwe();
         println!("NetworkRoomManager qwer");
+    }
+
+    fn on_client_scene_changed() {
+        println!("NetworkManager: Client scene changed");
+        // 这里可以添加更多的逻辑处理
     }
 }
