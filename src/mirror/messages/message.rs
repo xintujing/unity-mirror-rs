@@ -18,11 +18,6 @@ pub trait MessageDeserializer {
         Self: Sized;
 }
 
-// #[allow(unused)]
-// pub trait OnMessageHandler {
-//     fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {}
-// }
-
 pub trait Message: Object + MyAsAny + MessageSerializer + MessageDeserializer {}
 
 impl<T: Message + 'static> MyAsAny for T {
@@ -40,59 +35,6 @@ impl<T: Message + 'static> MyAsAny for T {
         self
     }
 }
-
-// static mut ON_MESSAGE_HANDLER_REGISTERS: Lazy<
-//     HashMap<u16, fn(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>,
-// > = Lazy::new(|| HashMap::new());
-//
-// pub fn register_messages<M>()
-// where
-//     M: Message + Sync + Send + 'static,
-// {
-//     let hash = M::get_full_name().hash16();
-//     let full_name = M::get_full_name();
-//     #[allow(static_mut_refs)]
-//     unsafe {
-//         if ON_MESSAGE_HANDLER_REGISTERS.contains_key(&hash) {
-//             panic!("Message '{full_name}' already registered")
-//         }
-//         ON_MESSAGE_HANDLER_REGISTERS.insert(hash, |connection, reader, channel| {
-//             match M::get_full_name().hash16() {
-//                 // TimeSnapshotMessage
-//                 57097 => {}
-//                 // NetworkPingMessage
-//                 17487 => {}
-//                 // NetworkPongMessage
-//                 27095 => {}
-//                 _ => {
-//                     // println!("received message: {}", M::full_name());
-//                 }
-//             }
-//             let mut m = M::deserialize(reader);
-//             M::handle(&mut m, connection, channel)
-//         });
-//     }
-// }
-
-// pub fn unpack_message(
-//     conn: &mut RevelArc<NetworkConnection>,
-//     reader: &mut NetworkReader,
-//     channel: TransportChannel,
-// ) -> bool {
-//     // 读取消息 ID
-//     let message_id = reader.read_blittable::<u16>();
-//
-//     #[allow(static_mut_refs)]
-//     if let Some(f) = unsafe { ON_MESSAGE_HANDLER_REGISTERS.get(&message_id) } {
-//         f(conn, reader, channel);
-//         return true;
-//     }
-//     log::error!(
-//         "ON_MESSAGE_HANDLER_REGISTERS not found `message_id: {:02X}",
-//         message_id
-//     );
-//     false
-// }
 
 pub type MessageHandlerFuncType<M> = fn(&mut RevelArc<NetworkConnection>, &M, TransportChannel);
 type MessageHandlerWrappedFuncType =
