@@ -7,6 +7,7 @@ static mut START_INSTANT: Lazy<Option<Instant>> = Lazy::new(|| None); // 游戏�
 static mut FRAME_RATE: AtomicU16 = AtomicU16::new(60); // 60 FPS
 static mut FRAME_COUNT: AtomicU64 = AtomicU64::new(0); // 帧计数器
 static mut FIXED_DATA_TIME: AtomicU64 = AtomicU64::new(20); // 20 ms
+static mut DEFAULT_PING_INTERVAL: f32 = 0.1; // 默认的ping间隔时间（单位：秒）
 
 pub struct Time;
 
@@ -83,6 +84,10 @@ impl Time {
             let frame_rate_duration = Self::get_frame_rate_duration().as_millis() as u64;
             Duration::from_millis(u64::min(fixed_data_time_millis, frame_rate_duration))
         }
+    }
+
+    pub fn ping_interval() -> f64 {
+        unsafe { DEFAULT_PING_INTERVAL as f64 }
     }
 }
 
