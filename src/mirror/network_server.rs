@@ -130,6 +130,7 @@ impl NetworkServer {
             TranSport.active().server_start((self.address, self.port));
         }
         self.active = true;
+        self.register_message_handlers();
     }
 
     fn add_transport_handlers(&self) {
@@ -187,6 +188,10 @@ impl NetworkServer {
 
     fn on_transport_disconnected(conn_id: u64) {
         // TODO: 处理断开连接
+    }
+
+    fn register_message_handlers(&mut self) {
+        // TODO: 注册消息处理器
     }
 
     pub fn register_handler<M>(
