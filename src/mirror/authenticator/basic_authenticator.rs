@@ -1,10 +1,13 @@
 use crate::commons::object::Object;
+use crate::commons::revel_arc::RevelArc;
 use crate::mirror::authenticator::authenticator::Authenticator;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
+use crate::mirror::transport::TransportChannel;
+use crate::mirror::NetworkServer;
 use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror.Authenticators.BasicAuthenticator+")]
@@ -12,6 +15,14 @@ use unity_mirror_macro::{namespace, Message};
 pub struct AuthRequestMessage {
     auth_username: String,
     auth_password: String,
+}
+impl AuthRequestMessage {
+    fn on_auth_request_message(
+        conn: &mut RevelArc<NetworkConnection>,
+        reader: &mut NetworkReader,
+        channel: TransportChannel,
+    ) {
+    }
 }
 
 impl Authenticator for AuthRequestMessage {
@@ -22,9 +33,13 @@ impl Authenticator for AuthRequestMessage {
         })
     }
 
-    fn on_start_server(&self) {}
+    fn on_start_server(&self) {
+        NetworkServer.register_handler::<AuthRequestMessage>(Self::on_auth_request_message, false);
+    }
 
-    fn on_stop_server(&self) {}
+    fn on_stop_server(&self) {
+        NetworkServer.unregister_handler::<AuthRequestMessage>();
+    }
 
     fn on_server_authenticate(&self, _connection: &mut NetworkConnection) {
         // do nothing...wait for AuthRequestMessage from client
@@ -113,5 +128,3 @@ impl MessageDeserializer for AuthResponseMessage {
         }
     }
 }
-
-// impl OnMessageHandler for AuthResponseMessage {}
