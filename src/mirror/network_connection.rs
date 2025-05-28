@@ -108,7 +108,12 @@ impl NetworkConnection {
             &mut self.delivery_time_ema,
         );
     }
-    pub fn update_time_interpolation(&mut self) {}
+    pub fn update_time_interpolation(&mut self) {
+        if self.snapshots.len() >= self.snapshot_buffer_size_limit as usize {
+            return;
+        }
+        // TODO
+    }
     pub fn send(&mut self, segment: &[u8], channel: TransportChannel) {
         if !self.batches.contains_key(&channel) {
             self.batches.insert(channel, Batcher::new(1500));
