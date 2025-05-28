@@ -6,7 +6,7 @@ use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{NetworkBehaviourT, SyncDirection, SyncMode};
+use crate::mirror::{NetworkBehaviourT, NetworkServer, SyncDirection, SyncMode};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -54,6 +54,17 @@ impl MonoBehaviour for NetworkIdentity {
     }
 }
 
+impl NetworkIdentity {
+    pub fn get_next_network_id() -> u32 {
+        let next_network_id = NetworkServer.next_network_id;
+        NetworkServer.next_network_id += 1;
+        next_network_id
+    }
+
+    pub fn reset_server_statics() {
+        NetworkServer.next_network_id = 1;
+    }
+}
 impl NetworkIdentity {
     // ServerDirtyMasks
     fn server_dirty_masks(&self, initial_state: bool) -> (u64, u64) {

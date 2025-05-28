@@ -3,7 +3,7 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
-use crate::mirror::transport::TranSport;
+use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
 use crate::mirror::NetworkIdentity;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -38,6 +38,7 @@ pub struct NetworkServerStatic {
     pub client_snapshot_settings: SnapshotInterpolationSettings,
 
     pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
+    pub next_network_id: u32,
     pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
     pub active: bool,
 }
@@ -62,6 +63,7 @@ static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic 
     exceptions_disconnect: true,
     client_snapshot_settings: SnapshotInterpolationSettings::new(),
     connections: Default::default(),
+    next_network_id: 1,
     spawned: Default::default(),
     active: false,
 });
@@ -113,6 +115,7 @@ impl NetworkServer {
             return;
         }
         self.connections.clear();
+        self.add_transport_handlers();
         self.initialized = true;
 
         self.early_update_duration = TimeSample::new(self.send_rate() as u32);
@@ -123,6 +126,55 @@ impl NetworkServer {
             TranSport.active().server_start((self.address, self.port));
         }
         self.active = true;
+    }
+
+    fn add_transport_handlers(&self) {
+        // let processor = CallbackProcessor {
+        //     on_server_connected: (),
+        //     on_server_connected_with_address: (),
+        //     on_server_data_received: (),
+        //     on_server_data_sent: (),
+        //     on_server_error: (),
+        //     on_server_transport_exception: (),
+        //     on_server_disconnected: (),
+        // };
+        // TranSport.active().init(processor);
+    }
+
+    pub fn shutdown(&mut self) {
+        if self.initialized {
+            self.disconnect_all();
+            TranSport.active().server_stop();
+
+            self.initialized = false;
+        }
+        self.listen = true;
+        self.is_loading_scene = false;
+        self.late_send_time = 0.0;
+        self.actual_tick_rate = 0;
+
+        // TODO handlers.Clear();
+        self.connections.clear();
+        self.cleanup_spawned();
+        self.active = false;
+        NetworkIdentity::reset_server_statics();
+
+        // TODO Event
+        // OnConnectedEvent = null;
+        // OnDisconnectedEvent = null;
+        // OnErrorEvent = null;
+        // OnTransportExceptionEvent = null;
+    }
+
+    fn disconnect_all(&mut self) {
+        for conn in self.connections.values_mut() {
+            conn.disconnect();
+        }
+        self.connections.clear();
+    }
+
+    fn cleanup_spawned(&mut self) {
+        // todo: 清理已生成的对象
     }
 }
 
