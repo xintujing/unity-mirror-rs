@@ -16,7 +16,11 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub(crate) fn send_message(&self, auth_response_message: &mut AuthResponseMessage, transport_channel: TransportChannel) {
+    pub(crate) fn send_message(
+        &self,
+        auth_response_message: &mut AuthResponseMessage,
+        transport_channel: TransportChannel,
+    ) {
         todo!()
     }
 }
