@@ -13,7 +13,7 @@ use crate::mirror::transport::{transport_manager, TransportChannel};
 use crate::mirror::NetworkIdentity;
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
 
 pub struct NetworkConnection {
     // NetworkConnection
@@ -23,12 +23,12 @@ pub struct NetworkConnection {
     pub is_ready: bool,
     pub last_message_time: f64,
     pub identity: RevelWeak<Box<NetworkIdentity>>,
-    owned: HashSet<RevelWeak<Box<NetworkIdentity>>>,
+    owned: Vec<RevelWeak<Box<NetworkIdentity>>>,
     pub remote_time_stamp: f64,
     batches: HashMap<TransportChannel, Batcher>,
     // NetworkConnectionToClient
     pub address: String,
-    observing: HashSet<RevelWeak<Box<NetworkIdentity>>>,
+    observing: Vec<RevelWeak<Box<NetworkIdentity>>>,
     pub un_batcher: UnBatcher,
     drift_ema: ExponentialMovingAverage,
     delivery_time_ema: ExponentialMovingAverage,
@@ -50,11 +50,11 @@ impl NetworkConnection {
             is_ready: false,
             last_message_time: 0.0,
             identity: RevelWeak::default(),
-            owned: HashSet::new(),
+            owned: Vec::new(),
             remote_time_stamp: 0.0,
             batches: HashMap::new(),
             address,
-            observing: HashSet::new(),
+            observing: Vec::new(),
             un_batcher: UnBatcher::new(),
             // TODO
             drift_ema: ExponentialMovingAverage::new(1),
@@ -167,5 +167,12 @@ impl NetworkConnection {
         if let Some(transport) = transport_manager() {
             transport.server_disconnect(self.id);
         }
+    }
+
+    pub fn add_to_observing(&mut self, weak_identity: RevelWeak<Box<NetworkIdentity>>) {
+        if let Some(identity) = weak_identity.get() {
+            //TODO
+        }
+        self.observing.push(weak_identity);
     }
 }
