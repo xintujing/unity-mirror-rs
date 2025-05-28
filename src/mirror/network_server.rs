@@ -1,19 +1,14 @@
 use crate::commons::revel_arc::RevelArc;
+use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::NetworkIdentity;
-use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
-use std::sync::atomic::AtomicBool;
-use crate::commons::revel_weak::RevelWeak;
 
-lazy_static! {
-    static ref ACTIVE: AtomicBool = AtomicBool::new(false);
-}
-static mut CONFIG: Lazy<NetworkServerConfig> = Lazy::new(|| NetworkServerConfig {
+static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
     tick_rate: 30,
     full_update_duration: TimeSample::new(30),
     late_send_time: 0.0,
@@ -29,6 +24,7 @@ static mut CONFIG: Lazy<NetworkServerConfig> = Lazy::new(|| NetworkServerConfig 
     client_snapshot_settings: SnapshotInterpolationSettings::new(),
     connections: Default::default(),
     spawned: Default::default(),
+    active: false,
 });
 
 #[allow(unused)]
@@ -49,7 +45,7 @@ pub enum RemovePlayerOptions {
     Destroy,
 }
 
-pub struct NetworkServerConfig {
+pub struct NetworkServerStatic {
     // 发送速率
     pub tick_rate: u32,
     // 完整更新持续时间
@@ -73,6 +69,7 @@ pub struct NetworkServerConfig {
 
     pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
     pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
+    pub active: bool,
 }
 
 pub struct NetworkServer;
@@ -295,7 +292,7 @@ impl NetworkServer {
 // }
 
 impl Deref for NetworkServer {
-    type Target = NetworkServerConfig;
+    type Target = NetworkServerStatic;
 
     fn deref(&self) -> &Self::Target {
         #[allow(static_mut_refs)]
