@@ -8,6 +8,33 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
+pub struct NetworkServerStatic {
+    // 发送速率
+    pub tick_rate: u32,
+    // 完整更新持续时间
+    full_update_duration: TimeSample,
+    late_send_time: f64,
+
+    disconnect_inactive_connections: bool,
+    disconnect_inactive_timeout: f32,
+
+    actual_tick_rate_counter: i32,
+    actual_tick_rate_start: f64,
+    actual_tick_rate: i32,
+
+    early_update_duration: TimeSample,
+    late_update_duration: TimeSample,
+
+    is_loading_scene: bool,
+    exceptions_disconnect: bool,
+
+    pub client_snapshot_settings: SnapshotInterpolationSettings,
+
+    pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
+    pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
+    pub active: bool,
+}
+
 static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
     tick_rate: 30,
     full_update_duration: TimeSample::new(30),
@@ -43,33 +70,6 @@ pub enum RemovePlayerOptions {
     UnSpawn,
     /// <summary>播放器对象在服务器和客户端上被破坏</summary>
     Destroy,
-}
-
-pub struct NetworkServerStatic {
-    // 发送速率
-    pub tick_rate: u32,
-    // 完整更新持续时间
-    full_update_duration: TimeSample,
-    late_send_time: f64,
-
-    disconnect_inactive_connections: bool,
-    disconnect_inactive_timeout: f32,
-
-    actual_tick_rate_counter: i32,
-    actual_tick_rate_start: f64,
-    actual_tick_rate: i32,
-
-    early_update_duration: TimeSample,
-    late_update_duration: TimeSample,
-
-    is_loading_scene: bool,
-    exceptions_disconnect: bool,
-
-    pub client_snapshot_settings: SnapshotInterpolationSettings,
-
-    pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
-    pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
-    pub active: bool,
 }
 
 pub struct NetworkServer;
