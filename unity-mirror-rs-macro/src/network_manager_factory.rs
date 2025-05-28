@@ -1,4 +1,3 @@
-use crate::utils;
 use crate::utils::random_string::random_string;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
