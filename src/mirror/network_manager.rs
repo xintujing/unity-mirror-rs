@@ -20,7 +20,7 @@ use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFa
     on_stop_server(&mut self);
 })]
 pub struct NetworkManager {
-    pub on_client_scene_changed: Option<Box<dyn SelfAction<()>>>,
+    pub on_client_scene_changed: Option<Box<dyn Action<()>>>,
 }
 // impl NetworkManager {
 //     pub fn set_callbacks(
