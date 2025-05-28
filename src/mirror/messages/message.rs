@@ -1,5 +1,5 @@
 use crate::commons::object::Object;
-use crate::mirror::connect::Connection;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
@@ -20,7 +20,7 @@ pub trait MessageDeserializer {
 
 #[allow(unused)]
 pub trait OnMessageHandler {
-    fn handle(&self, conn: &mut Connection, channel: TransportChannel) {}
+    fn handle(&self, conn: &mut NetworkConnection, channel: TransportChannel) {}
 }
 
 pub trait Message:
@@ -29,7 +29,7 @@ pub trait Message:
 }
 
 static mut ON_MESSAGE_HANDLER_REGISTERS: Lazy<
-    HashMap<u16, fn(&mut Connection, &mut NetworkReader, TransportChannel)>,
+    HashMap<u16, fn(&mut NetworkConnection, &mut NetworkReader, TransportChannel)>,
 > = Lazy::new(|| HashMap::new());
 
 pub fn register_messages<M>()
@@ -62,7 +62,7 @@ where
 }
 
 pub fn unpack_message(
-    conn: &mut Connection,
+    conn: &mut NetworkConnection,
     reader: &mut NetworkReader,
     channel: TransportChannel,
 ) -> bool {

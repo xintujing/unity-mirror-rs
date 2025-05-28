@@ -1,5 +1,6 @@
 use crate::commons::to_hex_string::ToHexString;
 use std::fmt::{Display, Formatter};
+use nalgebra::Quaternion;
 
 pub trait WriteCompress {
     fn compress(&self, writer: &mut NetworkWriter);
@@ -80,6 +81,47 @@ impl WriteCompress for u64 {
 
         writer.write_blittable::<u8>(255);
         writer.write_blittable::<u64>(*self);
+    }
+}
+impl WriteCompress for Quaternion<f32> {
+    fn compress(&self, writer: &mut NetworkWriter) {
+        // fn compress(&self) -> u32 {
+        //         let (largest_index, _, mut without_largest) =
+        //             Compress::largest_absolute_component_index(self);
+        //
+        //         if self[largest_index] < 0.0 {
+        //             without_largest = -without_largest;
+        //         }
+        //
+        //         let a_scaled = Compress::scale_float_to_ushort(
+        //             without_largest.x,
+        //             Compress::QUATERNION_MIN_RANGE,
+        //             Compress::QUATERNION_MAX_RANGE,
+        //             0,
+        //             Compress::TEN_BITS_MAX as u16,
+        //         );
+        //         let b_scaled = Compress::scale_float_to_ushort(
+        //             without_largest.y,
+        //             Compress::QUATERNION_MIN_RANGE,
+        //             Compress::QUATERNION_MAX_RANGE,
+        //             0,
+        //             Compress::TEN_BITS_MAX as u16,
+        //         );
+        //         let c_scaled = Compress::scale_float_to_ushort(
+        //             without_largest.z,
+        //             Compress::QUATERNION_MIN_RANGE,
+        //             Compress::QUATERNION_MAX_RANGE,
+        //             0,
+        //             Compress::TEN_BITS_MAX as u16,
+        //         );
+        //
+        //         // 将它们打包到一个整数中
+        //         (largest_index as u32) << 30
+        //             | (a_scaled as u32) << 20
+        //             | (b_scaled as u32) << 10
+        //             | (c_scaled as u32)
+        //     }
+        todo!()
     }
 }
 

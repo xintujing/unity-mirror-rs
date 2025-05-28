@@ -3,7 +3,7 @@ use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
 use std::sync::{Arc, Weak};
 
-pub struct RevelWeak<T: ?Sized>(pub Weak<UnsafeCell<T>>)
+pub struct RevelWeak<T: ?Sized>(pub(super) Weak<UnsafeCell<T>>)
 where
     T: Sized;
 

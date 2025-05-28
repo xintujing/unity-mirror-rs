@@ -1,5 +1,5 @@
 use crate::commons::object::Object;
-use crate::mirror::connect::Connection;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -38,7 +38,7 @@ impl CommandMessage {
 }
 #[allow(unused)]
 impl OnMessageHandler for CommandMessage {
-    fn handle(&self, uc_conn: &mut Connection, channel: TransportChannel) {
+    fn handle(&self, uc_conn: &mut NetworkConnection, channel: TransportChannel) {
         // let requires_authority =
         //     RemoteProcedureCalls::command_requires_authority(&self.function_hash);
 
