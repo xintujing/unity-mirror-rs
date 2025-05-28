@@ -1,43 +1,11 @@
 #![allow(dead_code)]
 
-use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
+use crate::mirror::network_connection::NetworkConnection;
 use once_cell::sync::Lazy;
 use std::any::Any;
 
-static mut AUTHENTICATOR_REGISTERS: Lazy<Option<fn() -> Box<dyn Authenticator>>> =
-    Lazy::new(|| None);
 static mut ON_SERVER_AUTHENTICATED: Lazy<Option<fn(&mut NetworkConnection)>> = Lazy::new(|| None);
-
-pub fn register<T: Authenticator>() {
-    #[allow(static_mut_refs)]
-    unsafe {
-        if AUTHENTICATOR_REGISTERS.is_some() {
-            panic!("Authenticator already registered");
-        }
-        *AUTHENTICATOR_REGISTERS = Some(T::new);
-    }
-}
-
-pub fn authenticator_factory() -> Option<&'static fn() -> Box<dyn Authenticator>> {
-    #[allow(static_mut_refs)]
-    unsafe {
-        AUTHENTICATOR_REGISTERS.as_ref()
-    }
-}
-
-#[macro_export]
-macro_rules! authenticator_register {
-    ($struct_name:path) => {
-        paste::paste! {
-            #[ctor::ctor]
-            #[allow(non_snake_case)]
-            fn [<$struct_name _registers>](){
-                crate::mirror::authenticator::authenticator::register::<$struct_name>();
-            }
-        }
-    };
-}
 
 pub trait AuthenticatorAnyMut {
     fn as_any(&self) -> &dyn Any;

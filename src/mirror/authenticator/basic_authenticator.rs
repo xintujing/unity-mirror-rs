@@ -19,9 +19,35 @@ pub struct AuthRequestMessage {
 impl AuthRequestMessage {
     fn on_auth_request_message(
         conn: &mut RevelArc<NetworkConnection>,
-        reader: &mut NetworkReader,
+        message: &AuthRequestMessage,
         channel: TransportChannel,
     ) {
+        // TODO: Implement authentication logic here
+        // match authenticator_factory() {
+        //     None => {
+        //         conn.send_message(
+        //             &mut AuthResponseMessage {
+        //                 code: 200,
+        //                 message: "Invalid Credentials".to_string(),
+        //             },
+        //             channel,
+        //         );
+        //         // 请检查是否正确注册了 Authenticator
+        //         log::error!("[AuthRequestMessage.handle] Authenticator not registered");
+        //         self.server_reject(conn);
+        //     }
+        //     Some(_authenticator) => {
+        //         conn.is_authenticated = true;
+        //         conn.send_message(
+        //             &mut AuthResponseMessage {
+        //                 code: 100,
+        //                 message: "Success".to_string(),
+        //             },
+        //             channel,
+        //         );
+        //         self.server_accept(conn);
+        //     }
+        // }
     }
 }
 
@@ -45,36 +71,6 @@ impl Authenticator for AuthRequestMessage {
         // do nothing...wait for AuthRequestMessage from client
     }
 }
-
-// impl OnMessageHandler for AuthRequestMessage {
-//     fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
-//         match authenticator_factory() {
-//             None => {
-//                 conn.send_message(
-//                     &mut AuthResponseMessage {
-//                         code: 200,
-//                         message: "Invalid Credentials".to_string(),
-//                     },
-//                     channel,
-//                 );
-//                 // 请检查是否正确注册了 Authenticator
-//                 log::error!("[AuthRequestMessage.handle] Authenticator not registered");
-//                 self.server_reject(conn);
-//             }
-//             Some(_authenticator) => {
-//                 conn.is_authenticated = true;
-//                 conn.send_message(
-//                     &mut AuthResponseMessage {
-//                         code: 100,
-//                         message: "Success".to_string(),
-//                     },
-//                     channel,
-//                 );
-//                 self.server_accept(conn);
-//             }
-//         }
-//     }
-// }
 
 impl MessageSerializer for AuthRequestMessage {
     fn serialize(&mut self, writer: &mut NetworkWriter)

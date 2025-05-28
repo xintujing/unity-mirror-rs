@@ -1,9 +1,11 @@
+use crate::commons::as_any::MyAsAny;
 use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::transport::TransportChannel;
+use std::any::Any;
 
 pub trait MessageSerializer {
     fn serialize(&mut self, writer: &mut NetworkWriter)
@@ -21,7 +23,23 @@ pub trait MessageDeserializer {
 //     fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {}
 // }
 
-pub trait Message: Object + Default + MessageSerializer + MessageDeserializer {}
+pub trait Message: Object + MyAsAny + MessageSerializer + MessageDeserializer {}
+
+impl<T: Message + 'static> MyAsAny for T {
+    fn as_any(&self) -> &dyn Any
+    where
+        Self: Sized,
+    {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any
+    where
+        Self: Sized,
+    {
+        self
+    }
+}
 
 // static mut ON_MESSAGE_HANDLER_REGISTERS: Lazy<
 //     HashMap<u16, fn(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>,
@@ -76,18 +94,33 @@ pub trait Message: Object + Default + MessageSerializer + MessageDeserializer {}
 //     false
 // }
 
-pub type MessageHandlerFuncType =
-    fn(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel);
+pub type MessageHandlerFuncType<M: Message> =
+    fn(&mut RevelArc<NetworkConnection>, &M, TransportChannel);
+type MessageHandlerWrappedFuncType =
+    Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &dyn Message, TransportChannel)>;
 
 pub struct MessageHandler {
-    func: MessageHandlerFuncType,
+    wrapped_func: MessageHandlerWrappedFuncType,
     require_authentication: bool,
 }
 
 impl MessageHandler {
-    pub fn new(func: MessageHandlerFuncType, require_authentication: bool) -> Self {
+    pub fn new<M: Message + 'static>(
+        func: MessageHandlerFuncType<M>,
+        require_authentication: bool,
+    ) -> Self {
+        // 将泛型函数包装为动态分发函数
+        let wrapped_func: MessageHandlerWrappedFuncType =
+            Box::new(move |conn, dyn_msg, channel| {
+                // 使用 `downcast_ref` 将 `dyn Message` 转换回具体类型
+                if let Some(msg) = dyn_msg.as_any().downcast_ref::<M>() {
+                    func(conn, msg, channel)
+                } else {
+                    panic!("Message type mismatch!");
+                }
+            });
         Self {
-            func,
+            wrapped_func,
             require_authentication,
         }
     }

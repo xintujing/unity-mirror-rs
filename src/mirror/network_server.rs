@@ -196,7 +196,7 @@ impl NetworkServer {
 
     pub fn register_handler<M>(
         &mut self,
-        func: MessageHandlerFuncType,
+        func: MessageHandlerFuncType<M>,
         require_authentication: bool,
     ) where
         M: Message + 'static,
@@ -211,12 +211,15 @@ impl NetworkServer {
         }
         self.handlers.insert(
             message_id,
-            MessageHandler::new(func, require_authentication),
+            MessageHandler::new::<M>(func, require_authentication),
         );
     }
 
-    pub fn replace_handler<M>(&mut self, func: MessageHandlerFuncType, require_authentication: bool)
-    where
+    pub fn replace_handler<M>(
+        &mut self,
+        func: MessageHandlerFuncType<M>,
+        require_authentication: bool,
+    ) where
         M: Message + 'static,
     {
         let message_id = M::get_full_name().hash16();
