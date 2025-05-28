@@ -31,9 +31,6 @@ static mut CONFIG: Lazy<NetworkServerConfig> = Lazy::new(|| NetworkServerConfig 
     spawned: Default::default(),
 });
 
-static mut CONNECTIONS: Lazy<HashMap<String, RevelArc<NetworkConnection>>> =
-    Lazy::new(|| HashMap::default());
-
 #[allow(unused)]
 pub enum ReplacePlayerOptions {
     KeepAuthority,
