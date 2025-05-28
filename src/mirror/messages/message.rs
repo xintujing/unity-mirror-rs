@@ -96,7 +96,7 @@ impl<T: Message + 'static> MyAsAny for T {
 
 pub type MessageHandlerFuncType<M> = fn(&mut RevelArc<NetworkConnection>, &M, TransportChannel);
 type MessageHandlerWrappedFuncType =
-    Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &dyn Message, TransportChannel)>;
+    Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
 
 pub struct MessageHandler {
     wrapped_func: MessageHandlerWrappedFuncType,
@@ -109,15 +109,10 @@ impl MessageHandler {
         require_authentication: bool,
     ) -> Self {
         // 将泛型函数包装为动态分发函数
-        let wrapped_func: MessageHandlerWrappedFuncType =
-            Box::new(move |conn, dyn_msg, channel| {
-                // 使用 `downcast_ref` 将 `dyn Message` 转换回具体类型
-                if let Some(msg) = dyn_msg.as_any().downcast_ref::<M>() {
-                    func(conn, msg, channel)
-                } else {
-                    panic!("Message type mismatch!");
-                }
-            });
+        let wrapped_func: MessageHandlerWrappedFuncType = Box::new(move |conn, reader, channel| {
+            let msg = M::deserialize(reader);
+            func(conn, &msg, channel)
+        });
         Self {
             wrapped_func,
             require_authentication,
@@ -130,8 +125,7 @@ impl MessageHandler {
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) {
-        // TODO: fix reader.read_blittable()
-        (self.wrapped_func)(conn, reader.read_blittable(), channel);
+        (self.wrapped_func)(conn, reader, channel);
     }
 
     pub fn unpack_id(reader: &mut NetworkReader) -> Option<u16> {

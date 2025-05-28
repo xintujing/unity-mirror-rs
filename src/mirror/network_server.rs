@@ -263,17 +263,17 @@ impl NetworkServer {
         channel: TransportChannel,
     ) -> bool {
         if let Some(msg_type) = MessageHandler::unpack_id(reader) {
-            match self.handlers.get_mut(&msg_type) {
+            return match self.handlers.get_mut(&msg_type) {
                 None => {
                     log::warn!("No handler registered for message type: {}", msg_type);
-                    return false;
+                    false
                 }
                 Some(handler) => {
                     handler.invoke(connection, reader, channel);
                     connection.last_message_time = Time::unscaled_time_f64();
-                    return true;
+                    true
                 }
-            }
+            };
         }
         log::warn!("Invalid message header for connection:{}", connection.id);
         false
