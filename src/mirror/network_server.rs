@@ -2,6 +2,7 @@ use crate::commons::revel_arc::RevelArc;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
+use crate::mirror::NetworkIdentity;
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -25,6 +26,8 @@ static mut CONFIG: Lazy<NetworkServerConfig> = Lazy::new(|| NetworkServerConfig 
     is_loading_scene: false,
     exceptions_disconnect: true,
     client_snapshot_settings: SnapshotInterpolationSettings::new(),
+    connections: Default::default(),
+    spawned: Default::default(),
 });
 
 static mut CONNECTIONS: Lazy<HashMap<String, RevelArc<NetworkConnection>>> =
@@ -48,7 +51,7 @@ pub enum RemovePlayerOptions {
     Destroy,
 }
 
-struct NetworkServerConfig {
+pub struct NetworkServerConfig {
     // 发送速率
     pub tick_rate: u32,
     // 完整更新持续时间
@@ -69,6 +72,9 @@ struct NetworkServerConfig {
     exceptions_disconnect: bool,
 
     pub client_snapshot_settings: SnapshotInterpolationSettings,
+
+    pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
+    pub spawned: HashMap<u32, RevelArc<Box<NetworkIdentity>>>,
 }
 
 pub struct NetworkServer;
