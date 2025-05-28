@@ -27,3 +27,6 @@ pub mod transport;
 mod stable_hash;
 mod connect;
 mod network_server;
+mod authenticator;
+mod batching;
+mod compress;
