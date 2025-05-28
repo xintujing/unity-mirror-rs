@@ -1,15 +1,15 @@
 use crate::commons::object::Object;
+use crate::commons::revel_arc::RevelArc;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
-use unity_mirror_macro::{namespace, MessageRegistry};
-use crate::commons::revel_arc::RevelArc;
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
+#[derive(Debug, PartialEq, Clone, Default, Message)]
 pub struct EntityStateMessage {
     pub net_id: u32,
     pub payload: Vec<u8>,
@@ -49,13 +49,5 @@ impl MessageDeserializer for EntityStateMessage {
             net_id,
             payload: payload.to_vec(),
         }
-    }
-}
-
-#[allow(unused)]
-impl OnMessageHandler for EntityStateMessage {
-    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
-        // println!("EntityStateMessage::handle");
-        // NetworkServer::on_entity_state_message(self, connection)
     }
 }

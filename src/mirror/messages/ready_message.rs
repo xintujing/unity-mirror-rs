@@ -1,15 +1,15 @@
 use crate::commons::object::Object;
+use crate::commons::revel_arc::RevelArc;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
-use unity_mirror_macro::{namespace, MessageRegistry};
-use crate::commons::revel_arc::RevelArc;
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default, MessageRegistry)]
+#[derive(Debug, PartialEq, Clone, Default, Message)]
 pub struct ReadyMessage;
 
 impl MessageSerializer for ReadyMessage {
@@ -27,17 +27,5 @@ impl MessageDeserializer for ReadyMessage {
         Self: Sized,
     {
         Self
-    }
-}
-
-impl OnMessageHandler for ReadyMessage {
-    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, _channel: TransportChannel) {
-        // NetworkManager::on_server_ready_message_internal(connection, self.clone());
-
-        // log::info!(
-        //     "AddPlayerMessage received from connection {} on channel {:?}",
-        //     connection_id,
-        //     channel
-        // )
     }
 }

@@ -1,16 +1,14 @@
 use crate::commons::object::Object;
-use crate::mirror::authenticator::authenticator::{authenticator_factory, Authenticator};
+use crate::mirror::authenticator::authenticator::Authenticator;
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use crate::mirror::transport::TransportChannel;
-use unity_mirror_macro::{namespace, Message, MessageRegistry};
-use crate::commons::revel_arc::RevelArc;
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror.Authenticators.BasicAuthenticator+")]
-#[derive(Default, Clone, MessageRegistry)]
+#[derive(Default, Clone, Message)]
 pub struct AuthRequestMessage {
     auth_username: String,
     auth_password: String,
@@ -33,35 +31,35 @@ impl Authenticator for AuthRequestMessage {
     }
 }
 
-impl OnMessageHandler for AuthRequestMessage {
-    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
-        match authenticator_factory() {
-            None => {
-                conn.send_message(
-                    &mut AuthResponseMessage {
-                        code: 200,
-                        message: "Invalid Credentials".to_string(),
-                    },
-                    channel,
-                );
-                // 请检查是否正确注册了 Authenticator
-                log::error!("[AuthRequestMessage.handle] Authenticator not registered");
-                self.server_reject(conn);
-            }
-            Some(_authenticator) => {
-                conn.is_authenticated = true;
-                conn.send_message(
-                    &mut AuthResponseMessage {
-                        code: 100,
-                        message: "Success".to_string(),
-                    },
-                    channel,
-                );
-                self.server_accept(conn);
-            }
-        }
-    }
-}
+// impl OnMessageHandler for AuthRequestMessage {
+//     fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {
+//         match authenticator_factory() {
+//             None => {
+//                 conn.send_message(
+//                     &mut AuthResponseMessage {
+//                         code: 200,
+//                         message: "Invalid Credentials".to_string(),
+//                     },
+//                     channel,
+//                 );
+//                 // 请检查是否正确注册了 Authenticator
+//                 log::error!("[AuthRequestMessage.handle] Authenticator not registered");
+//                 self.server_reject(conn);
+//             }
+//             Some(_authenticator) => {
+//                 conn.is_authenticated = true;
+//                 conn.send_message(
+//                     &mut AuthResponseMessage {
+//                         code: 100,
+//                         message: "Success".to_string(),
+//                     },
+//                     channel,
+//                 );
+//                 self.server_accept(conn);
+//             }
+//         }
+//     }
+// }
 
 impl MessageSerializer for AuthRequestMessage {
     fn serialize(&mut self, writer: &mut NetworkWriter)
@@ -116,4 +114,4 @@ impl MessageDeserializer for AuthResponseMessage {
     }
 }
 
-impl OnMessageHandler for AuthResponseMessage {}
+// impl OnMessageHandler for AuthResponseMessage {}

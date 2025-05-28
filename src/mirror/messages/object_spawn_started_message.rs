@@ -1,5 +1,5 @@
 use crate::commons::object::Object;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
@@ -33,5 +33,3 @@ impl MessageDeserializer for ObjectSpawnStartedMessage {
         Self
     }
 }
-
-impl OnMessageHandler for ObjectSpawnStartedMessage {}

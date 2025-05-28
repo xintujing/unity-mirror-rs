@@ -1,12 +1,12 @@
 use crate::commons::object::Object;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default, Message)]
 pub struct ChangeOwnerMessage {
     pub net_id: u32,
     pub is_owner: bool,
@@ -51,5 +51,3 @@ impl MessageDeserializer for ChangeOwnerMessage {
         }
     }
 }
-
-impl OnMessageHandler for ChangeOwnerMessage {}

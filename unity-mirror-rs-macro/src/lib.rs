@@ -101,10 +101,10 @@ pub fn parent_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStrea
     network_behaviour::parent_on_deserialize(attr, item)
 }
 
-#[proc_macro_derive(MessageRegistry)]
-pub fn message_registry(input: TokenStream) -> TokenStream {
-    message::message_registry_handler(input)
-}
+// #[proc_macro_derive(MessageRegistry)]
+// pub fn message_registry(input: TokenStream) -> TokenStream {
+//     message::message_registry_handler(input)
+// }
 
 #[proc_macro_derive(Message)]
 pub fn message(input: TokenStream) -> TokenStream {

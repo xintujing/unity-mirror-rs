@@ -1,8 +1,10 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType};
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
+use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
 use crate::mirror::NetworkIdentity;
 use once_cell::sync::Lazy;
@@ -38,6 +40,7 @@ pub struct NetworkServerStatic {
     pub client_snapshot_settings: SnapshotInterpolationSettings,
 
     pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
+    handlers: HashMap<u16, MessageHandler>,
     pub next_network_id: u32,
     pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
     pub active: bool,
@@ -63,6 +66,7 @@ static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic 
     exceptions_disconnect: true,
     client_snapshot_settings: SnapshotInterpolationSettings::new(),
     connections: Default::default(),
+    handlers: Default::default(),
     next_network_id: 1,
     spawned: Default::default(),
     active: false,
@@ -183,6 +187,46 @@ impl NetworkServer {
 
     fn on_transport_disconnected(conn_id: u64) {
         // TODO: 处理断开连接
+    }
+
+    pub fn register_handler<M>(
+        &mut self,
+        func: MessageHandlerFuncType,
+        require_authentication: bool,
+    ) where
+        M: Message + 'static,
+    {
+        let message_id = M::get_full_name().hash16();
+        if self.handlers.contains_key(&message_id) {
+            log::warn!(
+                "Handler for message {} already registered, please use replace_handler instead.",
+                M::get_full_name()
+            );
+            return;
+        }
+        self.handlers.insert(
+            message_id,
+            MessageHandler::new(func, require_authentication),
+        );
+    }
+
+    pub fn replace_handler<M>(&mut self, func: MessageHandlerFuncType, require_authentication: bool)
+    where
+        M: Message + 'static,
+    {
+        let message_id = M::get_full_name().hash16();
+        self.handlers.insert(
+            message_id,
+            MessageHandler::new(func, require_authentication),
+        );
+    }
+
+    pub fn unregister_handler<M>(&mut self)
+    where
+        M: Message + 'static,
+    {
+        let message_id = M::get_full_name().hash16();
+        self.handlers.remove(&message_id);
     }
 
     pub fn shutdown(&mut self) {

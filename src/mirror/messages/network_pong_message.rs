@@ -1,15 +1,12 @@
 use crate::commons::object::Object;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer, OnMessageHandler};
+use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use crate::mirror::transport::TransportChannel;
-use unity_mirror_macro::{namespace, MessageRegistry};
-use crate::commons::revel_arc::RevelArc;
+use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default, Copy, MessageRegistry)]
+#[derive(Debug, PartialEq, Clone, Default, Copy, Message)]
 pub struct NetworkPongMessage {
     pub local_time: f64,
     pub prediction_error_unadjusted: f64,
@@ -57,8 +54,4 @@ impl MessageDeserializer for NetworkPongMessage {
             prediction_error_adjusted,
         }
     }
-}
-
-impl OnMessageHandler for NetworkPongMessage {
-    fn handle(&self, conn: &mut RevelArc<NetworkConnection>, channel: TransportChannel) {}
 }
