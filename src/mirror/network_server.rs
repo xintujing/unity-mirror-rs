@@ -1,13 +1,9 @@
 use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::network_connection::NetworkConnection;
+use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
-use crate::mirror::transport::{init_transport_manager, TransportChannel, TransportError};
-use crate::transports::kcp2k2_transport::Kcp2kTransport;
-use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
-use std::cell::{RefCell, UnsafeCell};
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicBool;
@@ -17,7 +13,6 @@ lazy_static! {
 }
 static mut CONFIG: Lazy<NetworkServerConfig> = Lazy::new(|| NetworkServerConfig {
     tick_rate: 30,
-    send_rate: 30,
     full_update_duration: TimeSample::new(30),
     late_send_time: 0.0,
     disconnect_inactive_connections: false,
@@ -29,6 +24,7 @@ static mut CONFIG: Lazy<NetworkServerConfig> = Lazy::new(|| NetworkServerConfig 
     late_update_duration: TimeSample::new(0),
     is_loading_scene: false,
     exceptions_disconnect: true,
+    client_snapshot_settings: SnapshotInterpolationSettings::new(),
 });
 
 static mut CONNECTIONS: Lazy<HashMap<String, RevelArc<NetworkConnection>>> =
@@ -52,14 +48,11 @@ pub enum RemovePlayerOptions {
     Destroy,
 }
 
-pub struct NetworkServerConfig {
+struct NetworkServerConfig {
     // 发送速率
-    tick_rate: u32,
-    send_rate: i32,
+    pub tick_rate: u32,
     // 完整更新持续时间
     full_update_duration: TimeSample,
-    // 发送间隔
-    // send_interval: f32,
     late_send_time: f64,
 
     disconnect_inactive_connections: bool,
@@ -74,25 +67,28 @@ pub struct NetworkServerConfig {
 
     is_loading_scene: bool,
     exceptions_disconnect: bool,
+
+    pub client_snapshot_settings: SnapshotInterpolationSettings,
 }
 
 pub struct NetworkServer;
 
-impl Deref for NetworkServer {
-    type Target = NetworkServerConfig;
+impl NetworkServer {
+    pub fn send_rate(&self) -> i32 {
+        self.tick_rate as i32
+    }
 
-    fn deref(&self) -> &Self::Target {
-        #[allow(static_mut_refs)]
-        unsafe {
-            &*CONFIG
+    pub fn tick_interval(&self) -> f64 {
+        match self.tick_rate < i32::MAX as u32 {
+            true => 1.0 / self.tick_rate as f64,
+            false => 0.0,
         }
     }
-}
-impl DerefMut for NetworkServer {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        #[allow(static_mut_refs)]
-        unsafe {
-            &mut *CONFIG
+
+    pub fn send_interval(&self) -> f64 {
+        match self.tick_rate < i32::MAX as u32 {
+            true => 1.0 / self.tick_rate as f64,
+            false => 0.0,
         }
     }
 }
@@ -293,3 +289,22 @@ impl DerefMut for NetworkServer {
 //         *VIRTUAL_NETWORK_SERVER_ON_TRANSPORT_EXCEPTION_EVENT.get() = f;
 //     }
 // }
+
+impl Deref for NetworkServer {
+    type Target = NetworkServerConfig;
+
+    fn deref(&self) -> &Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe {
+            &*CONFIG
+        }
+    }
+}
+impl DerefMut for NetworkServer {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe {
+            &mut *CONFIG
+        }
+    }
+}

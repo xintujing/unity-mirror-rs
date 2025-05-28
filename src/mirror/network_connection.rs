@@ -10,7 +10,7 @@ use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInter
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::transport::{transport_manager, TransportChannel};
-use crate::mirror::NetworkIdentity;
+use crate::mirror::{NetworkIdentity, NetworkServer};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
 use std::collections::{BTreeMap, HashMap};
@@ -43,7 +43,7 @@ pub struct NetworkConnection {
 
 impl NetworkConnection {
     pub fn new(id: u64, address: String) -> Self {
-        Self {
+        let mut connection = Self {
             id,
             is_authenticated: false,
             authentication_data: None,
@@ -56,19 +56,28 @@ impl NetworkConnection {
             address,
             observing: Vec::new(),
             un_batcher: UnBatcher::new(),
-            // TODO
-            drift_ema: ExponentialMovingAverage::new(1),
-            // TODO
-            delivery_time_ema: ExponentialMovingAverage::new(1),
+            drift_ema: ExponentialMovingAverage::new(
+                NetworkServer.send_rate() as u32
+                    * NetworkServer.client_snapshot_settings.drift_ema_duration as u32,
+            ),
+            delivery_time_ema: ExponentialMovingAverage::new(
+                NetworkServer.send_rate() as u32
+                    * NetworkServer
+                        .client_snapshot_settings
+                        .delivery_time_ema_duration as u32,
+            ),
             remote_timeline: 0.0,
             remote_timescale: 0.0,
             buffer_time_multiplier: 2.0,
-            // TODO
             buffer_time: 0.0,
             snapshots: BTreeMap::new(),
             snapshot_buffer_size_limit: 64,
             last_ping_time: 0.0,
-        }
+        };
+
+        connection.buffer_time = NetworkServer.send_interval() * connection.buffer_time_multiplier;
+
+        connection
     }
     pub fn update(&mut self) {
         self.update_ping();
