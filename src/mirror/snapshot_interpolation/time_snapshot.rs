@@ -1,3 +1,4 @@
+#![allow(unused)]
 use crate::mirror::snapshot_interpolation::snapshot::Snapshot;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]

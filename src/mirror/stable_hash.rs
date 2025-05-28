@@ -1,3 +1,4 @@
+#![allow(unused)]
 pub trait StableHash {
     fn hash(&self) -> i32;
     fn hash16(&self) -> u16;

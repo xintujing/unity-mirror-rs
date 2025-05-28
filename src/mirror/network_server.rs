@@ -8,6 +8,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
+#[allow(unused)]
 pub struct NetworkServerStatic {
     // 发送速率
     pub tick_rate: u32,
