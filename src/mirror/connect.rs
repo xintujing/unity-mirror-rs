@@ -9,7 +9,8 @@ pub struct Connection {
     pub is_authenticated: bool,
     pub authentication_data: Option<Box<dyn Authenticator>>,
     pub is_ready: bool,
-    pub last_message_time: f32,
+    pub last_message_time: f64,
+    pub remote_time_stamp: f64,
 
     // Batcher,
     batches: HashMap<TransportChannel, Batcher>,
