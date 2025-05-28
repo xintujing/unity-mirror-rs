@@ -3,11 +3,11 @@ use crate::mirror::authenticator::authenticator::Authenticator;
 use crate::mirror::authenticator::basic_authenticator::AuthResponseMessage;
 use crate::mirror::batching::batcher::Batcher;
 use crate::mirror::batching::un_batcher::UnBatcher;
+use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkIdentity;
-use std::collections::{BTreeMap, HashMap, HashSet};
-use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::unity_engine::ExponentialMovingAverage;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 pub struct NetworkConnection {
     // NetworkConnection
@@ -19,7 +19,6 @@ pub struct NetworkConnection {
     pub identity: RevelWeak<Box<NetworkIdentity>>,
     pub owned: HashSet<RevelWeak<Box<NetworkIdentity>>>,
     pub remote_time_stamp: f64,
-    // Batcher,
     batches: HashMap<TransportChannel, Batcher>,
     // NetworkConnectionToClient
     pub address: String,
