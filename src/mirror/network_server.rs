@@ -131,11 +131,12 @@ impl NetworkServer {
     fn add_transport_handlers(&self) {
         let processor = CallbackProcessor {
             on_server_connected: Self::on_transport_connected,
-            on_server_data_received: (),
-            on_server_data_sent: (),
-            on_server_error: (),
-            on_server_transport_exception: (),
-            on_server_disconnected: (),
+            on_server_connected_with_address: Self::on_transport_connected_with_address,
+            on_server_data_received: Self::on_transport_data,
+            on_server_data_sent: |_, _, _| {},
+            on_server_error: Self::on_transport_error,
+            on_server_transport_exception: Self::on_transport_exception,
+            on_server_disconnected: Self::on_transport_disconnected,
         };
         TranSport.active().init(processor);
     }
@@ -151,7 +152,25 @@ impl NetworkServer {
         );
     }
 
-    fn on_transport_connected_with_address(conn_id: u64, address: &str) {}
+    fn on_transport_connected_with_address(conn_id: u64, address: &str) {
+        // TODO 处理连接
+    }
+
+    fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
+        // TODO: 处理接收到的数据
+    }
+
+    fn on_transport_error(conn_id: u64, err: TransportError, reason: &str) {
+        // TODO: 处理传输错误
+    }
+
+    fn on_transport_exception(conn_id: u64, _err: Box<dyn std::error::Error>) {
+        // TODO: 处理传输异常
+    }
+
+    fn on_transport_disconnected(conn_id: u64) {
+        // TODO: 处理断开连接
+    }
 
     pub fn shutdown(&mut self) {
         if self.initialized {
