@@ -125,6 +125,11 @@ impl MessageHandler {
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) {
+        if self.require_authentication && !conn.is_authenticated {
+            log::warn!("Disconnecting connection: {}. Received message that required authentication, but the user has not authenticated yet",conn.id);
+            conn.disconnect();
+            return;
+        }
         (self.wrapped_func)(conn, reader, channel);
     }
 
