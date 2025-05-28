@@ -67,28 +67,6 @@ impl TranSport {
     }
 }
 
-pub fn init_transport_manager(
-    mut transport: Box<dyn Transport>,
-    on_server_connected: fn(u64),
-    on_server_connected_with_address: fn(u64, &str),
-    on_server_data_received: fn(u64, &[u8], TransportChannel),
-    on_server_data_sent: fn(u64, &[u8], TransportChannel),
-    on_server_error: fn(u64, TransportError, &str),
-    on_server_transport_exception: fn(u64, Box<dyn std::error::Error>),
-    on_server_disconnected: fn(u64),
-) {
-    transport.init(CallbackProcessor {
-        on_server_connected,
-        on_server_connected_with_address,
-        on_server_data_received,
-        on_server_data_sent,
-        on_server_error,
-        on_server_transport_exception,
-        on_server_disconnected,
-    });
-    unsafe { TRANSPORT = Some(transport) }
-}
-
 pub struct CallbackProcessor {
     pub on_server_connected: fn(u64),
     pub on_server_connected_with_address: fn(u64, &str),
