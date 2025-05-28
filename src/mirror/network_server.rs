@@ -129,17 +129,29 @@ impl NetworkServer {
     }
 
     fn add_transport_handlers(&self) {
-        // let processor = CallbackProcessor {
-        //     on_server_connected: (),
-        //     on_server_connected_with_address: (),
-        //     on_server_data_received: (),
-        //     on_server_data_sent: (),
-        //     on_server_error: (),
-        //     on_server_transport_exception: (),
-        //     on_server_disconnected: (),
-        // };
-        // TranSport.active().init(processor);
+        let processor = CallbackProcessor {
+            on_server_connected: Self::on_transport_connected,
+            on_server_data_received: (),
+            on_server_data_sent: (),
+            on_server_error: (),
+            on_server_transport_exception: (),
+            on_server_disconnected: (),
+        };
+        TranSport.active().init(processor);
     }
+
+    fn on_transport_connected(conn_id: u64) {
+        Self::on_transport_connected_with_address(
+            conn_id,
+            TranSport
+                .active()
+                .server_get_client_address(conn_id)
+                .unwrap_or_default()
+                .as_str(),
+        );
+    }
+
+    fn on_transport_connected_with_address(conn_id: u64, address: &str) {}
 
     pub fn shutdown(&mut self) {
         if self.initialized {
