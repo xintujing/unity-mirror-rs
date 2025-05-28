@@ -1,12 +1,20 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::mirror::messages::command_message::CommandMessage;
+use crate::mirror::messages::entity_state_message::EntityStateMessage;
 use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType};
+use crate::mirror::messages::network_ping_message::NetworkPingMessage;
+use crate::mirror::messages::network_pong_message::NetworkPongMessage;
+use crate::mirror::messages::ready_message::ReadyMessage;
+use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::network_connection::NetworkConnection;
+use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
 use crate::mirror::NetworkIdentity;
+use crate::unity_engine::Time;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
@@ -192,6 +200,83 @@ impl NetworkServer {
 
     fn register_message_handlers(&mut self) {
         // TODO: 注册消息处理器
+        self.register_handler::<ReadyMessage>(Self::on_client_ready_message, true);
+        self.register_handler::<CommandMessage>(Self::on_client_command_message, true);
+        self.register_handler::<NetworkPingMessage>(Self::on_client_network_ping_message, false);
+        self.register_handler::<NetworkPongMessage>(Self::on_client_network_pong_message, false);
+        self.register_handler::<EntityStateMessage>(Self::on_client_entity_state_message, true);
+        self.register_handler::<TimeSnapshotMessage>(Self::on_client_time_snapshot_message, false);
+    }
+
+    fn on_client_ready_message(
+        connection: &mut RevelArc<NetworkConnection>,
+        _: &ReadyMessage,
+        _: TransportChannel,
+    ) {
+        // TODO: 处理客户端准备就绪消息
+    }
+
+    fn on_client_command_message(
+        connection: &mut RevelArc<NetworkConnection>,
+        _: &CommandMessage,
+        _: TransportChannel,
+    ) {
+        // TODO: 处理客户端命令消息
+    }
+
+    fn on_client_network_ping_message(
+        connection: &mut RevelArc<NetworkConnection>,
+        _: &NetworkPingMessage,
+        _: TransportChannel,
+    ) {
+        // TODO: 处理客户端网络Ping消息
+    }
+
+    fn on_client_network_pong_message(
+        connection: &mut RevelArc<NetworkConnection>,
+        _: &NetworkPongMessage,
+        _: TransportChannel,
+    ) {
+        // TODO: 处理客户端网络Pong消息
+    }
+
+    fn on_client_entity_state_message(
+        connection: &mut RevelArc<NetworkConnection>,
+        _: &EntityStateMessage,
+        _: TransportChannel,
+    ) {
+        // TODO: 处理客户端实体状态消息
+    }
+
+    fn on_client_time_snapshot_message(
+        connection: &mut RevelArc<NetworkConnection>,
+        _: &TimeSnapshotMessage,
+        _: TransportChannel,
+    ) {
+        // TODO: 处理时间快照消息
+    }
+
+    fn unpack_and_invoke(
+        &mut self,
+        connection: &mut RevelArc<NetworkConnection>,
+        reader: &mut NetworkReader,
+        channel: TransportChannel,
+    ) -> bool {
+        if let Some(msg_type) = MessageHandler::unpack_id(reader) {
+            match self.handlers.get_mut(&msg_type) {
+                None => {
+                    log::warn!("No handler registered for message type: {}", msg_type);
+                    return false;
+                }
+                Some(handler) => {
+                    handler.invoke(connection, reader, channel);
+                    connection.last_message_time = Time::unscaled_time_f64();
+                    return true;
+                }
+            }
+        }
+        log::warn!("Invalid message header for connection:{}", connection.id);
+        false
     }
 
     pub fn register_handler<M>(

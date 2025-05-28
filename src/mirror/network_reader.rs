@@ -1,7 +1,6 @@
 #![allow(unused)]
 use crate::commons::to_hex_string::ToHexString;
 use crate::mirror::network_writer::NetworkWriter;
-use nalgebra::Quaternion;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -96,7 +95,7 @@ impl ReadCompress for u64 {
         0
     }
 }
-impl ReadCompress for Quaternion<f32> {
+impl ReadCompress for nalgebra::Quaternion<f32> {
     fn decompress(reader: &mut NetworkReader) -> Self
     where
         Self: Sized,

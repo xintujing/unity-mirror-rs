@@ -1,6 +1,5 @@
 use crate::commons::to_hex_string::ToHexString;
 use std::fmt::{Display, Formatter};
-use nalgebra::Quaternion;
 
 pub trait WriteCompress {
     fn compress(&self, writer: &mut NetworkWriter);
@@ -83,7 +82,7 @@ impl WriteCompress for u64 {
         writer.write_blittable::<u64>(*self);
     }
 }
-impl WriteCompress for Quaternion<f32> {
+impl WriteCompress for nalgebra::Quaternion<f32> {
     fn compress(&self, writer: &mut NetworkWriter) {
         // fn compress(&self) -> u32 {
         //         let (largest_index, _, mut without_largest) =

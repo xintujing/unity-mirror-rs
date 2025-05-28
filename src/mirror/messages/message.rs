@@ -94,14 +94,13 @@ impl<T: Message + 'static> MyAsAny for T {
 //     false
 // }
 
-pub type MessageHandlerFuncType<M: Message> =
-    fn(&mut RevelArc<NetworkConnection>, &M, TransportChannel);
+pub type MessageHandlerFuncType<M> = fn(&mut RevelArc<NetworkConnection>, &M, TransportChannel);
 type MessageHandlerWrappedFuncType =
     Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &dyn Message, TransportChannel)>;
 
 pub struct MessageHandler {
     wrapped_func: MessageHandlerWrappedFuncType,
-    require_authentication: bool,
+    pub require_authentication: bool,
 }
 
 impl MessageHandler {
@@ -122,6 +121,24 @@ impl MessageHandler {
         Self {
             wrapped_func,
             require_authentication,
+        }
+    }
+
+    pub fn invoke(
+        &mut self,
+        conn: &mut RevelArc<NetworkConnection>,
+        reader: &mut NetworkReader,
+        channel: TransportChannel,
+    ) {
+        // TODO: fix reader.read_blittable()
+        (self.wrapped_func)(conn, reader.read_blittable(), channel);
+    }
+
+    pub fn unpack_id(reader: &mut NetworkReader) -> Option<u16> {
+        let msg_type = reader.read_blittable::<u16>();
+        match msg_type {
+            0 => None,
+            _ => Some(msg_type),
         }
     }
 }
