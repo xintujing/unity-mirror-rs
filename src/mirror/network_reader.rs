@@ -1,6 +1,8 @@
 #![allow(unused)]
 use crate::commons::to_hex_string::ToHexString;
+use crate::mirror::compress::Compress;
 use crate::mirror::network_writer::NetworkWriter;
+use nalgebra::Vector4;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -100,56 +102,54 @@ impl ReadCompress for nalgebra::Quaternion<f32> {
     where
         Self: Sized,
     {
-        //     fn decompress(data: u32) -> Self {
-        //         // 获取 cScaled（位 0..10）
-        //         let c_scaled = (data & Compress::TEN_BITS_MAX) as u16;
-        //
-        //         // 获取 bScaled（位 10..20）
-        //         let b_scaled = ((data >> 10) & Compress::TEN_BITS_MAX) as u16;
-        //
-        //         // 获取 aScaled（位 20..30）
-        //         let a_scaled = ((data >> 20) & Compress::TEN_BITS_MAX) as u16;
-        //
-        //         // 获取 largestIndex（位 30..32）
-        //         let largest_index = (data >> 30) as usize;
-        //
-        //         // 缩放回浮点数
-        //         let a = Compress::scale_ushort_to_float(
-        //             a_scaled,
-        //             0,
-        //             Compress::TEN_BITS_MAX,
-        //             Compress::QUATERNION_MIN_RANGE,
-        //             Compress::QUATERNION_MAX_RANGE,
-        //         );
-        //         let b = Compress::scale_ushort_to_float(
-        //             b_scaled,
-        //             0,
-        //             Compress::TEN_BITS_MAX,
-        //             Compress::QUATERNION_MIN_RANGE,
-        //             Compress::QUATERNION_MAX_RANGE,
-        //         );
-        //         let c = Compress::scale_ushort_to_float(
-        //             c_scaled,
-        //             0,
-        //             Compress::TEN_BITS_MAX,
-        //             Compress::QUATERNION_MIN_RANGE,
-        //             Compress::QUATERNION_MAX_RANGE,
-        //         );
-        //
-        //         // 计算省略的分量 d，基于 a² + b² + c² + d² = 1
-        //         let d = (1.0 - a * a - b * b - c * c).sqrt();
-        //
-        //         // 根据 largestIndex 重建四元数
-        //         let v4 = match largest_index {
-        //             0 => Vector4::new(d, a, b, c),
-        //             1 => Vector4::new(a, d, b, c),
-        //             2 => Vector4::new(a, b, d, c),
-        //             _ => Vector4::new(a, b, c, d),
-        //         };
-        //
-        //         Compress::quaternion_normalize_safe(v4)
-        //     }
-        todo!()
+        let data = reader.read_blittable::<u32>();
+        // 获取 cScaled（位 0..10）
+        let c_scaled = (data & Compress::TEN_BITS_MAX) as u16;
+
+        // 获取 bScaled（位 10..20）
+        let b_scaled = ((data >> 10) & Compress::TEN_BITS_MAX) as u16;
+
+        // 获取 aScaled（位 20..30）
+        let a_scaled = ((data >> 20) & Compress::TEN_BITS_MAX) as u16;
+
+        // 获取 largestIndex（位 30..32）
+        let largest_index = (data >> 30) as usize;
+
+        // 缩放回浮点数
+        let a = Compress.scale_ushort_to_float(
+            a_scaled,
+            0,
+            Compress::TEN_BITS_MAX,
+            Compress::QUATERNION_MIN_RANGE,
+            Compress::QUATERNION_MAX_RANGE,
+        );
+        let b = Compress.scale_ushort_to_float(
+            b_scaled,
+            0,
+            Compress::TEN_BITS_MAX,
+            Compress::QUATERNION_MIN_RANGE,
+            Compress::QUATERNION_MAX_RANGE,
+        );
+        let c = Compress.scale_ushort_to_float(
+            c_scaled,
+            0,
+            Compress::TEN_BITS_MAX,
+            Compress::QUATERNION_MIN_RANGE,
+            Compress::QUATERNION_MAX_RANGE,
+        );
+
+        // 计算省略的分量 d，基于 a² + b² + c² + d² = 1
+        let d = (1.0 - a * a - b * b - c * c).sqrt();
+
+        // 根据 largestIndex 重建四元数
+        let v4 = match largest_index {
+            0 => Vector4::new(d, a, b, c),
+            1 => Vector4::new(a, d, b, c),
+            2 => Vector4::new(a, b, d, c),
+            _ => Vector4::new(a, b, c, d),
+        };
+
+        Compress.quaternion_normalize_safe(v4)
     }
 }
 

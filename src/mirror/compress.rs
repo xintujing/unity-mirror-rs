@@ -34,7 +34,7 @@ impl Compress {
     }
 
     // 将 `u16` 值缩放到指定的浮点范围
-    fn scale_ushort_to_float(
+    pub fn scale_ushort_to_float(
         &self,
         value: u16,
         min_value: u32,
