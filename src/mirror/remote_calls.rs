@@ -65,7 +65,7 @@ impl RemoteProcedureCalls {
         function_hash
     }
 
-    pub fn check_if_delegate_exists(
+    fn check_if_delegate_exists(
         &self,
         component_type: TypeId,
         function_full_name: &str,
@@ -90,15 +90,30 @@ impl RemoteProcedureCalls {
         false
     }
 
-    pub fn get_invoker_for_hash(
+    pub fn invoke(
         &self,
         function_hash: u16,
-        remote_call_type: &RemoteCallType,
+        remote_call_type: RemoteCallType,
+        reader: &mut NetworkReader,
+        network_behaviour_chain: &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
+        conn: &mut RevelArc<NetworkConnection>,
+    ) -> bool {
+        if let Some(invoker) = self.get_invoker_for_hash(function_hash, remote_call_type) {
+            (invoker.function)(network_behaviour_chain, reader, conn);
+            return true;
+        }
+        false
+    }
+
+    fn get_invoker_for_hash(
+        &self,
+        function_hash: u16,
+        remote_call_type: RemoteCallType,
     ) -> Option<&'static Invoker> {
         #[allow(static_mut_refs)]
         unsafe {
             if let Some(invoker) = REMOTE_CALL_DELEGATES.get(&function_hash) {
-                if invoker.call_type == *remote_call_type {
+                if invoker.call_type == remote_call_type {
                     return Some(invoker);
                 }
             }
@@ -122,7 +137,7 @@ pub enum RemoteCallType {
     ClientRpc,
 }
 pub type RemoteCallDelegate = fn(
-    &Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
+    &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
     &mut NetworkReader,
     &mut RevelArc<NetworkConnection>,
 );
