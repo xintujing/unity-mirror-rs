@@ -193,6 +193,41 @@ impl NetworkServer {
         // TODO 处理连接
     }
 
+    fn is_connection_allowed(conn_id: u64, address: &str) -> bool {
+        if !Self.listen {
+            log::warn!(
+                "Server not listening, rejecting connectionId={} with address={}",
+                conn_id,
+                address
+            );
+            return false;
+        }
+
+        if conn_id == 0 {
+            log::error!("Server.HandleConnect: invalid connectionId={} needs to be != 0, because 0 is reserved for local player.", conn_id);
+            return false;
+        }
+
+        if Self.connections.contains_key(&conn_id) {
+            log::error!(
+                "Server connectionId={} already in use. Client with address={} will be kicked",
+                conn_id,
+                address
+            );
+            return false;
+        }
+
+        if Self.connections.len() as i32 >= Self.max_connections {
+            log::error!(
+                "Server full, client connectionId={} with address={} will be kicked",
+                conn_id,
+                address
+            );
+            return false;
+        }
+        true
+    }
+
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
         // TODO: 处理接收到的数据
     }
