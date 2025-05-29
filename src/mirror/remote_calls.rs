@@ -15,6 +15,20 @@ pub struct RemoteProcedureCalls;
 impl RemoteProcedureCalls {
     pub const INVOKE_RPC_PREFIX: &'static str = "InvokeUserCode_";
 
+    pub fn register_command<T: NetworkBehaviourT + 'static>(
+        &self,
+        function_full_name: &str,
+        func: RemoteCallDelegate,
+        cmd_requires_authority: bool,
+    ) -> u16 {
+        self.register_delegate::<T>(
+            function_full_name,
+            RemoteCallType::Command,
+            func,
+            cmd_requires_authority,
+        )
+    }
+
     pub fn register_delegate<T: NetworkBehaviourT + 'static>(
         &self,
         function_full_name: &str,
@@ -74,6 +88,29 @@ impl RemoteProcedureCalls {
             }
         }
         false
+    }
+
+    pub fn get_invoker_for_hash(
+        &self,
+        function_hash: u16,
+        remote_call_type: &RemoteCallType,
+    ) -> Option<&'static Invoker> {
+        #[allow(static_mut_refs)]
+        unsafe {
+            if let Some(invoker) = REMOTE_CALL_DELEGATES.get(&function_hash) {
+                if invoker.call_type == *remote_call_type {
+                    return Some(invoker);
+                }
+            }
+        }
+        None
+    }
+
+    pub fn remove_delegate(&self, function_hash: u16) {
+        #[allow(static_mut_refs)]
+        unsafe {
+            REMOTE_CALL_DELEGATES.remove(&function_hash);
+        }
     }
 }
 
