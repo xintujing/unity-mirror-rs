@@ -52,6 +52,13 @@ pub struct NetworkServerStatic {
     pub next_network_id: u32,
     pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
     pub active: bool,
+
+    // Events
+    pub on_connected_event: fn(&mut RevelArc<NetworkConnection>),
+    pub on_disconnected_event: fn(&mut RevelArc<NetworkConnection>),
+    pub on_error_event: fn(&mut RevelArc<NetworkConnection>, TransportError, &str),
+    pub on_transport_exception_event:
+        fn(&mut RevelArc<NetworkConnection>, Box<dyn std::error::Error>),
 }
 
 static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
@@ -78,6 +85,10 @@ static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic 
     next_network_id: 1,
     spawned: Default::default(),
     active: false,
+    on_connected_event: |_| {},
+    on_disconnected_event: |_| {},
+    on_error_event: |_, _, _| {},
+    on_transport_exception_event: |_, _| {},
 });
 
 #[allow(unused)]
@@ -336,17 +347,16 @@ impl NetworkServer {
         self.late_send_time = 0.0;
         self.actual_tick_rate = 0;
 
-        // TODO handlers.Clear();
         self.connections.clear();
+        self.handlers.clear();
         self.cleanup_spawned();
         self.active = false;
         NetworkIdentity::reset_server_statics();
 
-        // TODO Event
-        // OnConnectedEvent = null;
-        // OnDisconnectedEvent = null;
-        // OnErrorEvent = null;
-        // OnTransportExceptionEvent = null;
+        self.on_connected_event = |_| {};
+        self.on_disconnected_event = |_| {};
+        self.on_error_event = |_, _, _| {};
+        self.on_transport_exception_event = |_, _| {};
     }
 
     fn disconnect_all(&mut self) {
