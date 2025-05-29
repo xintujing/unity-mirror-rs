@@ -190,7 +190,12 @@ impl NetworkServer {
     }
 
     fn on_transport_connected_with_address(conn_id: u64, address: &str) {
-        // TODO 处理连接
+        if Self::is_connection_allowed(conn_id, address) {
+            let connection = NetworkConnection::new(conn_id, address.to_string());
+            Self::on_connected(RevelArc::new(connection));
+            return;
+        }
+        TranSport.active().server_disconnect(conn_id);
     }
 
     fn is_connection_allowed(conn_id: u64, address: &str) -> bool {
@@ -225,6 +230,19 @@ impl NetworkServer {
             );
             return false;
         }
+        true
+    }
+
+    fn on_connected(mut conn: RevelArc<NetworkConnection>) {
+        (Self.on_connected_event)(&mut conn);
+        Self.add_connection(conn);
+    }
+
+    fn add_connection(&mut self, conn: RevelArc<NetworkConnection>) -> bool {
+        if self.connections.contains_key(&conn.id) {
+            return false;
+        }
+        self.connections.insert(conn.id, conn);
         true
     }
 
