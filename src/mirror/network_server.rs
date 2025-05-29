@@ -246,6 +246,13 @@ impl NetworkServer {
         true
     }
 
+    fn remove_connection(&mut self, conn_id: u64) -> bool {
+        if self.connections.remove(&conn_id).is_some() {
+            return true;
+        }
+        false
+    }
+
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
         // TODO: 处理接收到的数据
     }
