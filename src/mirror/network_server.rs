@@ -210,7 +210,6 @@ impl NetworkServer {
     }
 
     fn register_message_handlers(&mut self) {
-        // TODO: 注册消息处理器
         self.register_handler::<ReadyMessage>(Self::on_client_ready_message, true);
         self.register_handler::<CommandMessage>(Self::on_client_command_message, true);
         self.register_handler::<NetworkPingMessage>(Self::on_client_network_ping_message, false);
