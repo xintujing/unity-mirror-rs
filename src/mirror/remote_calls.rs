@@ -150,7 +150,7 @@ pub struct Invoker {
 }
 
 impl Invoker {
-    pub fn are_equal(
+    fn are_equal(
         &self,
         component_type: TypeId,
         call_type: &RemoteCallType,
