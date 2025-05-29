@@ -9,7 +9,11 @@ use std::any::TypeId;
 use std::collections::HashMap;
 
 static mut REMOTE_CALL_DELEGATES: Lazy<HashMap<u16, Invoker>> = Lazy::new(|| HashMap::new());
-
+pub type RemoteCallDelegate = fn(
+    &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
+    &mut NetworkReader,
+    &mut RevelArc<NetworkConnection>,
+);
 pub struct RemoteProcedureCalls;
 
 impl RemoteProcedureCalls {
@@ -136,11 +140,6 @@ pub enum RemoteCallType {
     #[allow(unused)]
     ClientRpc,
 }
-pub type RemoteCallDelegate = fn(
-    &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
-    &mut NetworkReader,
-    &mut RevelArc<NetworkConnection>,
-);
 
 pub struct Invoker {
     pub(crate) component_type: TypeId,
