@@ -8,7 +8,7 @@ impl Compress {
     pub const QUATERNION_MIN_RANGE: f32 = -FRAC_1_SQRT_2;
     pub const QUATERNION_MAX_RANGE: f32 = FRAC_1_SQRT_2;
     pub const TEN_BITS_MAX: u32 = 1023;
-    fn largest_absolute_component_index(q: &Quaternion<f32>) -> (usize, f32, Vector3<f32>) {
+    pub fn largest_absolute_component_index(&self, q: &Quaternion<f32>) -> (usize, f32, Vector3<f32>) {
         let abs = Vector4::new(q.i.abs(), q.j.abs(), q.k.abs(), q.w.abs());
 
         let mut largest_abs = abs.x;
@@ -49,7 +49,7 @@ impl Compress {
     }
 
     // 将浮点值缩放到 `u16` 范围
-    fn scale_float_to_ushort(
+    pub fn scale_float_to_ushort(
         &self,
         value: f32,
         min_value: f32,
@@ -64,7 +64,7 @@ impl Compress {
     }
 
     // 安全地规范化四元数，即使输入包含无效值（如 NaN）
-    fn quaternion_normalize_safe(&self, v4: Vector4<f32>) -> Quaternion<f32> {
+    pub fn quaternion_normalize_safe(&self, v4: Vector4<f32>) -> Quaternion<f32> {
         const FLT_MIN_NORMAL: f64 = 1.175494351e-38f64;
         let len = v4.dot(&v4);
         if len > FLT_MIN_NORMAL as f32 {
@@ -83,7 +83,7 @@ impl Compress {
         (result, Vector3::new(x, y, z))
     }
 
-    fn vector3float_to_long3(&self, value: Vector3<f32>, precision: f32) -> (bool, i64, i64, i64) {
+    pub fn vector3float_to_long3(&self, value: Vector3<f32>, precision: f32) -> (bool, i64, i64, i64) {
         let mut result = true;
         let (res, x) = self.float_to_long(value.x, precision);
         result &= res;
@@ -94,7 +94,7 @@ impl Compress {
         (result, x, y, z)
     }
 
-    fn float_to_long(&self, value: f32, precision: f32) -> (bool, i64) {
+    pub fn float_to_long(&self, value: f32, precision: f32) -> (bool, i64) {
         if precision == 0.0 {
             println!("precision cannot be 0");
         }
@@ -102,7 +102,7 @@ impl Compress {
         (true, quantized)
     }
 
-    fn long_to_float(&self, value: i64, precision: f32) -> f32 {
+    pub fn long_to_float(&self, value: i64, precision: f32) -> f32 {
         if precision == 0.0 {
             println!("precision cannot be 0");
         }
@@ -113,7 +113,7 @@ impl Compress {
         self.long3_to_vector3float(value.x, value.y, value.z, precision)
     }
 
-    fn long3_to_vector3float(&self, x: i64, y: i64, z: i64, precision: f32) -> Vector3<f32> {
+    pub fn long3_to_vector3float(&self, x: i64, y: i64, z: i64, precision: f32) -> Vector3<f32> {
         let mut v = Vector3::new(0.0, 0.0, 0.0);
         v.x = self.long_to_float(x, precision);
         v.y = self.long_to_float(y, precision);
