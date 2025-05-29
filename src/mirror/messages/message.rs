@@ -41,7 +41,9 @@ type MessageHandlerWrappedFuncType =
     Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
 
 pub struct MessageHandler {
+    #[allow(unused)]
     wrapped_func: MessageHandlerWrappedFuncType,
+    #[allow(unused)]
     pub require_authentication: bool,
 }
 
@@ -61,6 +63,7 @@ impl MessageHandler {
         }
     }
 
+    #[allow(unused)]
     pub fn invoke(
         &mut self,
         conn: &mut RevelArc<NetworkConnection>,
@@ -75,6 +78,7 @@ impl MessageHandler {
         (self.wrapped_func)(conn, reader, channel);
     }
 
+    #[allow(unused)]
     pub fn unpack_id(reader: &mut NetworkReader) -> Option<u16> {
         let msg_type = reader.read_blittable::<u16>();
         match msg_type {

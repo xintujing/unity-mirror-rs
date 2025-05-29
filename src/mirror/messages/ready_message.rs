@@ -1,11 +1,8 @@
 use crate::commons::object::Object;
-use crate::commons::revel_arc::RevelArc;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
-use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use crate::mirror::transport::TransportChannel;
 use unity_mirror_macro::{namespace, Message};
 
 #[namespace(prefix = "Mirror")]

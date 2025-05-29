@@ -234,9 +234,6 @@ impl WorldManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::mirror::NetworkIdentity;
-    use crate::unity_engine::game_looper::GameLooper;
-    use std::thread::spawn;
 
     #[test]
     fn test_change_scene() {

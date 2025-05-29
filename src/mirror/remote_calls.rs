@@ -8,14 +8,20 @@ use once_cell::sync::Lazy;
 use std::any::TypeId;
 use std::collections::HashMap;
 
+#[allow(unused)]
 static mut REMOTE_CALL_DELEGATES: Lazy<HashMap<u16, Invoker>> = Lazy::new(|| HashMap::new());
+
+#[allow(unused)]
 pub type RemoteCallDelegate = fn(
     &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
     &mut NetworkReader,
     &mut RevelArc<NetworkConnection>,
 );
+
+#[allow(unused)]
 pub struct RemoteProcedureCalls;
 
+#[allow(unused)]
 impl RemoteProcedureCalls {
     pub const INVOKE_RPC_PREFIX: &'static str = "InvokeUserCode_";
 
@@ -145,6 +151,7 @@ pub struct Invoker {
     pub(crate) component_type: TypeId,
     pub(crate) call_type: RemoteCallType,
     pub(crate) function: RemoteCallDelegate,
+    #[allow(unused)]
     pub(crate) cmd_requires_authority: bool,
     pub(crate) function_name: String,
 }
