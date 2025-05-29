@@ -234,8 +234,8 @@ impl NetworkServer {
     }
 
     fn on_connected(mut conn: RevelArc<NetworkConnection>) {
+        Self.add_connection(conn.clone());
         (Self.on_connected_event)(&mut conn);
-        Self.add_connection(conn);
     }
 
     fn add_connection(&mut self, conn: RevelArc<NetworkConnection>) -> bool {
