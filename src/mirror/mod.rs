@@ -31,3 +31,4 @@ mod network_server;
 mod authenticator;
 mod batching;
 mod compress;
+mod remote_calls;
