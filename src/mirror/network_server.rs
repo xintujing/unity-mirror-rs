@@ -280,7 +280,7 @@ impl NetworkServer {
 
     fn on_client_ready_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: &ReadyMessage,
+        _: ReadyMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理客户端准备就绪消息
@@ -288,7 +288,7 @@ impl NetworkServer {
 
     fn on_client_command_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: &CommandMessage,
+        _: CommandMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理客户端命令消息
@@ -296,7 +296,7 @@ impl NetworkServer {
 
     fn on_client_network_ping_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: &NetworkPingMessage,
+        _: NetworkPingMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理客户端网络Ping消息
@@ -304,7 +304,7 @@ impl NetworkServer {
 
     fn on_client_network_pong_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: &NetworkPongMessage,
+        _: NetworkPongMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理客户端网络Pong消息
@@ -312,7 +312,7 @@ impl NetworkServer {
 
     fn on_client_entity_state_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: &EntityStateMessage,
+        _: EntityStateMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理客户端实体状态消息
@@ -320,7 +320,7 @@ impl NetworkServer {
 
     fn on_client_time_snapshot_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: &TimeSnapshotMessage,
+        _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理时间快照消息

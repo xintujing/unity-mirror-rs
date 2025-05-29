@@ -19,7 +19,7 @@ pub struct AuthRequestMessage {
 impl AuthRequestMessage {
     fn on_auth_request_message(
         conn: &mut RevelArc<NetworkConnection>,
-        message: &AuthRequestMessage,
+        message: AuthRequestMessage,
         channel: TransportChannel,
     ) {
         // TODO: Implement authentication logic here

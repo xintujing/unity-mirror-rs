@@ -36,7 +36,7 @@ impl<T: Message + 'static> MyAsAny for T {
     }
 }
 
-pub type MessageHandlerFuncType<M> = fn(&mut RevelArc<NetworkConnection>, &M, TransportChannel);
+pub type MessageHandlerFuncType<M> = fn(&mut RevelArc<NetworkConnection>, M, TransportChannel);
 type MessageHandlerWrappedFuncType =
     Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
 
@@ -55,7 +55,7 @@ impl MessageHandler {
         // 将泛型函数包装为动态分发函数
         let wrapped_func: MessageHandlerWrappedFuncType = Box::new(move |conn, reader, channel| {
             let msg = M::deserialize(reader);
-            func(conn, &msg, channel)
+            func(conn, msg, channel)
         });
         Self {
             wrapped_func,
