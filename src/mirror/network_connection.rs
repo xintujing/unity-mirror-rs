@@ -93,8 +93,7 @@ impl NetworkConnection {
         // dynamic adjustment
         if snapshot_settings.dynamic_adjustment {
             self.buffer_time_multiplier = SnapshotInterpolation::dynamic_adjustment(
-                // TODO NetworkServer.send_interval as f64
-                0.0,
+                NetworkServer.send_interval(),
                 self.delivery_time_ema.standard_deviation,
                 snapshot_settings.dynamic_adjustment_tolerance as f64,
             )
@@ -106,8 +105,7 @@ impl NetworkConnection {
             snapshot,
             &mut self.remote_timeline,
             &mut self.remote_timescale,
-            // TODO NetworkServer.send_interval as f64
-            0.0,
+            NetworkServer.send_interval(),
             self.buffer_time,
             snapshot_settings.catchup_speed,
             snapshot_settings.slowdown_speed,
