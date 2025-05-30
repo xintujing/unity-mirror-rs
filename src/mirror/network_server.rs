@@ -17,6 +17,7 @@ use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
+use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
@@ -585,11 +586,15 @@ impl NetworkServer {
     }
 
     fn on_client_time_snapshot_message(
-        connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<NetworkConnection>,
         _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理时间快照消息
+        let remote_time_stamp = connection.remote_time_stamp;
+        connection.on_time_snapshot(TimeSnapshot::new(
+            remote_time_stamp,
+            Time::unscaled_time_f64(),
+        ))
     }
 
     fn unpack_and_invoke(
