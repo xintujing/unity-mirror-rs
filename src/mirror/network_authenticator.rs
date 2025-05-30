@@ -23,9 +23,7 @@ impl<T: Authenticator + 'static> AuthenticatorAnyMut for T {
     }
 }
 
-pub trait Authenticator:
-    Object //+ AuthenticatorAnyMut + MessageSerializer + MessageDeserializer
-{
+pub trait Authenticator: Object {
     fn new() -> Box<dyn Authenticator>
     where
         Self: Sized;
