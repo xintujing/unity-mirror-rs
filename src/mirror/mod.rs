@@ -15,8 +15,11 @@ mod pool;
 mod snapshot_interpolation;
 
 mod network_manager;
-pub mod network_manager_trait;
 pub use network_manager::*;
+
+mod network_manager_trait;
+pub use network_manager_trait::*;
+
 mod network_manager_factory;
 mod network_room_manager;
 

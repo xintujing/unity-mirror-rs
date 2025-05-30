@@ -1,6 +1,6 @@
 use crate::commons::action::SelfMutAction;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::mirror::network_manager::NetworkManager;
+use crate::mirror::NetworkManager;
 use crate::mirror::NetworkManagerCallbacks;
 use crate::unity_engine::MonoBehaviour;
 use std::any::Any;

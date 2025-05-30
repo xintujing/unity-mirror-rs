@@ -56,7 +56,7 @@ impl NetworkManagerInitialize for NetworkManager {
     }
 }
 
-static mut NETWORK_MANAGER: Lazy<RevelWeak<Box<dyn network_manager_trait::NetworkManager>>> =
+static mut NETWORK_MANAGER: Lazy<RevelWeak<Box<dyn network_manager_trait::TNetworkManager>>> =
     Lazy::new(|| RevelWeak::default());
 impl NetworkManager {
     pub fn start(prefab_path: &str) {
@@ -88,7 +88,7 @@ impl NetworkManager {
         WorldManager::dont_destroy_object(arc_game_object);
     }
 
-    pub fn singleton<T: network_manager_trait::NetworkManager + 'static>(f: fn(&mut T)) {
+    pub fn singleton<T: network_manager_trait::TNetworkManager + 'static>(f: fn(&mut T)) {
         #[allow(static_mut_refs)]
         unsafe {
             if let Some(weak) = NETWORK_MANAGER.downcast::<T>() {

@@ -4,13 +4,13 @@ use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkM
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use std::any::TypeId;
 
-pub trait NetworkManager: MonoBehaviour + NetworkManagerInstance {}
+pub trait TNetworkManager: MonoBehaviour + NetworkManagerInstance {}
 
 pub trait NetworkManagerInstance {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkManagerWrapper,
-    ) -> Vec<(RevelArc<Box<dyn NetworkManager>>, TypeId)>
+    ) -> Vec<(RevelArc<Box<dyn TNetworkManager>>, TypeId)>
     where
         Self: Sized;
 }

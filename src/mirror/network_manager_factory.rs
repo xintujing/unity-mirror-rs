@@ -1,7 +1,7 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::mirror::network_manager_trait::NetworkManager;
+use crate::mirror::network_manager_trait::TNetworkManager;
 use crate::unity_engine::GameObject;
 use once_cell::sync::Lazy;
 use std::any::TypeId;
@@ -13,18 +13,18 @@ static mut NETWORK_MANAGER_FACTORY: Lazy<
         fn(
             weak_game_object: RevelWeak<GameObject>,
             metadata: &MetadataNetworkManagerWrapper,
-        ) -> Vec<(RevelArc<Box<dyn NetworkManager>>, TypeId)>,
+        ) -> Vec<(RevelArc<Box<dyn TNetworkManager>>, TypeId)>,
     >,
 > = Lazy::new(|| HashMap::new());
 
 pub struct NetworkManagerFactory;
 
 impl NetworkManagerFactory {
-    pub fn register<T: NetworkManager + 'static>(
+    pub fn register<T: TNetworkManager + 'static>(
         factory: fn(
             weak_game_object: RevelWeak<GameObject>,
             metadata: &MetadataNetworkManagerWrapper,
-        ) -> Vec<(RevelArc<Box<dyn NetworkManager>>, TypeId)>,
+        ) -> Vec<(RevelArc<Box<dyn TNetworkManager>>, TypeId)>,
     ) {
         let full_name = T::get_full_name();
         #[allow(static_mut_refs)]
@@ -43,7 +43,7 @@ impl NetworkManagerFactory {
         full_name: &str,
         weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkManagerWrapper,
-    ) -> Vec<(RevelArc<Box<dyn NetworkManager>>, TypeId)> {
+    ) -> Vec<(RevelArc<Box<dyn TNetworkManager>>, TypeId)> {
         #[allow(static_mut_refs)]
         unsafe {
             if let Some(factory) = NETWORK_MANAGER_FACTORY.get(full_name) {

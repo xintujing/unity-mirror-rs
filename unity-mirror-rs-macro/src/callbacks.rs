@@ -81,7 +81,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
     }
 
-    // let a = quote! {pub trait #callbacks_trait_ident: crate::mirror::network_manager_trait::NetworkManager {
+    // let a = quote! {pub trait #callbacks_trait_ident: crate::mirror::TNetworkManager {
     //     #callbacks_args
     // }};
     //
@@ -90,7 +90,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         #item_struct
 
-        pub trait #callbacks_trait_ident: crate::mirror::network_manager_trait::NetworkManager {
+        pub trait #callbacks_trait_ident: crate::mirror::TNetworkManager {
             #callbacks_args
         }
 
