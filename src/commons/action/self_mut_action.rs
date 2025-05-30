@@ -32,11 +32,17 @@ impl_self_mut_handler! { A B C D E F G H }
 impl_self_mut_handler! { A B C D E F G H I }
 impl_self_mut_handler! { A B C D E F G H I J }
 
-pub struct SelfMutAction<Args, Return>(Box<dyn Fn(Args) -> Return>);
+pub struct SelfMutAction<Args, Return> {
+    f: Box<dyn Fn(Args) -> Return>,
+    reg: bool,
+}
 
 impl<Args, Return> Default for SelfMutAction<Args, Return> {
     fn default() -> Self {
-        Self(Box::new(|_| panic!("Action called without a handler set")))
+        Self {
+            f: Box::new(|_| {}),
+            reg: false,
+        }
     }
 }
 
@@ -45,11 +51,23 @@ impl<Args, Return> SelfMutAction<Args, Return> {
     where
         F: SelfMutHandler<This, Args, Output = Return>,
     {
-        Self(Box::new(move |args| unsafe {
-            handler.call(&mut **(s.upgrade().unwrap().get()), args)
-        }))
+        Self {
+            f: Box::new(move |args| unsafe {
+                handler.call(&mut **(s.upgrade().unwrap().get()), args)
+            }),
+            reg: true,
+        }
     }
     pub fn call(&self, args: Args) -> Return {
-        self.0(args)
+        (self.f)(args)
+    }
+
+    pub fn is_registered(&self) -> bool {
+        self.reg
+    }
+
+    pub fn reset(&mut self) {
+        self.f = Box::new(|_| {});
+        self.reg = false;
     }
 }

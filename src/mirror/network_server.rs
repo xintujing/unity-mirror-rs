@@ -1,3 +1,4 @@
+use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::messages::command_message::CommandMessage;
@@ -54,11 +55,15 @@ pub struct NetworkServerStatic {
     pub active: bool,
 
     // Events
-    pub on_connected_event: fn(&mut RevelArc<NetworkConnection>),
-    pub on_disconnected_event: fn(&mut RevelArc<NetworkConnection>),
-    pub on_error_event: fn(&mut RevelArc<NetworkConnection>, TransportError, &str),
+    pub on_connected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
+    pub on_disconnected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
+    pub on_error_event:
+        SelfMutAction<(RevelArc<NetworkConnection>, TransportError, &'static str), ()>,
+    // pub on_error_event: fn(&mut RevelArc<NetworkConnection>, TransportError, &str),
     pub on_transport_exception_event:
-        fn(&mut RevelArc<NetworkConnection>, Box<dyn std::error::Error>),
+        SelfMutAction<(RevelArc<NetworkConnection>, Box<dyn std::error::Error>), ()>,
+    // pub on_transport_exception_event:
+    //     fn(&mut RevelArc<NetworkConnection>, Box<dyn std::error::Error>),
 }
 
 static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
@@ -85,10 +90,10 @@ static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic 
     next_network_id: 1,
     spawned: Default::default(),
     active: false,
-    on_connected_event: |_| {},
-    on_disconnected_event: |_| {},
-    on_error_event: |_, _, _| {},
-    on_transport_exception_event: |_, _| {},
+    on_connected_event: SelfMutAction::default(),
+    on_disconnected_event: SelfMutAction::default(),
+    on_error_event: SelfMutAction::default(),
+    on_transport_exception_event: SelfMutAction::default(),
 });
 
 #[allow(unused)]
@@ -233,13 +238,17 @@ impl NetworkServer {
         true
     }
 
-    fn on_connected(mut conn: RevelArc<NetworkConnection>) {
+    fn on_connected(conn: RevelArc<NetworkConnection>) {
         Self.add_connection(conn.clone());
-        (Self.on_connected_event)(&mut conn);
+        Self.on_connected_event.call((conn,));
+    }
+
+    fn connection_contains_key(&self, conn_id: &u64) -> bool {
+        self.connections.contains_key(conn_id)
     }
 
     fn add_connection(&mut self, conn: RevelArc<NetworkConnection>) -> bool {
-        if self.connections.contains_key(&conn.id) {
+        if self.connection_contains_key(&conn.id) {
             return false;
         }
         self.connections.insert(conn.id, conn);
@@ -412,10 +421,10 @@ impl NetworkServer {
         self.active = false;
         NetworkIdentity::reset_server_statics();
 
-        self.on_connected_event = |_| {};
-        self.on_disconnected_event = |_| {};
-        self.on_error_event = |_, _, _| {};
-        self.on_transport_exception_event = |_, _| {};
+        self.on_connected_event.reset();
+        self.on_disconnected_event.reset();
+        self.on_error_event.reset();
+        self.on_transport_exception_event.reset();
     }
 
     fn disconnect_all(&mut self) {
