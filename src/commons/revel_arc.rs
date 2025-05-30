@@ -23,7 +23,7 @@ impl<T> Deref for RevelArc<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        unsafe { &*self.0.get() }
+        unsafe { &mut *self.0.get() }
     }
 }
 
@@ -50,9 +50,9 @@ impl<T> RevelArc<T> {
         RevelWeak(std::sync::Arc::downgrade(&self.0))
     }
 
-    pub fn get<'a>(&self) -> &'a mut T {
-        unsafe { &mut *self.0.get() }
-    }
+    // pub fn get<'a>(&self) -> &'a mut T {
+    //     unsafe { &mut *self.0.get() }
+    // }
 
     pub fn ptr_eq(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.0, &other.0)

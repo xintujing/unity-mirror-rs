@@ -257,7 +257,7 @@ macro_rules! recursive_event_fn {
                 for component in &mut self.components {
                     if let Some(component_mut) = component.last_mut() {
                         if let Some(component_mut) = component.last_mut() {
-                            component_mut.get().$fn_name();
+                            component_mut.$fn_name();
                         }
                     }
                 }

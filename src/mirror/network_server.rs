@@ -293,7 +293,7 @@ impl NetworkServer {
     }
 
     fn on_client_ready_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: ReadyMessage,
         _: TransportChannel,
     ) {
@@ -301,7 +301,7 @@ impl NetworkServer {
     }
 
     fn on_client_command_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: CommandMessage,
         _: TransportChannel,
     ) {
@@ -309,7 +309,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_ping_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: NetworkPingMessage,
         _: TransportChannel,
     ) {
@@ -317,7 +317,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_pong_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: NetworkPongMessage,
         _: TransportChannel,
     ) {
@@ -325,7 +325,7 @@ impl NetworkServer {
     }
 
     fn on_client_entity_state_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: EntityStateMessage,
         _: TransportChannel,
     ) {
@@ -333,7 +333,7 @@ impl NetworkServer {
     }
 
     fn on_client_time_snapshot_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
@@ -342,7 +342,7 @@ impl NetworkServer {
 
     fn unpack_and_invoke(
         &mut self,
-        connection: &mut NetworkConnection,
+        mut connection: RevelArc<NetworkConnection>,
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) -> bool {
@@ -353,7 +353,7 @@ impl NetworkServer {
                     false
                 }
                 Some(handler) => {
-                    handler.invoke(connection, reader, channel);
+                    handler.invoke(connection.clone(), reader, channel);
                     connection.last_message_time = Time::unscaled_time_f64();
                     true
                 }
