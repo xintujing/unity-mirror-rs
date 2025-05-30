@@ -1,6 +1,5 @@
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::batching::batcher::Batcher;
-use crate::mirror::batching::un_batcher::UnBatcher;
 use crate::mirror::messages::message;
 use crate::mirror::messages::message::MessageSerializer;
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
@@ -28,7 +27,6 @@ pub struct NetworkConnection {
     // NetworkConnectionToClient
     pub address: String,
     observing: Vec<RevelWeak<Box<NetworkIdentity>>>,
-    pub un_batcher: UnBatcher,
     drift_ema: ExponentialMovingAverage,
     delivery_time_ema: ExponentialMovingAverage,
     pub remote_timeline: f64,
@@ -54,7 +52,6 @@ impl NetworkConnection {
             batches: HashMap::new(),
             address,
             observing: Vec::new(),
-            un_batcher: UnBatcher::new(),
             drift_ema: ExponentialMovingAverage::new(
                 NetworkServer.send_rate() as u32
                     * NetworkServer.client_snapshot_settings.drift_ema_duration as u32,
@@ -178,5 +175,8 @@ impl NetworkConnection {
             //TODO
         }
         self.observing.push(weak_identity);
+    }
+    pub fn cleanup(&mut self) {
+        // TODO
     }
 }

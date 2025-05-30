@@ -18,7 +18,6 @@ impl BasicAuthenticator {
         message: BasicAuthenticatorRequestMessage,
         channel: TransportChannel,
     ) {
-        connection.id = 555;
     }
 }
 

@@ -42,7 +42,7 @@ impl<Args, Return> Action<Args, Return> {
     where
         F: Handler<Args, Output = Return>,
     {
-        Self(Box::new(move |args| unsafe { handler.call(args) }))
+        Self(Box::new(move |args| handler.call(args)))
     }
     pub fn call(&self, args: Args) -> Return {
         self.0(args)

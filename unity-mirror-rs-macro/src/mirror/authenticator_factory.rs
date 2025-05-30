@@ -1,7 +1,7 @@
 use crate::utils::random_string::random_string;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::format_ident;
 use syn::Data;
 
 pub(crate) fn handler(item: TokenStream) -> TokenStream {

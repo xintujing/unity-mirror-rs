@@ -1,15 +1,14 @@
 use crate::commons::revel_arc::RevelArc;
 use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
-use std::sync::{Arc, Weak};
 
-pub struct RevelWeak<T: ?Sized>(pub(super) Weak<UnsafeCell<T>>)
+pub struct RevelWeak<T: ?Sized>(pub(super) std::sync::Weak<UnsafeCell<T>>)
 where
     T: Sized;
 
 impl<T> RevelWeak<T> {
     pub fn from_raw(ptr: *const UnsafeCell<T>) -> RevelWeak<T> {
-        let weak = unsafe { Weak::from_raw(ptr) };
+        let weak = unsafe { std::sync::Weak::from_raw(ptr) };
         RevelWeak(weak)
     }
 }
@@ -73,7 +72,7 @@ impl<T: 'static> RevelWeak<T> {
         // self.0.upgrade().unwrap().eq_value(other)
     }
 
-    pub fn upgrade(&self) -> Option<Arc<UnsafeCell<T>>> {
+    pub fn upgrade(&self) -> Option<std::sync::Arc<UnsafeCell<T>>> {
         self.0.upgrade()
     }
     pub fn upgradable(&self) -> bool {

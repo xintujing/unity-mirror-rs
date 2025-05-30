@@ -6,7 +6,7 @@ use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{NetworkBehaviourT, NetworkServer, SyncDirection, SyncMode};
+use crate::mirror::{NetworkBehaviourT, SyncDirection, SyncMode};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;

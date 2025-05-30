@@ -1,18 +1,24 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::command_message::CommandMessage;
 use crate::mirror::messages::entity_state_message::EntityStateMessage;
-use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType};
+use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType, ID_SIZE};
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
+use crate::mirror::messages::object_spawn_finished_message::ObjectSpawnFinishedMessage;
+use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_reader_pool::NetworkReaderPool;
+use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::stable_hash::StableHash;
+use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
 use crate::mirror::NetworkIdentity;
 use crate::unity_engine::Time;
@@ -65,8 +71,7 @@ pub struct NetworkServerStatic {
     // Events
     pub on_connected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
     pub on_disconnected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    pub on_error_event:
-        SelfMutAction<(RevelArc<NetworkConnection>, TransportError, &'static str), ()>,
+    pub on_error_event: SelfMutAction<(RevelArc<NetworkConnection>, TransportError, String), ()>,
     pub on_transport_exception_event:
         SelfMutAction<(RevelArc<NetworkConnection>, Box<dyn std::error::Error>), ()>,
 }
@@ -260,27 +265,120 @@ impl NetworkServer {
         true
     }
 
-    fn remove_connection(&mut self, conn_id: u64) -> bool {
-        if self.connections.remove(&conn_id).is_some() {
-            return true;
-        }
-        false
+    fn remove_connection(&mut self, conn_id: u64) -> Option<RevelArc<NetworkConnection>> {
+        self.connections.remove(&conn_id)
     }
 
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
-        // TODO: 处理接收到的数据
+        if let Some(conn) = Self.connections.get(&conn_id) {
+            let mut conn = conn.clone();
+            UnBatcherPool::get_return(move |un_batcher| {
+                if !un_batcher.add_batch_with_slice(data) {
+                    if Self.exceptions_disconnect {
+                        log::error!(
+                        "NetworkServer: received message from connectionId:{} was too short (messages should start with message id). Disconnecting.",
+                        conn_id
+                    );
+                        conn.disconnect();
+                    } else {
+                        log::warn!(
+                        "NetworkServer: received message from connectionId:{} was too short (messages should start with message id).",
+                        conn_id
+                    );
+                        return;
+                    }
+                }
+
+                if Self.is_loading_scene {
+                    log::warn!(
+                    "NetworkServer: connectionId:{} is loading scene, skipping message processing.",
+                    conn_id
+                );
+                    return;
+                }
+
+                while let Some((message, remote_timestamp)) = un_batcher.get_next_message() {
+                    NetworkReaderPool::get_with_slice_return(message, |reader| {
+                        if reader.remaining() < ID_SIZE {
+                            if Self.exceptions_disconnect {
+                                log::error!(
+                                "NetworkServer: connectionId:{} received message with invalid header, disconnecting.",
+                                conn_id
+                            );
+                                conn.disconnect();
+                            } else {
+                                log::warn!(
+                                "NetworkServer: connectionId:{} received message with invalid header.",
+                                conn_id
+                            );
+                            }
+                            return;
+                        }
+
+                        conn.remote_time_stamp = remote_timestamp;
+
+                        if !Self.unpack_and_invoke(conn.clone(), reader, channel) {
+                            if Self.exceptions_disconnect {
+                                log::error!(
+                                "NetworkServer: connectionId:{} received message with unknown type, disconnecting.",
+                                conn_id
+                            );
+                                conn.disconnect();
+                            } else {
+                                log::warn!(
+                                "NetworkServer: connectionId:{} received message with unknown type.",
+                                conn_id
+                            );
+                            }
+                            return;
+                        }
+                    });
+                }
+
+                if !Self.is_loading_scene && un_batcher.batches_count() > 0 {
+                    log::error!("NetworkServer: connectionId:{} has unprocessed batches, skipping message processing.",conn_id);
+                }
+            });
+        } else {
+            log::warn!(
+                "NetworkServer: connectionId:{} not found when processing data.",
+                conn_id
+            );
+        }
     }
 
     fn on_transport_error(conn_id: u64, err: TransportError, reason: &str) {
-        // TODO: 处理传输错误
+        log::warn!(
+            "NetworkServer: connectionId:{} encountered an error: {}. Reason: {}",
+            conn_id,
+            err,
+            reason
+        );
+        if let Some(conn) = Self.connections.get(&conn_id) {
+            Self.on_error_event
+                .call((conn.clone(), err, reason.to_string()));
+        }
     }
 
     fn on_transport_exception(conn_id: u64, _err: Box<dyn std::error::Error>) {
-        // TODO: 处理传输异常
+        log::warn!(
+            "NetworkServer: connectionId:{} encountered a transport exception.",
+            conn_id
+        );
+        if let Some(conn) = Self.connections.get(&conn_id) {
+            Self.on_transport_exception_event.call((conn.clone(), _err));
+        }
     }
 
     fn on_transport_disconnected(conn_id: u64) {
-        // TODO: 处理断开连接
+        if let Some(mut conn) = Self.remove_connection(conn_id) {
+            conn.cleanup();
+            if Self.on_disconnected_event.is_registered() {
+                Self.on_disconnected_event.call((conn.clone(),));
+            } else {
+                // TODO DestroyPlayerForConnection(conn)
+            }
+        }
     }
 
     fn register_message_handlers(&mut self) {
@@ -297,15 +395,50 @@ impl NetworkServer {
         _: ReadyMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端准备就绪消息
+        Self::set_client_ready(connection);
+    }
+
+    pub fn set_client_ready(mut connection: RevelArc<NetworkConnection>) {
+        connection.is_ready = true;
+        if connection.identity.upgradable() {
+            Self::spawn_observers_for_connection(connection);
+        }
+    }
+
+    fn spawn_observers_for_connection(mut connection: RevelArc<NetworkConnection>) {
+        if !connection.is_ready {
+            return;
+        }
+
+        connection.send_message(&mut ObjectSpawnStartedMessage::default(), Reliable);
+
+        // TODO: Spawn observers logic
+
+        connection.send_message(&mut ObjectSpawnFinishedMessage::default(), Reliable);
     }
 
     fn on_client_command_message(
         connection: RevelArc<NetworkConnection>,
-        _: CommandMessage,
-        _: TransportChannel,
+        message: CommandMessage,
+        channel: TransportChannel,
     ) {
         // TODO: 处理客户端命令消息
+        if !connection.is_ready {
+            if channel == Reliable {
+                if let Some(weak_net_identity) = Self.spawned.get(&message.net_id) {
+                    if let Some(net_identity) = weak_net_identity.get() {
+                        // if message.component_index< net_identity
+                        if true {
+                            if let Some(name) =
+                                RemoteProcedureCalls.get_function_method_name(message.function_hash)
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+            return;
+        }
     }
 
     fn on_client_network_ping_message(
@@ -353,8 +486,8 @@ impl NetworkServer {
                     false
                 }
                 Some(handler) => {
-                    handler.invoke(connection.clone(), reader, channel);
                     connection.last_message_time = Time::unscaled_time_f64();
+                    handler.invoke(connection, reader, channel);
                     true
                 }
             };

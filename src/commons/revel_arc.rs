@@ -50,10 +50,6 @@ impl<T> RevelArc<T> {
         RevelWeak(std::sync::Arc::downgrade(&self.0))
     }
 
-    // pub fn get<'a>(&self) -> &'a mut T {
-    //     unsafe { &mut *self.0.get() }
-    // }
-
     pub fn ptr_eq(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.0, &other.0)
     }

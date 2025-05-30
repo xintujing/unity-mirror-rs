@@ -131,6 +131,16 @@ impl RemoteProcedureCalls {
         None
     }
 
+    pub fn get_function_method_name(&self, function_hash: u16) -> Option<String> {
+        #[allow(static_mut_refs)]
+        unsafe {
+            if let Some(invoker) = REMOTE_CALL_DELEGATES.get(&function_hash) {
+                return Some(invoker.function_name.clone());
+            }
+        }
+        None
+    }
+
     pub fn remove_delegate(&self, function_hash: u16) {
         #[allow(static_mut_refs)]
         unsafe {
