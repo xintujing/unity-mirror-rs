@@ -16,12 +16,13 @@ pub trait MessageDeserializer {
         Self: Sized;
 }
 
-pub trait Message: Object  + MessageSerializer + MessageDeserializer {}
+pub trait Message: Object + MessageSerializer + MessageDeserializer {}
+
+pub type MessageHandlerFuncType<M> = fn(&mut NetworkConnection, M, TransportChannel);
 
 
-pub type MessageHandlerFuncType<M> = fn(&mut RevelArc<NetworkConnection>, M, TransportChannel);
 type MessageHandlerWrappedFuncType =
-    Box<dyn FnMut(&mut RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
+    Box<dyn FnMut(&mut NetworkConnection, &mut NetworkReader, TransportChannel)>;
 
 pub struct MessageHandler {
     #[allow(unused)]
@@ -49,7 +50,7 @@ impl MessageHandler {
     #[allow(unused)]
     pub fn invoke(
         &mut self,
-        conn: &mut RevelArc<NetworkConnection>,
+        conn: &mut NetworkConnection,
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) {

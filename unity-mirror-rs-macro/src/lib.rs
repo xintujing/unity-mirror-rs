@@ -17,6 +17,8 @@ pub(crate) mod utils;
 
 mod callbacks;
 
+mod mirror;
+
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
         #[derive(Default)]
@@ -134,4 +136,9 @@ pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn callbacks(attr: TokenStream, item: TokenStream) -> TokenStream {
     callbacks::handler(attr, item)
+}
+
+#[proc_macro_derive(AuthenticatorFactory)]
+pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
+    mirror::authenticator_factory::handler(item)
 }

@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::commons::object::Object;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_connection::NetworkConnection;
 use once_cell::sync::Lazy;
@@ -22,7 +23,9 @@ impl<T: Authenticator + 'static> AuthenticatorAnyMut for T {
     }
 }
 
-pub trait Authenticator: AuthenticatorAnyMut + MessageSerializer + MessageDeserializer {
+pub trait Authenticator:
+    Object //+ AuthenticatorAnyMut + MessageSerializer + MessageDeserializer
+{
     fn new() -> Box<dyn Authenticator>
     where
         Self: Sized;
