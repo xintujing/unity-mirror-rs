@@ -45,8 +45,8 @@ impl<Args, Return> SelfAction<Args, Return> {
     where
         F: SelfHandler<This, Args, Output = Return>,
     {
-        Self(Box::new(move |args| unsafe {
-            handler.call(&**(s.upgrade().unwrap().get()), args)
+        Self(Box::new(move |args| {
+            handler.call(&**(s.upgrade().unwrap()), args)
         }))
     }
     pub fn call(&self, args: Args) -> Return {

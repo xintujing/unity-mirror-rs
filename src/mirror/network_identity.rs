@@ -3,6 +3,7 @@ use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
@@ -42,6 +43,7 @@ pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>>,
+    connection: RevelWeak<NetworkConnection>,
 }
 
 impl MonoBehaviour for NetworkIdentity {
@@ -221,5 +223,21 @@ impl NetworkIdentity {
         println!("Mirror: NetworkIdentity Instance");
 
         identity
+    }
+
+    pub fn name(&self) -> String {
+        "NetworkIdentity".to_string()
+    }
+
+    pub fn connection(&self) -> RevelWeak<NetworkConnection> {
+        self.connection.clone()
+    }
+
+    pub fn set_connection(&mut self, connections: RevelWeak<NetworkConnection>) {
+        self.connection = connections;
+    }
+
+    pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>> {
+        &self.network_behaviours
     }
 }

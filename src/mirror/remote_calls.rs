@@ -141,6 +141,16 @@ impl RemoteProcedureCalls {
         None
     }
 
+    pub fn command_requires_authority(&self, function_hash: &u16) -> bool {
+        #[allow(static_mut_refs)]
+        unsafe {
+            if let Some(invoker) = REMOTE_CALL_DELEGATES.get(function_hash) {
+                return invoker.cmd_requires_authority;
+            }
+        }
+        false
+    }
+
     pub fn remove_delegate(&self, function_hash: u16) {
         #[allow(static_mut_refs)]
         unsafe {

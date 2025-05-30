@@ -56,24 +56,19 @@ impl<T: 'static> RevelWeak<T> {
         self.0.as_ptr()
     }
 
-    // pub fn eq_arc(&self, other: &RevelArc<T>) -> bool {
-    //     if self.0.upgrade().is_none() {
-    //         return false;
-    //     }
-    //     other.eq_weak(self)
-    // }
-
     pub unsafe fn eq_value(&self, other: &T) -> bool {
         if self.0.upgrade().is_none() {
             return false;
         }
 
         RevelArc(self.0.upgrade().unwrap()).ptr_eq_value(other)
-        // self.0.upgrade().unwrap().eq_value(other)
     }
 
-    pub fn upgrade(&self) -> Option<std::sync::Arc<UnsafeCell<T>>> {
-        self.0.upgrade()
+    pub fn upgrade(&self) -> Option<RevelArc<T>> {
+        match self.0.upgrade() {
+            None => None,
+            Some(value) => Some(RevelArc(value)),
+        }
     }
     pub fn upgradable(&self) -> bool {
         self.0.upgrade().is_some()

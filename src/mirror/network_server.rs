@@ -422,22 +422,53 @@ impl NetworkServer {
         message: CommandMessage,
         channel: TransportChannel,
     ) {
-        // TODO: 处理客户端命令消息
         if !connection.is_ready {
             if channel == Reliable {
                 if let Some(weak_net_identity) = Self.spawned.get(&message.net_id) {
                     if let Some(net_identity) = weak_net_identity.get() {
-                        // if message.component_index< net_identity
-                        if true {
+                        if message.component_index < net_identity.network_behaviours().len() as u8 {
                             if let Some(name) =
                                 RemoteProcedureCalls.get_function_method_name(message.function_hash)
                             {
+                                log::warn!(
+                                    "Command {} received for {} [netId={}] component index={} when client not ready. This may be ignored if client intentionally set NotReady.",
+                                    name,
+                                    net_identity.name(),
+                                    message.net_id,
+                                    message.component_index
+                                );
+                                return;
                             }
+
+                            log::warn!(
+                                "Command received from {} while client is not ready. This may be ignored if client intentionally set NotReady.",
+                                connection.id
+                            );
                         }
                     }
                 }
             }
             return;
+        }
+
+        match Self.spawned.get(&message.net_id) {
+            None => {
+                if channel == Reliable {
+                    log::warn!(
+                        "Spawned object not found when handling Command message netId={}",
+                        message.net_id
+                    );
+                }
+
+                return;
+            }
+            Some(weak_net_identity) => {
+                if let Some(net_identity) = weak_net_identity.get() {
+                    let requires_authority =
+                        RemoteProcedureCalls.command_requires_authority(&message.function_hash);
+                    let is_owner = connection.ptr_eq_weak(&net_identity.connection());
+                }
+            }
         }
     }
 
@@ -495,7 +526,6 @@ impl NetworkServer {
         log::warn!("Invalid message header for connection:{}", connection.id);
         false
     }
-
 
     pub fn register_handler<M>(
         &mut self,

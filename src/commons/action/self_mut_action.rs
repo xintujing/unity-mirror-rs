@@ -55,9 +55,7 @@ impl<Args, Return> SelfMutAction<Args, Return> {
         F: SelfMutHandler<This, Args, Output = Return>,
     {
         Self {
-            f: Box::new(move |args| unsafe {
-                handler.call(&mut **(s.upgrade().unwrap().get()), args)
-            }),
+            f: Box::new(move |args| handler.call(&mut **(s.upgrade().unwrap()), args)),
             reg: true,
         }
     }
