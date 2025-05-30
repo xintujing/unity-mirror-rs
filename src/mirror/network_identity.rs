@@ -12,6 +12,7 @@ use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
 use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::atomic::AtomicU32;
@@ -36,6 +37,7 @@ fn static_init() {
 lazy_static! {
     static ref NEXT_NETWORK_ID: AtomicU32 = AtomicU32::new(1);
 }
+static mut SCENE_IDS: Lazy<HashMap<u64, RevelWeak<NetworkIdentity>>> = Lazy::new(|| HashMap::new());
 
 #[allow(unused)]
 pub(crate) trait IntoNum {
@@ -95,7 +97,6 @@ pub struct NetworkIdentity {
 
     owner_payload: Vec<u8>,
     observers_payload: Vec<u8>,
-    // TODO sceneIds
 }
 
 impl MonoBehaviour for NetworkIdentity {
