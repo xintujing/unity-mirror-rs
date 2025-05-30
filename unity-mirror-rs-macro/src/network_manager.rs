@@ -3,7 +3,7 @@ use proc_macro2::Ident;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::token::Comma;
-use syn::{parse_macro_input, parse_quote, Fields, Path};
+use syn::{Fields, Path, parse_macro_input, parse_quote};
 
 struct ParentArgs {
     pub value: Path,
@@ -84,6 +84,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         if let Some(weak_instance) = arc_instance.downgrade().downcast::<Self>() {
             if let Some(real_instance) = weak_instance.get() {
                 real_instance.initialize(metadata);
+                real_instance.weak = weak_instance.clone();
             }
         }
     };
@@ -92,6 +93,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         Fields::Named(fields_named) => {
             fields_named.named.push(parse_quote! {
                 game_object: crate::commons::revel_weak::RevelWeak<crate::unity_engine::GameObject>
+            });
+            fields_named.named.push(parse_quote! {
+                weak: crate::commons::revel_weak::RevelWeak<Box<Self>>
             });
         }
         _ => {
@@ -158,6 +162,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         if let Some(parent) = real_instance.parent.get() {
                             parent.set_callbacks(instance.downgrade())
                         }
+                        real_instance.weak = weak_instance.clone();
                         real_instance.initialize(metadata);
                     }
                 }
