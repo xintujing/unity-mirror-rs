@@ -8,6 +8,7 @@ static mut FRAME_RATE: AtomicU16 = AtomicU16::new(60); // 60 FPS
 static mut FRAME_COUNT: AtomicU64 = AtomicU64::new(0); // 帧计数器
 static mut FIXED_DATA_TIME: AtomicU64 = AtomicU64::new(20); // 20 ms
 static mut DEFAULT_PING_INTERVAL: f32 = 0.1; // 默认的ping间隔时间（单位：秒）
+static mut PING_WINDOW_SIZE: u32 = 50; // Ping窗口大小
 
 pub struct Time;
 
@@ -88,6 +89,9 @@ impl Time {
 
     pub fn ping_interval() -> f64 {
         unsafe { DEFAULT_PING_INTERVAL as f64 }
+    }
+    pub fn get_ping_window_size() -> u32 {
+        unsafe { PING_WINDOW_SIZE }
     }
 }
 

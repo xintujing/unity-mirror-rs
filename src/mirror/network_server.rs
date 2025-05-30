@@ -516,11 +516,17 @@ impl NetworkServer {
     }
 
     fn on_client_network_pong_message(
-        connection: RevelArc<NetworkConnection>,
-        _: NetworkPongMessage,
+        mut connection: RevelArc<NetworkConnection>,
+        message: NetworkPongMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端网络Pong消息
+        let local_time = Time::unscaled_time_f64();
+        if message.local_time > local_time {
+            return;
+        }
+
+        let new_rtt = local_time - message.local_time;
+        connection._rtt.add(new_rtt);
     }
 
     fn on_client_entity_state_message(
