@@ -1,5 +1,3 @@
-use crate::commons::revel_weak::RevelWeak;
-
 trait Handler<Args>: 'static {
     type Output;
     fn call(&self, args: Args) -> Self::Output;
@@ -44,7 +42,7 @@ impl<Args, Return> Action<Args, Return> {
     where
         F: Handler<Args, Output = Return>,
     {
-        Self(Box::new(move |args| unsafe { handler.call(&mut **(args)) }))
+        Self(Box::new(move |args| unsafe { handler.call(args) }))
     }
     pub fn call(&self, args: Args) -> Return {
         self.0(args)
