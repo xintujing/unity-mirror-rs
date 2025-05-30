@@ -502,11 +502,17 @@ impl NetworkServer {
     }
 
     fn on_client_network_ping_message(
-        connection: RevelArc<NetworkConnection>,
-        _: NetworkPingMessage,
+        mut connection: RevelArc<NetworkConnection>,
+        message: NetworkPingMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端网络Ping消息
+        let local_time = Time::unscaled_time_f64();
+        let unadjusted_error = local_time - message.local_time;
+        let adjusted_error = local_time - message.predicted_time_adjusted;
+
+        let mut pong_message =
+            NetworkPongMessage::new(message.local_time, unadjusted_error, adjusted_error);
+        connection.send_message(&mut pong_message, Reliable);
     }
 
     fn on_client_network_pong_message(
