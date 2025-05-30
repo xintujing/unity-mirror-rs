@@ -1,4 +1,6 @@
-use unity_mirror_rs::mirror::NetworkManager;
+use unity_mirror_rs::commons::action::self_mut_action::SelfMutAction;
+use unity_mirror_rs::commons::revel_arc::RevelArc;
+use unity_mirror_rs::mirror::{NetworkManager, NetworkRoomManager};
 use unity_mirror_rs::unity_engine::{GameLooper, MonoBehaviour};
 
 #[ctor::ctor]
@@ -33,6 +35,15 @@ fn init_logger() {
 }
 
 fn main() {
+    // let manager = NetworkRoomManager::default();
+    // let arc = RevelArc::new(Box::new(manager));
+    // let weak = arc.downgrade();
+    // let action = Action::new(weak, NetworkRoomManager::qwer);
+    //
+    // println!("{}", action.call((5,)));
+    //
+    // return;
+
     NetworkManager::start("Assets/Prefabs/NetworkRoomManager.prefab");
 
     // NetworkServer.aaa();

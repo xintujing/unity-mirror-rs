@@ -1,5 +1,5 @@
-use crate::commons::action;
-use crate::commons::action::ActionWrapper;
+// use crate::commons::action::ActionWrapper;
+use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
@@ -17,10 +17,17 @@ use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFa
 #[namespace(prefix = "Mirror")]
 #[derive(NetworkManagerFactory)]
 pub struct NetworkRoomManager {}
+//
+// impl crate::commons::action::Arguments for &NetworkRoomManager {}
+// impl FromArguments for NetworkRoomManager {
+//     fn to_args(&self) -> Self {
+//         self
+//     }
+// }
 
 impl NetworkManagerCallbacks for NetworkRoomManager {
     fn on_start_server(&mut self) {
-        self.qwer()
+        // self.qwer()
     }
 
     fn on_stop_server(&mut self) {}
@@ -28,6 +35,9 @@ impl NetworkManagerCallbacks for NetworkRoomManager {
 
 impl MonoBehaviour for NetworkRoomManager {
     fn awake(&mut self) {
+        self.on_client_scene_changed =
+            SelfMutAction::new(self.weak.clone(), Self::on_client_scene_changed);
+
         if let Some(parent) = self.parent.get() {
             parent.awake();
             // if let Some(game_object) = self.game_object.get() {
@@ -51,18 +61,24 @@ impl MonoBehaviour for NetworkRoomManager {
 
 impl NetworkRoomManagerInitialize for NetworkRoomManager {
     fn initialize(&mut self, metadata: &MetadataNetworkManagerWrapper) {
-        self.on_client_scene_changed = Some(ActionWrapper::new(Self::on_client_scene_changed));
+        // let weak = self.weak.clone();
+        // self.on_client_scene_changed = Some(ActionWrapper::new(move || {
+        //     if let Some(this) = weak.upgrade() {
+        //         Self::on_client_scene_changed(unsafe { &mut **this.get() }, );
+        //     }
+        // }));
     }
 }
 
 impl NetworkRoomManager {
-    pub fn qwer(&self) {
+    pub fn qwer(&mut self, i: i32) -> i32 {
         // self.qwe();
-        println!("NetworkRoomManager qwer");
+        println!("NetworkRoomManager qwer {}", i);
+        77
     }
 
-    fn on_client_scene_changed() {
-        println!("NetworkManager: Client scene changed");
+    fn on_client_scene_changed(&mut self) {
+        println!("NetworkManager: Client scene changed 111");
         // 这里可以添加更多的逻辑处理
     }
 }

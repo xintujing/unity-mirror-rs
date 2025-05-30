@@ -1,4 +1,4 @@
-use crate::commons::action::{Action, ActionWrapper, Arguments};
+use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::metadata::Metadata;
@@ -19,7 +19,7 @@ use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFa
     on_stop_server(&mut self);
 })]
 pub struct NetworkManager {
-    pub on_client_scene_changed: Option<Box<dyn Action<()>>>,
+    pub on_client_scene_changed: SelfMutAction<(), ()>,
 }
 // impl NetworkManager {
 //     pub fn set_callbacks(
@@ -35,9 +35,10 @@ impl MonoBehaviour for NetworkManager {
         println!("Mirror: NetworkManager Awake");
     }
     fn update(&mut self) {
-        if let Some(ref mut on_client_scene_changed) = self.on_client_scene_changed {
-            on_client_scene_changed.invoke(());
-        }
+        self.on_client_scene_changed.call(());
+        // if let Some(ref mut on_client_scene_changed) = self.on_client_scene_changed {
+        //     on_client_scene_changed.invoke(());
+        // }
 
         println!("Mirror: NetworkManager Update");
         if let Some(callbacks) = self.callbacks.get() {
