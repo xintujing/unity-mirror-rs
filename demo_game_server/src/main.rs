@@ -1,5 +1,5 @@
 use unity_mirror_rs::mirror::NetworkManager;
-use unity_mirror_rs::unity_engine::{GameLooper, MonoBehaviour};
+use unity_mirror_rs::unity_engine::GameLooper;
 
 #[ctor::ctor]
 fn init_logger() {

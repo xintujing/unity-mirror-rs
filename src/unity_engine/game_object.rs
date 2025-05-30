@@ -55,7 +55,7 @@ pub struct GameObject {
 
 impl GameObject {
     pub fn instance(metadata_prefab: &MetadataPrefab) -> RevelArc<GameObject> {
-        let mut arc_game_object = Self::new(RevelWeak::default(), metadata_prefab);
+        let arc_game_object = Self::new(RevelWeak::default(), metadata_prefab);
         Self::recursive_children(arc_game_object.downgrade(), &metadata_prefab.children);
         component_loading();
         arc_game_object
