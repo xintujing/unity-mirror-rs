@@ -1,3 +1,4 @@
+use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
@@ -7,7 +8,9 @@ use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{SyncDirection, SyncMode, TNetworkBehaviour};
+use crate::mirror::{
+    RemoteCallType, RemoteProcedureCalls, SyncDirection, SyncMode, TNetworkBehaviour,
+};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -121,6 +124,41 @@ impl NetworkIdentity {
 
     pub fn reset_server_statics() {
         NEXT_NETWORK_ID.store(1, SeqCst);
+    }
+
+    pub fn handle_remote_call(
+        &self,
+        component_index: u8,
+        function_hash: u16,
+        remote_call_type: RemoteCallType,
+        reader: &mut NetworkReader,
+        sender_connection: RevelArc<NetworkConnection>,
+    ) {
+        if component_index >= self.component_mapping.len() as u8 {
+            log::warn!(
+                "NetworkIdentity: handle_remote_call: component_index {} out of bounds for identity with net_id {}",
+                component_index,
+                self.net_id
+            );
+            return;
+        }
+        let invoke_component_chain = self.network_behaviours[component_index as usize].clone();
+
+        if !RemoteProcedureCalls.invoke(
+            function_hash,
+            &remote_call_type,
+            reader,
+            invoke_component_chain,
+            sender_connection,
+        ) {
+            log::error!(
+                "Found no receiver for incoming {:?} [{}] on {}, the server and client should have the same NetworkBehaviour instances [netId={}].",
+                remote_call_type,
+                function_hash,
+                self.name(),
+                self.net_id
+            );
+        }
     }
 }
 
