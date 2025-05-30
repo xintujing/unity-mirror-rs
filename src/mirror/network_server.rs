@@ -14,6 +14,7 @@ use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_reader_pool::NetworkReaderPool;
+use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::stable_hash::StableHash;
@@ -24,7 +25,6 @@ use crate::unity_engine::Time;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
-use crate::mirror::remote_calls::RemoteProcedureCalls;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -270,8 +270,9 @@ impl NetworkServer {
     }
 
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
-        if let Some(conn) = Self.connections.get_mut(&conn_id) {
-            UnBatcherPool::get_return(|un_batcher| {
+        if let Some(conn) = Self.connections.get(&conn_id) {
+            let mut conn = conn.clone();
+            UnBatcherPool::get_return(move |un_batcher| {
                 if !un_batcher.add_batch_with_slice(data) {
                     if Self.exceptions_disconnect {
                         log::error!(
@@ -316,7 +317,7 @@ impl NetworkServer {
 
                         conn.remote_time_stamp = remote_timestamp;
 
-                        if !Self.unpack_and_invoke(conn, reader, channel) {
+                        if !Self.unpack_and_invoke(conn.clone(), reader, channel) {
                             if Self.exceptions_disconnect {
                                 log::error!(
                                 "NetworkServer: connectionId:{} received message with unknown type, disconnecting.",
@@ -390,21 +391,21 @@ impl NetworkServer {
     }
 
     fn on_client_ready_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: ReadyMessage,
         _: TransportChannel,
     ) {
         Self::set_client_ready(connection);
     }
 
-    pub fn set_client_ready(connection: &mut RevelArc<NetworkConnection>) {
+    pub fn set_client_ready(mut connection: RevelArc<NetworkConnection>) {
         connection.is_ready = true;
         if connection.identity.upgradable() {
             Self::spawn_observers_for_connection(connection);
         }
     }
 
-    fn spawn_observers_for_connection(connection: &mut RevelArc<NetworkConnection>) {
+    fn spawn_observers_for_connection(mut connection: RevelArc<NetworkConnection>) {
         if !connection.is_ready {
             return;
         }
@@ -417,7 +418,7 @@ impl NetworkServer {
     }
 
     fn on_client_command_message(
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: RevelArc<NetworkConnection>,
         message: CommandMessage,
         channel: TransportChannel,
     ) {
@@ -427,9 +428,10 @@ impl NetworkServer {
                 if let Some(weak_net_identity) = Self.spawned.get(&message.net_id) {
                     if let Some(net_identity) = weak_net_identity.get() {
                         // if message.component_index< net_identity
-                        if true{
-                            if let Some(name) = RemoteProcedureCalls.get_function_method_name(message.function_hash) {
-
+                        if true {
+                            if let Some(name) =
+                                RemoteProcedureCalls.get_function_method_name(message.function_hash)
+                            {
                             }
                         }
                     }
@@ -440,7 +442,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_ping_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: NetworkPingMessage,
         _: TransportChannel,
     ) {
@@ -448,7 +450,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_pong_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: NetworkPongMessage,
         _: TransportChannel,
     ) {
@@ -456,7 +458,7 @@ impl NetworkServer {
     }
 
     fn on_client_entity_state_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: EntityStateMessage,
         _: TransportChannel,
     ) {
@@ -464,7 +466,7 @@ impl NetworkServer {
     }
 
     fn on_client_time_snapshot_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
@@ -473,7 +475,7 @@ impl NetworkServer {
 
     fn unpack_and_invoke(
         &mut self,
-        connection: &mut NetworkConnection,
+        mut connection: RevelArc<NetworkConnection>,
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) -> bool {
@@ -484,8 +486,8 @@ impl NetworkServer {
                     false
                 }
                 Some(handler) => {
-                    handler.invoke(connection, reader, channel);
                     connection.last_message_time = Time::unscaled_time_f64();
+                    handler.invoke(connection, reader, channel);
                     true
                 }
             };

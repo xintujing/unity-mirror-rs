@@ -14,7 +14,7 @@ use unity_mirror_macro::{namespace, AuthenticatorFactory, Message};
 pub struct BasicAuthenticator {}
 impl BasicAuthenticator {
     pub fn on_auth_request_message(
-        connection: &mut NetworkConnection,
+        connection: RevelArc<NetworkConnection>,
         message: BasicAuthenticatorRequestMessage,
         channel: TransportChannel,
     ) {
