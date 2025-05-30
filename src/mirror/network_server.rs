@@ -496,6 +496,7 @@ impl NetworkServer {
         false
     }
 
+
     pub fn register_handler<M>(
         &mut self,
         func: MessageHandlerFuncType<M>,

@@ -1,9 +1,11 @@
 use crate::commons::revel_weak::RevelWeak;
 use crate::unity_engine::MonoBehaviour;
+use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
 
-pub struct RevelArc<T>(pub(super) std::sync::Arc<std::cell::UnsafeCell<T>>);
+pub struct RevelArc<T>(pub(super) Arc<UnsafeCell<T>>);
 
 impl<T> Debug for RevelArc<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -49,7 +51,7 @@ impl<T> RevelArc<T> {
     }
 
     pub fn ptr_eq(&self, other: &Self) -> bool {
-        std::sync::Arc::ptr_eq(&self.0, &other.0)
+        Arc::ptr_eq(&self.0, &other.0)
     }
 
     pub fn ptr_eq_weak(&self, other: &RevelWeak<T>) -> bool {
