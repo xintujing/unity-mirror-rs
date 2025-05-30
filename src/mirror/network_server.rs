@@ -3,13 +3,14 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::messages::command_message::CommandMessage;
 use crate::mirror::messages::entity_state_message::EntityStateMessage;
-use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType};
+use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType, ID_SIZE};
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::stable_hash::StableHash;
@@ -19,6 +20,7 @@ use crate::unity_engine::Time;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -268,7 +270,81 @@ impl NetworkServer {
     }
 
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
-        // TODO: 处理接收到的数据
+        if let Some(conn) = Self.connections.get_mut(&conn_id) {
+
+            UnBatcherPool::get_return(|un_batcher| {
+                if !un_batcher.add_batch_with_slice(data) {
+                    if Self.exceptions_disconnect {
+                        log::error!(
+                        "NetworkServer: received message from connectionId:{} was too short (messages should start with message id). Disconnecting.",
+                        conn_id
+                    );
+                        conn.disconnect();
+                    } else {
+                        log::warn!(
+                        "NetworkServer: received message from connectionId:{} was too short (messages should start with message id).",
+                        conn_id
+                    );
+                        return;
+                    }
+                }
+
+                if Self.is_loading_scene {
+                    log::warn!(
+                    "NetworkServer: connectionId:{} is loading scene, skipping message processing.",
+                    conn_id
+                );
+                    return;
+                }
+
+                while let Some((message, remote_timestamp)) = un_batcher.get_next_message() {
+                    NetworkReaderPool::get_with_slice_return(message, |reader| {
+                        if reader.remaining() < ID_SIZE {
+                            if Self.exceptions_disconnect {
+                                log::error!(
+                                "NetworkServer: connectionId:{} received message with invalid header, disconnecting.",
+                                conn_id
+                            );
+                                conn.disconnect();
+                            } else {
+                                log::warn!(
+                                "NetworkServer: connectionId:{} received message with invalid header.",
+                                conn_id
+                            );
+                            }
+                            return;
+                        }
+
+                        conn.remote_time_stamp = remote_timestamp;
+
+                        if !Self.unpack_and_invoke(conn, reader, channel) {
+                            if Self.exceptions_disconnect {
+                                log::error!(
+                                "NetworkServer: connectionId:{} received message with unknown type, disconnecting.",
+                                conn_id
+                            );
+                                conn.disconnect();
+                            } else {
+                                log::warn!(
+                                "NetworkServer: connectionId:{} received message with unknown type.",
+                                conn_id
+                            );
+                            }
+                            return;
+                        }
+                    });
+                }
+
+                if !Self.is_loading_scene && un_batcher.batches_count() > 0 {
+                    log::error!("NetworkServer: connectionId:{} has unprocessed batches, skipping message processing.",conn_id);
+                }
+            });
+        } else {
+            log::warn!(
+                "NetworkServer: connectionId:{} not found when processing data.",
+                conn_id
+            );
+        }
     }
 
     fn on_transport_error(conn_id: u64, err: TransportError, reason: &str) {

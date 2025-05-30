@@ -24,7 +24,7 @@ impl UnBatcher {
         self.un_batches.len()
     }
 
-    pub fn add_batch_with_array_segment(&mut self, data: &[u8]) -> bool {
+    pub fn add_batch_with_slice(&mut self, data: &[u8]) -> bool {
         if data.len() < Batcher::TIMESTAMP_SIZE {
             return false;
         }

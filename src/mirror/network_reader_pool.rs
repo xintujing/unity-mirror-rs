@@ -76,11 +76,11 @@ impl NetworkReaderPool {
         }
     }
 
-    pub fn get_with_array_segment_return<T>(array_segment: &[u8], func: T)
+    pub fn get_with_slice_return<T>(slice: &[u8], func: T)
     where
         T: FnOnce(&mut NetworkReader),
     {
-        let mut reader = Self::get_with_array_segment(array_segment);
+        let mut reader = Self::get_with_array_segment(slice);
         func(&mut reader);
         Self::return_(reader);
     }
