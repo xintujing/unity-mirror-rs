@@ -177,4 +177,7 @@ impl NetworkConnection {
         }
         self.observing.push(weak_identity);
     }
+    pub fn cleanup(&mut self) {
+        // TODO
+    }
 }

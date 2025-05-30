@@ -1,6 +1,7 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::command_message::CommandMessage;
 use crate::mirror::messages::entity_state_message::EntityStateMessage;
 use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType, ID_SIZE};
@@ -20,7 +21,6 @@ use crate::unity_engine::Time;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
-use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -67,8 +67,7 @@ pub struct NetworkServerStatic {
     // Events
     pub on_connected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
     pub on_disconnected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    pub on_error_event:
-        SelfMutAction<(RevelArc<NetworkConnection>, TransportError, &'static str), ()>,
+    pub on_error_event: SelfMutAction<(RevelArc<NetworkConnection>, TransportError, String), ()>,
     pub on_transport_exception_event:
         SelfMutAction<(RevelArc<NetworkConnection>, Box<dyn std::error::Error>), ()>,
 }
@@ -262,16 +261,12 @@ impl NetworkServer {
         true
     }
 
-    fn remove_connection(&mut self, conn_id: u64) -> bool {
-        if self.connections.remove(&conn_id).is_some() {
-            return true;
-        }
-        false
+    fn remove_connection(&mut self, conn_id: u64) -> Option<RevelArc<NetworkConnection>> {
+        self.connections.remove(&conn_id)
     }
 
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
         if let Some(conn) = Self.connections.get_mut(&conn_id) {
-
             UnBatcherPool::get_return(|un_batcher| {
                 if !un_batcher.add_batch_with_slice(data) {
                     if Self.exceptions_disconnect {
@@ -348,15 +343,37 @@ impl NetworkServer {
     }
 
     fn on_transport_error(conn_id: u64, err: TransportError, reason: &str) {
-        // TODO: 处理传输错误
+        log::warn!(
+            "NetworkServer: connectionId:{} encountered an error: {}. Reason: {}",
+            conn_id,
+            err,
+            reason
+        );
+        if let Some(conn) = Self.connections.get(&conn_id) {
+            Self.on_error_event
+                .call((conn.clone(), err, reason.to_string()));
+        }
     }
 
     fn on_transport_exception(conn_id: u64, _err: Box<dyn std::error::Error>) {
-        // TODO: 处理传输异常
+        log::warn!(
+            "NetworkServer: connectionId:{} encountered a transport exception.",
+            conn_id
+        );
+        if let Some(conn) = Self.connections.get(&conn_id) {
+            Self.on_transport_exception_event.call((conn.clone(), _err));
+        }
     }
 
     fn on_transport_disconnected(conn_id: u64) {
-        // TODO: 处理断开连接
+        if let Some(mut conn) = Self.remove_connection(conn_id) {
+            conn.cleanup();
+            if Self.on_disconnected_event.is_registered() {
+                Self.on_disconnected_event.call((conn.clone(),));
+            } else {
+                // TODO DestroyPlayerForConnection(conn)
+            }
+        }
     }
 
     fn register_message_handlers(&mut self) {
@@ -373,7 +390,14 @@ impl NetworkServer {
         _: ReadyMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端准备就绪消息
+        Self::set_client_ready(connection);
+    }
+
+    pub fn set_client_ready(connection: &mut RevelArc<NetworkConnection>) {
+        connection.is_ready = true;
+        if connection.identity.upgradable() {
+            // TODO SpawnObserversForConnection
+        }
     }
 
     fn on_client_command_message(
