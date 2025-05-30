@@ -7,6 +7,8 @@ use crate::mirror::messages::entity_state_message::EntityStateMessage;
 use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType, ID_SIZE};
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
+use crate::mirror::messages::object_spawn_finished_message::ObjectSpawnFinishedMessage;
+use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::network_connection::NetworkConnection;
@@ -15,6 +17,7 @@ use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::stable_hash::StableHash;
+use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
 use crate::mirror::NetworkIdentity;
 use crate::unity_engine::Time;
@@ -396,8 +399,20 @@ impl NetworkServer {
     pub fn set_client_ready(connection: &mut RevelArc<NetworkConnection>) {
         connection.is_ready = true;
         if connection.identity.upgradable() {
-            // TODO SpawnObserversForConnection
+            Self::spawn_observers_for_connection(connection);
         }
+    }
+
+    fn spawn_observers_for_connection(connection: &mut RevelArc<NetworkConnection>) {
+        if !connection.is_ready {
+            return;
+        }
+
+        connection.send_message(&mut ObjectSpawnStartedMessage::default(), Reliable);
+
+        // TODO: Spawn observers logic
+
+        connection.send_message(&mut ObjectSpawnFinishedMessage::default(), Reliable);
     }
 
     fn on_client_command_message(
