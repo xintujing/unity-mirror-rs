@@ -142,3 +142,14 @@ pub fn callbacks(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
     mirror::authenticator_factory::handler(item)
 }
+
+// #[proc_macro_attribute]
+// pub fn rpc_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+//     mirror::component::rpc_impl::handler(attr, item)
+// }
+
+
+#[proc_macro_attribute]
+pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {
+    mirror::component::command::handler(attr, item)
+}

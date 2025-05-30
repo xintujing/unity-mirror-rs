@@ -29,6 +29,7 @@ mod compress;
 mod network_connection;
 mod network_server;
 mod remote_calls;
+pub use remote_calls::*;
 mod stable_hash;
 pub mod sync_list;
 pub mod sync_object;
