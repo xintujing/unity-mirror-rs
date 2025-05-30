@@ -1,5 +1,4 @@
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::authenticator::authenticator::Authenticator;
 use crate::mirror::batching::batcher::Batcher;
 use crate::mirror::messages::message;
 use crate::mirror::messages::message::MessageSerializer;
@@ -9,7 +8,7 @@ use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInter
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::transport::{TranSport, TransportChannel};
-use crate::mirror::{NetworkIdentity, NetworkServer};
+use crate::mirror::{Authenticator, NetworkIdentity, NetworkServer};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
 use std::collections::{BTreeMap, HashMap};

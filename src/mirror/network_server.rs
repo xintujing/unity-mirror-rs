@@ -390,7 +390,7 @@ impl NetworkServer {
     }
 
     fn on_client_ready_message(
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: &mut NetworkConnection,
         _: ReadyMessage,
         _: TransportChannel,
     ) {
@@ -440,7 +440,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_ping_message(
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: &mut NetworkConnection,
         _: NetworkPingMessage,
         _: TransportChannel,
     ) {
@@ -448,7 +448,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_pong_message(
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: &mut NetworkConnection,
         _: NetworkPongMessage,
         _: TransportChannel,
     ) {
@@ -456,7 +456,7 @@ impl NetworkServer {
     }
 
     fn on_client_entity_state_message(
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: &mut NetworkConnection,
         _: EntityStateMessage,
         _: TransportChannel,
     ) {
@@ -464,7 +464,7 @@ impl NetworkServer {
     }
 
     fn on_client_time_snapshot_message(
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: &mut NetworkConnection,
         _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
@@ -473,7 +473,7 @@ impl NetworkServer {
 
     fn unpack_and_invoke(
         &mut self,
-        connection: &mut RevelArc<NetworkConnection>,
+        connection: &mut NetworkConnection,
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) -> bool {
