@@ -7,7 +7,7 @@ use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{NetworkBehaviourT, SyncDirection, SyncMode};
+use crate::mirror::{TNetworkBehaviour, SyncDirection, SyncMode};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -42,7 +42,7 @@ lazy_static! {
 pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
-    network_behaviours: Vec<Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>>,
+    network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
     connection: RevelWeak<NetworkConnection>,
 }
 
@@ -237,7 +237,7 @@ impl NetworkIdentity {
         self.connection = connections;
     }
 
-    pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>> {
+    pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>> {
         &self.network_behaviours
     }
 }

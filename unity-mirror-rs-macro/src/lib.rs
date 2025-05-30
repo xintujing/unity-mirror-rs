@@ -9,8 +9,6 @@ mod metadata_settings;
 
 mod network_manager;
 
-mod virtual_helper;
-
 mod network_manager_factory;
 
 pub(crate) mod utils;
@@ -123,11 +121,6 @@ pub fn network_manager(attr: TokenStream, item: TokenStream) -> TokenStream {
     network_manager::handler(attr, item)
 }
 
-#[proc_macro_attribute]
-pub fn virtual_helper(attr: TokenStream, item: TokenStream) -> TokenStream {
-    virtual_helper::handler(attr, item)
-}
-
 #[proc_macro_derive(NetworkManagerFactory)]
 pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
     network_manager_factory::handler(item)
@@ -147,7 +140,6 @@ pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
 // pub fn rpc_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
 //     mirror::component::rpc_impl::handler(attr, item)
 // }
-
 
 #[proc_macro_attribute]
 pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {

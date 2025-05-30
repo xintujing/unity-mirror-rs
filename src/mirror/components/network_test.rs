@@ -3,7 +3,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_anima
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_behaviour::{
     NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, NetworkBehaviourSerializer,
-    NetworkBehaviourT,
+    TNetworkBehaviour,
 };
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
@@ -33,7 +33,7 @@ impl MonoBehaviour for NetworkTest {
     }
 }
 
-impl NetworkBehaviourT for NetworkTest {
+impl TNetworkBehaviour for NetworkTest {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,

@@ -480,8 +480,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         impl #state_condition_ident for #struct_ident {}
 
-        // impl crate::mirror::network_behaviour::BaseNetworkBehaviourT for #struct_ident {
-        impl crate::mirror::network_behaviour::BaseNetworkBehaviourT for #struct_ident {
+        // impl crate::mirror::network_behaviour::TBaseNetworkBehaviour for #struct_ident {
+        impl crate::mirror::network_behaviour::TBaseNetworkBehaviour for #struct_ident {
         }
 
     })
