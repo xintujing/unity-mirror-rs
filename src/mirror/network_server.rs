@@ -530,11 +530,58 @@ impl NetworkServer {
     }
 
     fn on_client_entity_state_message(
-        connection: RevelArc<NetworkConnection>,
-        _: EntityStateMessage,
+        mut connection: RevelArc<NetworkConnection>,
+        message: EntityStateMessage,
         _: TransportChannel,
     ) {
         // TODO: 处理客户端实体状态消息
+        match Self.spawned.get(&message.net_id) {
+            None => {
+                log::warn!(
+                    "EntityStateMessage from {} for netId={} without authority.",
+                    connection.id,
+                    message.net_id
+                );
+            }
+            Some(weak_net_identity) => {
+                if let Some(net_identity) = weak_net_identity.get() {
+                    if !connection.ptr_eq_weak(&net_identity.connection()) {
+                        log::warn!(
+                            "EntityStateMessage from {} for {} without authority.",
+                            connection.id,
+                            net_identity.name()
+                        );
+                        return;
+                    }
+                    NetworkReaderPool::get_with_slice_return(
+                        message.payload.as_slice(),
+                        |reader| {
+                            if !net_identity.deserialize_server(reader) {
+                                if Self.exceptions_disconnect {
+                                    log::error!(
+                                        "Server failed to deserialize client state for {} with netId={}. Disconnecting.",
+                                        net_identity.name(),
+                                        net_identity.net_id()
+                                    );
+                                    connection.disconnect();
+                                } else {
+                                    log::warn!(
+                                        "Server failed to deserialize client state for {} with netId={}.",
+                                        net_identity.name(),
+                                        net_identity.net_id()
+                                    );
+                                }
+                            } else {
+                                log::warn!(
+                                "Server failed to deserialize client state for {} with netId={}.",
+                                net_identity.name(),
+                                net_identity.net_id());
+                            }
+                        },
+                    );
+                }
+            }
+        }
     }
 
     fn on_client_time_snapshot_message(

@@ -155,12 +155,8 @@ impl NetworkIdentity {
         }
     }
 
-    pub(crate) fn deserialize_server(
-        &self,
-        initial_state: bool,
-        owner_reader: &mut NetworkReader,
-        observers_reader: &mut NetworkReader,
-    ) {
+    pub(crate) fn deserialize_server(&self, reader: &mut NetworkReader) -> bool {
+        true
     }
 }
 
@@ -227,6 +223,10 @@ impl NetworkIdentity {
 
     pub fn name(&self) -> String {
         "NetworkIdentity".to_string()
+    }
+
+    pub fn net_id(&self) -> u32 {
+        self.net_id
     }
 
     pub fn connection(&self) -> RevelWeak<NetworkConnection> {
