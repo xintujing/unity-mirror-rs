@@ -7,7 +7,7 @@ use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{TNetworkBehaviour, SyncDirection, SyncMode};
+use crate::mirror::{SyncDirection, SyncMode, TNetworkBehaviour};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -37,6 +37,44 @@ lazy_static! {
     static ref NEXT_NETWORK_ID: AtomicU32 = AtomicU32::new(1);
 }
 
+#[allow(unused)]
+pub(crate) trait IntoNum {
+    fn to_u32(&self) -> u32;
+    fn to_u64(&self) -> u64;
+}
+
+#[allow(unused)]
+impl IntoNum for str {
+    fn to_u32(&self) -> u32 {
+        self.parse::<u32>().unwrap_or(0)
+    }
+
+    fn to_u64(&self) -> u64 {
+        self.parse::<u64>().unwrap_or(0)
+    }
+}
+
+#[allow(unused)]
+#[derive(Eq, PartialEq, Default)]
+pub enum Visibility {
+    #[default]
+    Normal,
+    ForceHidden,
+    ForceShown,
+}
+
+impl Into<Visibility>
+    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+{
+    fn into(self) -> Visibility {
+        match self {
+            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::Default => Visibility::Normal,
+            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::ForceHidden => Visibility::ForceHidden,
+            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::ForceShown => Visibility::ForceShown,
+        }
+    }
+}
+
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkIdentity {
@@ -44,6 +82,20 @@ pub struct NetworkIdentity {
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
     connection: RevelWeak<NetworkConnection>,
+
+    pub is_server: bool,
+    pub server_only: bool,
+    pub is_client: bool,
+    pub is_owned: bool,
+
+    pub scene_id: u64,
+    _asset_id: u32,
+    destroy_called: bool,
+    pub visibility: Visibility,
+
+    owner_payload: Vec<u8>,
+    observers_payload: Vec<u8>,
+    // TODO sceneIds
 }
 
 impl MonoBehaviour for NetworkIdentity {
@@ -59,6 +111,7 @@ impl MonoBehaviour for NetworkIdentity {
 }
 
 impl NetworkIdentity {
+    const MAX_NETWORK_BEHAVIOURS: usize = 64;
     pub fn get_next_network_id() -> u32 {
         let curr = NEXT_NETWORK_ID.load(SeqCst);
         NEXT_NETWORK_ID.store(curr + 1, SeqCst);
@@ -239,5 +292,13 @@ impl NetworkIdentity {
 
     pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>> {
         &self.network_behaviours
+    }
+
+    pub fn is_server_only(&self) -> bool {
+        self.is_server && !self.is_client
+    }
+
+    pub fn is_client_only(&self) -> bool {
+        !self.is_server && self.is_client
     }
 }
