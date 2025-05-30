@@ -111,7 +111,7 @@ impl MonoBehaviour for NetworkBehaviour {
     }
 }
 
-impl NetworkBehaviourT for NetworkBehaviour {
+impl TNetworkBehaviour for NetworkBehaviour {
     fn new(_: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
@@ -175,8 +175,8 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
     }
 }
 
-pub trait BaseNetworkBehaviourT: NetworkBehaviourT {}
-pub trait NetworkBehaviourT:
+pub trait TBaseNetworkBehaviour: TNetworkBehaviour {}
+pub trait TNetworkBehaviour:
     MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self

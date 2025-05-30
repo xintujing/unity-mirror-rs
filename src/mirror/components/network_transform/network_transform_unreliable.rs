@@ -2,7 +2,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_unreliable::MetadataNetworkTransformUnreliable;
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
-use crate::mirror::network_behaviour::NetworkBehaviourT;
+use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Time;
 use unity_mirror_macro::{namespace, network_behaviour};
@@ -82,7 +82,7 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 
 impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {}
 
-impl NetworkBehaviourT for NetworkTransformUnreliable {
+impl TNetworkBehaviour for NetworkTransformUnreliable {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,

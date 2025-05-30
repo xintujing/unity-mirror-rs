@@ -1,10 +1,9 @@
+use crate::utils::csharp::to_csharp_function_inputs;
+use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{Expr, FnArg, Path, Token, parse_macro_input};
-use syn::punctuated::Punctuated;
-use crate::utils::csharp::to_csharp_function_inputs;
-use crate::utils::string_case::StringCase;
+use syn::{parse_macro_input, FnArg, Path, Token};
 
 struct CommandArgs {
     struct_path: Path,
@@ -20,10 +19,7 @@ impl Parse for CommandArgs {
         let struct_path = match input.parse::<Path>() {
             Ok(struct_path) => struct_path,
             Err(_) => {
-                return Err(syn::Error::new(
-                    input.span(),
-                    "Expected a struct path",
-                ));
+                return Err(syn::Error::new(input.span(), "Expected a struct path"));
             }
         };
         let mut authority = false;
@@ -83,7 +79,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #item_fn
 
         fn #invoke_user_code(
-            mut obj_chain: Vec<crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::network_behaviour::NetworkBehaviourT>>>,
+            mut obj_chain: Vec<crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::network_behaviour::TNetworkBehaviour>>>,
             reader: &mut crate::mirror::network_reader::NetworkReader,
             connection: crate::commons::revel_arc::RevelArc<crate::mirror::network_connection::NetworkConnection>,
         ) {
@@ -98,7 +94,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-
+            log::error!("Command {} invoke failed.", stringify!(#fn_camel_name));
 
             #[ctor::ctor]
             fn __static_init() {
@@ -107,14 +103,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     #struct_path::get_full_name(),
                     #fn_camel_name, #csharp_func_inputs,
                 );
-                crate::mirror::RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, true);
+                crate::mirror::RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, #authority);
             }
-
-            log::error!("Command {} invoke failed.", stringify!(#fn_camel_name));
         }
-
     })
 }
-
-
-

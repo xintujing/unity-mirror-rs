@@ -1,16 +1,14 @@
-use crate::commons::action::Action;
 use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::remote_calls::{RemoteCallDelegate, RemoteProcedureCalls};
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
+use crate::mirror::NetworkBehaviour;
+use crate::mirror::TNetworkBehaviour;
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
 use unity_mirror_macro::{command, namespace, network_behaviour};
-use crate::mirror::NetworkBehaviourT;
-use crate::mirror::NetworkBehaviour;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
 
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 #[namespace(prefix = "Mirror")]
@@ -58,7 +56,7 @@ impl NetworkRoomPlayer {
     }
 }
 
-impl NetworkBehaviourT for NetworkRoomPlayer {
+impl TNetworkBehaviour for NetworkRoomPlayer {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,

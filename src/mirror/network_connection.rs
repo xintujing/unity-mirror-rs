@@ -36,6 +36,7 @@ pub struct NetworkConnection {
     pub snapshots: BTreeMap<OrderedFloat<f64>, TimeSnapshot>,
     pub snapshot_buffer_size_limit: i32,
     last_ping_time: f64,
+    pub(crate) _rtt: ExponentialMovingAverage,
 }
 
 impl NetworkConnection {
@@ -69,6 +70,7 @@ impl NetworkConnection {
             snapshots: BTreeMap::new(),
             snapshot_buffer_size_limit: 64,
             last_ping_time: 0.0,
+            _rtt: ExponentialMovingAverage::new(Time::get_ping_window_size()),
         };
 
         connection.buffer_time = NetworkServer.send_interval() * connection.buffer_time_multiplier;

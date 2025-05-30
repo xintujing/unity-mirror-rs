@@ -35,7 +35,7 @@ impl<T> DerefMut for RevelArc<T> {
 
 impl<T: Default> Default for RevelArc<T> {
     fn default() -> Self {
-        Self(std::sync::Arc::new(std::cell::UnsafeCell::new(
+        Self(Arc::new(UnsafeCell::new(
             Default::default(),
         )))
     }
@@ -43,11 +43,11 @@ impl<T: Default> Default for RevelArc<T> {
 
 impl<T> RevelArc<T> {
     pub fn new(value: T) -> Self {
-        RevelArc(std::sync::Arc::new(std::cell::UnsafeCell::new(value)))
+        RevelArc(Arc::new(UnsafeCell::new(value)))
     }
 
     pub fn downgrade(&self) -> RevelWeak<T> {
-        RevelWeak(std::sync::Arc::downgrade(&self.0))
+        RevelWeak(Arc::downgrade(&self.0))
     }
 
     pub fn ptr_eq(&self, other: &Self) -> bool {
@@ -61,16 +61,10 @@ impl<T> RevelArc<T> {
         self.ptr_eq(&Self(other.0.upgrade().unwrap()))
     }
 
-    // pub fn to<TT>(&self) -> RevelArc<Box<TT>> {
-    //     let ptr = Arc::as_ptr(&self.0);
-    //     let n_ptr = ptr as *const UnsafeCell<Box<TT>>;
-    //     unsafe { RevelArc(Arc::from_raw(n_ptr)) }
-    // }
-
     pub unsafe fn ptr_eq_value(&self, other: &T) -> bool {
         let a_ptr = other as *const T;
-        let b_uc_ptr = std::sync::Arc::into_raw(self.0.clone());
-        let offset = size_of::<std::cell::UnsafeCell<T>>() - size_of::<T>();
+        let b_uc_ptr = Arc::into_raw(self.0.clone());
+        let offset = size_of::<UnsafeCell<T>>() - size_of::<T>();
         (b_uc_ptr as *const u8).add(offset) as *const T == a_ptr
     }
 }
@@ -78,11 +72,3 @@ impl<T> RevelArc<T> {
 pub trait VecRevelArc {
     fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>>;
 }
-// impl VecRevelArc for Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
-//     fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>> {
-//         if let Some((mono_behaviour, _)) = self.last() {
-//             return Some(mono_behaviour.clone().downgrade().to::<T>());
-//         }
-//         None
-//     }
-// }

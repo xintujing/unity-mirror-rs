@@ -4,7 +4,7 @@ use crate::mirror::components::network_transform::transform_snapshot::TransformS
 
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
-use crate::mirror::network_behaviour::NetworkBehaviourT;
+use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Transform;
@@ -76,7 +76,7 @@ impl MonoBehaviour for NetworkTransformBase {
 
 impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
-impl NetworkBehaviourT for NetworkTransformBase {
+impl TNetworkBehaviour for NetworkTransformBase {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,

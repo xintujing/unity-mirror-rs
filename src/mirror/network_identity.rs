@@ -3,10 +3,11 @@ use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
 use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{NetworkBehaviourT, SyncDirection, SyncMode};
+use crate::mirror::{TNetworkBehaviour, SyncDirection, SyncMode};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -41,7 +42,8 @@ lazy_static! {
 pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
-    network_behaviours: Vec<Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>>,
+    network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
+    connection: RevelWeak<NetworkConnection>,
 }
 
 impl MonoBehaviour for NetworkIdentity {
@@ -153,12 +155,8 @@ impl NetworkIdentity {
         }
     }
 
-    pub(crate) fn deserialize_server(
-        &self,
-        initial_state: bool,
-        owner_reader: &mut NetworkReader,
-        observers_reader: &mut NetworkReader,
-    ) {
+    pub(crate) fn deserialize_server(&self, reader: &mut NetworkReader) -> bool {
+        true
     }
 }
 
@@ -221,5 +219,25 @@ impl NetworkIdentity {
         println!("Mirror: NetworkIdentity Instance");
 
         identity
+    }
+
+    pub fn name(&self) -> String {
+        "NetworkIdentity".to_string()
+    }
+
+    pub fn net_id(&self) -> u32 {
+        self.net_id
+    }
+
+    pub fn connection(&self) -> RevelWeak<NetworkConnection> {
+        self.connection.clone()
+    }
+
+    pub fn set_connection(&mut self, connections: RevelWeak<NetworkConnection>) {
+        self.connection = connections;
+    }
+
+    pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>> {
+        &self.network_behaviours
     }
 }

@@ -1,9 +1,13 @@
-use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{FnArg, GenericArgument, Path, PathArguments, PathSegment, Token, Type, TypeArray, TypePath, TypeReference, TypeSlice};
 use syn::punctuated::Punctuated;
+use syn::{
+    FnArg, GenericArgument, Path, PathArguments, PathSegment, Token, Type, TypeArray, TypePath,
+    TypeReference, TypeSlice,
+};
 
-pub(crate) fn to_csharp_function_inputs(inputs: Punctuated<FnArg, Token![,]>) -> proc_macro2::TokenStream {
+pub(crate) fn to_csharp_function_inputs(
+    inputs: Punctuated<FnArg, Token![,]>,
+) -> proc_macro2::TokenStream {
     let mut params: Vec<proc_macro2::TokenStream> = Vec::new();
     for arg in inputs.iter().filter_map(|input| match input {
         FnArg::Typed(pat_type) => Some(pat_type),

@@ -17,6 +17,7 @@ use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
+use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
@@ -422,55 +423,177 @@ impl NetworkServer {
         message: CommandMessage,
         channel: TransportChannel,
     ) {
-        // TODO: 处理客户端命令消息
         if !connection.is_ready {
             if channel == Reliable {
                 if let Some(weak_net_identity) = Self.spawned.get(&message.net_id) {
                     if let Some(net_identity) = weak_net_identity.get() {
-                        // if message.component_index< net_identity
-                        if true {
+                        if message.component_index < net_identity.network_behaviours().len() as u8 {
                             if let Some(name) =
                                 RemoteProcedureCalls.get_function_method_name(message.function_hash)
                             {
+                                log::warn!(
+                                    "Command {} received for {} [netId={}] component index={} when client not ready. This may be ignored if client intentionally set NotReady.",
+                                    name,
+                                    net_identity.name(),
+                                    message.net_id,
+                                    message.component_index
+                                );
+                                return;
                             }
+
+                            log::warn!(
+                                "Command received from {} while client is not ready. This may be ignored if client intentionally set NotReady.",
+                                connection.id
+                            );
                         }
                     }
                 }
             }
             return;
         }
+
+        match Self.spawned.get(&message.net_id) {
+            None => {
+                if channel == Reliable {
+                    log::warn!(
+                        "Spawned object not found when handling Command message netId={}",
+                        message.net_id
+                    );
+                }
+
+                return;
+            }
+            Some(weak_net_identity) => {
+                if let Some(net_identity) = weak_net_identity.get() {
+                    let requires_authority =
+                        RemoteProcedureCalls.command_requires_authority(&message.function_hash);
+                    let is_owner = connection.ptr_eq_weak(&net_identity.connection());
+
+                    if requires_authority && !is_owner {
+                        if (message.component_index as usize)
+                            < net_identity.network_behaviours().len()
+                        {
+                            if let Some(name) =
+                                RemoteProcedureCalls.get_function_method_name(message.function_hash)
+                            {
+                                log::warn!(
+                                    "Command {} received for {} [netId={}] component index={} when client not ready. This may be ignored if client intentionally set NotReady.",
+                                    name,
+                                    net_identity.name(),
+                                    message.net_id,
+                                    message.component_index
+                                );
+                                return;
+                            }
+
+                            log::warn!(
+                                "Command received from {} while client is not ready. This may be ignored if client intentionally set NotReady.",
+                                connection.id
+                            );
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        NetworkReaderPool::get_with_slice_return(message.payload.as_slice(), |reader| {
+            // TODO: 处理命令消息
+        });
     }
 
     fn on_client_network_ping_message(
-        connection: RevelArc<NetworkConnection>,
-        _: NetworkPingMessage,
+        mut connection: RevelArc<NetworkConnection>,
+        message: NetworkPingMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端网络Ping消息
+        let local_time = Time::unscaled_time_f64();
+        let unadjusted_error = local_time - message.local_time;
+        let adjusted_error = local_time - message.predicted_time_adjusted;
+
+        let mut pong_message =
+            NetworkPongMessage::new(message.local_time, unadjusted_error, adjusted_error);
+        connection.send_message(&mut pong_message, Reliable);
     }
 
     fn on_client_network_pong_message(
-        connection: RevelArc<NetworkConnection>,
-        _: NetworkPongMessage,
+        mut connection: RevelArc<NetworkConnection>,
+        message: NetworkPongMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端网络Pong消息
+        let local_time = Time::unscaled_time_f64();
+        if message.local_time > local_time {
+            return;
+        }
+
+        let new_rtt = local_time - message.local_time;
+        connection._rtt.add(new_rtt);
     }
 
     fn on_client_entity_state_message(
-        connection: RevelArc<NetworkConnection>,
-        _: EntityStateMessage,
+        mut connection: RevelArc<NetworkConnection>,
+        message: EntityStateMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端实体状态消息
+        match Self.spawned.get(&message.net_id) {
+            None => {
+                log::warn!(
+                    "EntityStateMessage from {} for netId={} without authority.",
+                    connection.id,
+                    message.net_id
+                );
+            }
+            Some(weak_net_identity) => {
+                if let Some(net_identity) = weak_net_identity.get() {
+                    if !connection.ptr_eq_weak(&net_identity.connection()) {
+                        log::warn!(
+                            "EntityStateMessage from {} for {} without authority.",
+                            connection.id,
+                            net_identity.name()
+                        );
+                        return;
+                    }
+                    NetworkReaderPool::get_with_slice_return(
+                        message.payload.as_slice(),
+                        |reader| {
+                            if !net_identity.deserialize_server(reader) {
+                                if Self.exceptions_disconnect {
+                                    log::error!(
+                                        "Server failed to deserialize client state for {} with netId={}. Disconnecting.",
+                                        net_identity.name(),
+                                        net_identity.net_id()
+                                    );
+                                    connection.disconnect();
+                                } else {
+                                    log::warn!(
+                                        "Server failed to deserialize client state for {} with netId={}.",
+                                        net_identity.name(),
+                                        net_identity.net_id()
+                                    );
+                                }
+                            } else {
+                                log::warn!(
+                                "Server failed to deserialize client state for {} with netId={}.",
+                                net_identity.name(),
+                                net_identity.net_id());
+                            }
+                        },
+                    );
+                }
+            }
+        }
     }
 
     fn on_client_time_snapshot_message(
-        connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<NetworkConnection>,
         _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理时间快照消息
+        let remote_time_stamp = connection.remote_time_stamp;
+        connection.on_time_snapshot(TimeSnapshot::new(
+            remote_time_stamp,
+            Time::unscaled_time_f64(),
+        ))
     }
 
     fn unpack_and_invoke(
@@ -495,7 +618,6 @@ impl NetworkServer {
         log::warn!("Invalid message header for connection:{}", connection.id);
         false
     }
-
 
     pub fn register_handler<M>(
         &mut self,
