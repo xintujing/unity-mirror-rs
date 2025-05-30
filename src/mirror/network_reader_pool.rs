@@ -41,28 +41,7 @@ impl NetworkReaderPool {
         Self::return_(reader);
     }
 
-    pub fn get_with_bytes(bytes: Vec<u8>) -> NetworkReader {
-        if let Ok(mut pool) = NETWORK_READER_POOL.lock() {
-            let mut reader = pool.get();
-            reader.reset();
-            reader.set_vec(bytes);
-            reader
-        } else {
-            println!("NetworkReaderPool::get_with_bytes() failed to lock NETWORK_READER_POOL");
-            NetworkReader::new(bytes)
-        }
-    }
-
-    pub fn get_with_bytes_return<T>(bytes: &Vec<u8>, func: T)
-    where
-        T: FnOnce(&mut NetworkReader),
-    {
-        let mut reader = Self::get_with_bytes(bytes.to_vec());
-        func(&mut reader);
-        Self::return_(reader);
-    }
-
-    pub fn get_with_array_segment(array_segment: &[u8]) -> NetworkReader {
+    pub fn get_with_slice(array_segment: &[u8]) -> NetworkReader {
         if let Ok(mut pool) = NETWORK_READER_POOL.lock() {
             let mut reader = pool.get();
             reader.reset();
@@ -80,7 +59,7 @@ impl NetworkReaderPool {
     where
         T: FnOnce(&mut NetworkReader),
     {
-        let mut reader = Self::get_with_array_segment(slice);
+        let mut reader = Self::get_with_slice(slice);
         func(&mut reader);
         Self::return_(reader);
     }

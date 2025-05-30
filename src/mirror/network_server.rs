@@ -467,9 +467,38 @@ impl NetworkServer {
                     let requires_authority =
                         RemoteProcedureCalls.command_requires_authority(&message.function_hash);
                     let is_owner = connection.ptr_eq_weak(&net_identity.connection());
+
+                    if requires_authority && !is_owner {
+                        if (message.component_index as usize)
+                            < net_identity.network_behaviours().len()
+                        {
+                            if let Some(name) =
+                                RemoteProcedureCalls.get_function_method_name(message.function_hash)
+                            {
+                                log::warn!(
+                                    "Command {} received for {} [netId={}] component index={} when client not ready. This may be ignored if client intentionally set NotReady.",
+                                    name,
+                                    net_identity.name(),
+                                    message.net_id,
+                                    message.component_index
+                                );
+                                return;
+                            }
+
+                            log::warn!(
+                                "Command received from {} while client is not ready. This may be ignored if client intentionally set NotReady.",
+                                connection.id
+                            );
+                        }
+                        return;
+                    }
                 }
             }
         }
+
+        NetworkReaderPool::get_with_slice_return(message.payload.as_slice(), |reader| {
+            // TODO: 处理命令消息
+        });
     }
 
     fn on_client_network_ping_message(
