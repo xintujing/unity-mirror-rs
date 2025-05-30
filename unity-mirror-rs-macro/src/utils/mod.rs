@@ -1,6 +1,8 @@
 pub(crate) mod random_string;
 pub(crate) mod string_case;
 
+pub(crate) mod csharp;
+
 #[allow(unused)]
 pub fn write_to_file(prefix: &str, value: String) {
     let timestamp = std::time::SystemTime::now()

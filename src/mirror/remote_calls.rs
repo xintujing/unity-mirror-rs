@@ -12,11 +12,8 @@ use std::collections::HashMap;
 static mut REMOTE_CALL_DELEGATES: Lazy<HashMap<u16, Invoker>> = Lazy::new(|| HashMap::new());
 
 #[allow(unused)]
-pub type RemoteCallDelegate = fn(
-    &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
-    &mut NetworkReader,
-    &mut RevelArc<NetworkConnection>,
-);
+pub type RemoteCallDelegate =
+fn(Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>, &mut NetworkReader, RevelArc<NetworkConnection>);
 
 #[allow(unused)]
 pub struct RemoteProcedureCalls;
@@ -31,6 +28,8 @@ impl RemoteProcedureCalls {
         func: RemoteCallDelegate,
         cmd_requires_authority: bool,
     ) -> u16 {
+        println!("Registering remote procedure call: {}", function_full_name);
+
         self.register_delegate::<T>(
             function_full_name,
             RemoteCallType::Command,
@@ -105,8 +104,8 @@ impl RemoteProcedureCalls {
         function_hash: u16,
         remote_call_type: RemoteCallType,
         reader: &mut NetworkReader,
-        network_behaviour_chain: &mut Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
-        conn: &mut RevelArc<NetworkConnection>,
+        network_behaviour_chain: Vec<RevelWeak<Box<dyn NetworkBehaviourT>>>,
+        conn: RevelArc<NetworkConnection>,
     ) -> bool {
         if let Some(invoker) = self.get_invoker_for_hash(function_hash, remote_call_type) {
             (invoker.function)(network_behaviour_chain, reader, conn);

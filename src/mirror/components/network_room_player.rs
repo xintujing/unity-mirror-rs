@@ -1,12 +1,18 @@
+use crate::commons::action::Action;
+use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::mirror::remote_calls::{RemoteCallDelegate, RemoteProcedureCalls};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro::{command, namespace, network_behaviour};
+use crate::mirror::NetworkBehaviourT;
+use crate::mirror::NetworkBehaviour;
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
 
-// #[network_behaviour]
+#[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 #[namespace(prefix = "Mirror")]
 pub struct NetworkRoomPlayer {
     // #[sync_var]
@@ -15,22 +21,17 @@ pub struct NetworkRoomPlayer {
     index: i32,
 }
 
+// #[rpc_impl]
 impl NetworkRoomPlayer {
-    // #[command]
-    pub fn cmd_change_ready_state(&self, ready_state: bool) {
-        // self.net_id
+    #[command(NetworkRoomPlayer, authority = true)]
+    pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
+        // // Self::COMPONENT_NAME;
+        // let x = stringify!(NetworkRoomPlayer);
+        // let name = std::any::type_name::<Self>();
+        // println!("{}", name);
+        // // self.net_id
     }
 }
-
-// impl NetworkRoomPlayerHooks for NetworkRoomPlayer {
-//     fn ready_to_begin_changed(&mut self, old_value: &bool, new_value: &bool) {
-//         todo!()
-//     }
-//
-//     fn index_changed(&mut self, old_value: &i32, new_value: &i32) {
-//         todo!()
-//     }
-// }
 
 impl MonoBehaviour for NetworkRoomPlayer {
     fn start(&mut self) {}
@@ -56,3 +57,13 @@ impl NetworkRoomPlayer {
         todo!()
     }
 }
+
+impl NetworkBehaviourT for NetworkRoomPlayer {
+    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
+    }
+}
+impl NetworkRoomPlayerOnChangeCallback for NetworkRoomPlayer {}

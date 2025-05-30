@@ -63,5 +63,5 @@ fn main() {
     //     println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
     // }
 
-    GameLooper::new().run();
+    // GameLooper::new().run();
 }

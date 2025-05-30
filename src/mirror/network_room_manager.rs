@@ -71,6 +71,8 @@ impl NetworkRoomManager {
     }
 
     fn on_client_scene_changed(&mut self) {
+        let name = std::any::type_name::<Self>();
+        println!("{}", name.split("::").last().unwrap_or_default());
         println!("NetworkManager: Client scene changed 111");
         // 这里可以添加更多的逻辑处理
     }

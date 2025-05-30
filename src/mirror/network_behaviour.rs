@@ -175,10 +175,9 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
     }
 }
 
-
 pub trait BaseNetworkBehaviourT: NetworkBehaviourT {}
 pub trait NetworkBehaviourT:
-MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
+    MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
