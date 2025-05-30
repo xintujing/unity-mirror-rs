@@ -535,7 +535,6 @@ impl NetworkServer {
         message: EntityStateMessage,
         _: TransportChannel,
     ) {
-        // TODO: 处理客户端实体状态消息
         match Self.spawned.get(&message.net_id) {
             None => {
                 log::warn!(
