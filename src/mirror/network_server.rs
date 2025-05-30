@@ -48,22 +48,27 @@ pub struct NetworkServerStatic {
 
     pub client_snapshot_settings: SnapshotInterpolationSettings,
 
-    pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
-    handlers: HashMap<u16, MessageHandler>,
     pub next_network_id: u32,
+
+    // Identity
     pub spawned: HashMap<u32, RevelWeak<Box<NetworkIdentity>>>,
+
+    // State
     pub active: bool,
+
+    // Handlers
+    message_handlers: HashMap<u16, MessageHandler>,
+
+    // Connections
+    pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
 
     // Events
     pub on_connected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
     pub on_disconnected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
     pub on_error_event:
         SelfMutAction<(RevelArc<NetworkConnection>, TransportError, &'static str), ()>,
-    // pub on_error_event: fn(&mut RevelArc<NetworkConnection>, TransportError, &str),
     pub on_transport_exception_event:
         SelfMutAction<(RevelArc<NetworkConnection>, Box<dyn std::error::Error>), ()>,
-    // pub on_transport_exception_event:
-    //     fn(&mut RevelArc<NetworkConnection>, Box<dyn std::error::Error>),
 }
 
 static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
@@ -86,7 +91,7 @@ static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic 
     exceptions_disconnect: true,
     client_snapshot_settings: SnapshotInterpolationSettings::new(),
     connections: Default::default(),
-    handlers: Default::default(),
+    message_handlers: Default::default(),
     next_network_id: 1,
     spawned: Default::default(),
     active: false,
@@ -342,7 +347,7 @@ impl NetworkServer {
         channel: TransportChannel,
     ) -> bool {
         if let Some(msg_type) = MessageHandler::unpack_id(reader) {
-            return match self.handlers.get_mut(&msg_type) {
+            return match self.message_handlers.get_mut(&msg_type) {
                 None => {
                     log::warn!("No handler registered for message type: {}", msg_type);
                     false
@@ -366,14 +371,14 @@ impl NetworkServer {
         M: Message + 'static,
     {
         let message_id = M::get_full_name().hash16();
-        if self.handlers.contains_key(&message_id) {
+        if self.message_handlers.contains_key(&message_id) {
             log::warn!(
                 "Handler for message {} already registered, please use replace_handler instead.",
                 M::get_full_name()
             );
             return;
         }
-        self.handlers.insert(
+        self.message_handlers.insert(
             message_id,
             MessageHandler::new::<M>(func, require_authentication),
         );
@@ -387,7 +392,7 @@ impl NetworkServer {
         M: Message + 'static,
     {
         let message_id = M::get_full_name().hash16();
-        self.handlers.insert(
+        self.message_handlers.insert(
             message_id,
             MessageHandler::new(func, require_authentication),
         );
@@ -398,7 +403,7 @@ impl NetworkServer {
         M: Message + 'static,
     {
         let message_id = M::get_full_name().hash16();
-        self.handlers.remove(&message_id);
+        self.message_handlers.remove(&message_id);
     }
 
     pub fn shutdown(&mut self) {
@@ -416,7 +421,7 @@ impl NetworkServer {
         self.actual_tick_rate = 0;
 
         self.connections.clear();
-        self.handlers.clear();
+        self.message_handlers.clear();
         self.cleanup_spawned();
         self.active = false;
         NetworkIdentity::reset_server_statics();

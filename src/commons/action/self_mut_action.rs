@@ -1,4 +1,5 @@
 use crate::commons::revel_weak::RevelWeak;
+use std::mem;
 
 trait SelfMutHandler<This, Args>: 'static {
     type Output;
@@ -39,9 +40,11 @@ pub struct SelfMutAction<Args, Return> {
 
 impl<Args, Return> Default for SelfMutAction<Args, Return> {
     fn default() -> Self {
-        Self {
-            f: Box::new(|_| {}),
-            reg: false,
+        unsafe {
+            Self {
+                f: Box::new(|_| mem::zeroed()),
+                reg: false,
+            }
         }
     }
 }
@@ -67,7 +70,6 @@ impl<Args, Return> SelfMutAction<Args, Return> {
     }
 
     pub fn reset(&mut self) {
-        self.f = Box::new(|_| {});
-        self.reg = false;
+        *self = Self::default()
     }
 }

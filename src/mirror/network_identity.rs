@@ -10,8 +10,11 @@ use crate::mirror::{NetworkBehaviourT, NetworkServer, SyncDirection, SyncMode};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
+use lazy_static::lazy_static;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
+use std::sync::atomic::AtomicU32;
+use std::sync::atomic::Ordering::SeqCst;
 use unity_mirror_macro::namespace;
 
 #[ctor::ctor]
@@ -22,16 +25,15 @@ fn static_init() {
             .downcast_ref::<MetadataNetworkIdentityWrapper>()
             .unwrap();
 
-        // // let wrappers = metadata.list::<MetadataNetworkIdentityWrapper>();
-        // if wrappers.len() < 1 {
-        //     panic!("NetworkIdentity requires at least one MetadataNetworkIdentity");
-        // }
-
         let identity =
             NetworkIdentity::instance(weak_game_object, wrapper.get::<MetadataNetworkIdentity>());
         let type_id = identity.type_id();
         vec![(Box::new(identity), type_id)]
     });
+}
+
+lazy_static! {
+    static ref NEXT_NETWORK_ID: AtomicU32 = AtomicU32::new(1);
 }
 
 #[namespace(prefix = "Mirror")]
@@ -56,15 +58,17 @@ impl MonoBehaviour for NetworkIdentity {
 
 impl NetworkIdentity {
     pub fn get_next_network_id() -> u32 {
-        let next_network_id = NetworkServer.next_network_id;
-        NetworkServer.next_network_id += 1;
-        next_network_id
+        let curr = NEXT_NETWORK_ID.load(SeqCst);
+        NEXT_NETWORK_ID.store(curr + 1, SeqCst);
+        curr
     }
 
     pub fn reset_server_statics() {
-        NetworkServer.next_network_id = 1;
+        NEXT_NETWORK_ID.store(1, SeqCst);
     }
 }
+
+// 序列化相关
 impl NetworkIdentity {
     // ServerDirtyMasks
     fn server_dirty_masks(&self, initial_state: bool) -> (u64, u64) {
@@ -158,6 +162,7 @@ impl NetworkIdentity {
     }
 }
 
+// 实例化
 impl NetworkIdentity {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,
@@ -217,24 +222,4 @@ impl NetworkIdentity {
 
         identity
     }
-}
-
-impl NetworkIdentity {
-    pub fn net_id(&self) -> u32 {
-        self.net_id
-    }
-    // pub fn get_component<T: NetworkBehaviour>(&self) -> Option<T> {
-    //     let type_id = TypeId::of::<T>();
-    //     unsafe {
-    //         match self.network_behaviours.get(&type_id) {
-    //             None => None,
-    //             Some(network_behaviour) => {
-    //                 let option = network_behaviour.upgrade();
-    //                 let rc = option.unwrap();
-    //                 let x = rc.get();
-    //                 let x1 = x.as_any_mut().downcast_mut::<T>();
-    //             },
-    //         }
-    //     }
-    // }
 }

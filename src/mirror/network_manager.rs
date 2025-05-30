@@ -3,6 +3,7 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::metadata::Metadata;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
+use crate::mirror::authenticator::authenticator::Authenticator;
 use crate::mirror::network_manager_factory::NetworkManagerFactory;
 use crate::mirror::{network_manager_trait, NetworkBehaviour, NetworkRoomManager};
 use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
@@ -18,16 +19,12 @@ use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFa
     on_stop_server(&mut self);
 })]
 pub struct NetworkManager {
+    pub authenticator: Option<Box<dyn Authenticator>>,
+
+    // Action Begin
     pub on_client_scene_changed: SelfMutAction<(), ()>,
+    // Action End
 }
-// impl NetworkManager {
-//     pub fn set_callbacks(
-//         &mut self,
-//         callbacks: crate::commons::revel_weak::RevelWeak<Box<dyn NetworkManagerCallbacks>>,
-//     ) {
-//         self.callbacks = callbacks;
-//     }
-// }
 
 impl MonoBehaviour for NetworkManager {
     fn awake(&mut self) {
