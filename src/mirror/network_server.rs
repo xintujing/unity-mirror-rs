@@ -24,6 +24,7 @@ use crate::unity_engine::Time;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use crate::mirror::remote_calls::RemoteProcedureCalls;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -417,10 +418,25 @@ impl NetworkServer {
 
     fn on_client_command_message(
         connection: &mut RevelArc<NetworkConnection>,
-        _: CommandMessage,
-        _: TransportChannel,
+        message: CommandMessage,
+        channel: TransportChannel,
     ) {
         // TODO: 处理客户端命令消息
+        if !connection.is_ready {
+            if channel == Reliable {
+                if let Some(weak_net_identity) = Self.spawned.get(&message.net_id) {
+                    if let Some(net_identity) = weak_net_identity.get() {
+                        // if message.component_index< net_identity
+                        if true{
+                            if let Some(name) = RemoteProcedureCalls.get_function_method_name(message.function_hash) {
+
+                            }
+                        }
+                    }
+                }
+            }
+            return;
+        }
     }
 
     fn on_client_network_ping_message(
