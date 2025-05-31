@@ -21,7 +21,7 @@ use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
-use crate::mirror::NetworkIdentity;
+use crate::mirror::{NetworkIdentity, RemoteCallType};
 use crate::unity_engine::Time;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -493,13 +493,22 @@ impl NetworkServer {
                         }
                         return;
                     }
+
+                    NetworkReaderPool::get_with_slice_return(
+                        message.payload.as_slice(),
+                        |reader| {
+                            net_identity.handle_remote_call(
+                                message.component_index,
+                                message.function_hash,
+                                RemoteCallType::Command,
+                                reader,
+                                connection,
+                            );
+                        },
+                    );
                 }
             }
         }
-
-        NetworkReaderPool::get_with_slice_return(message.payload.as_slice(), |reader| {
-            // TODO: 处理命令消息
-        });
     }
 
     fn on_client_network_ping_message(

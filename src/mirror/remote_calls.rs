@@ -13,7 +13,7 @@ static mut REMOTE_CALL_DELEGATES: Lazy<HashMap<u16, Invoker>> = Lazy::new(|| Has
 
 #[allow(unused)]
 pub type RemoteCallDelegate =
-fn(Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>, &mut NetworkReader, RevelArc<NetworkConnection>);
+    fn(Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>, &mut NetworkReader, RevelArc<NetworkConnection>);
 
 #[allow(unused)]
 pub struct RemoteProcedureCalls;
@@ -102,7 +102,7 @@ impl RemoteProcedureCalls {
     pub fn invoke(
         &self,
         function_hash: u16,
-        remote_call_type: RemoteCallType,
+        remote_call_type: &RemoteCallType,
         reader: &mut NetworkReader,
         network_behaviour_chain: Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>,
         conn: RevelArc<NetworkConnection>,
@@ -117,12 +117,12 @@ impl RemoteProcedureCalls {
     fn get_invoker_for_hash(
         &self,
         function_hash: u16,
-        remote_call_type: RemoteCallType,
+        remote_call_type: &RemoteCallType,
     ) -> Option<&'static Invoker> {
         #[allow(static_mut_refs)]
         unsafe {
             if let Some(invoker) = REMOTE_CALL_DELEGATES.get(&function_hash) {
-                if invoker.call_type == remote_call_type {
+                if invoker.call_type == *remote_call_type {
                     return Some(invoker);
                 }
             }
@@ -158,7 +158,7 @@ impl RemoteProcedureCalls {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum RemoteCallType {
     #[allow(unused)]
     Command,

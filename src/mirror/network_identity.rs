@@ -1,3 +1,4 @@
+use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
@@ -7,11 +8,14 @@ use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::{TNetworkBehaviour, SyncDirection, SyncMode};
+use crate::mirror::{
+    RemoteCallType, RemoteProcedureCalls, SyncDirection, SyncMode, TNetworkBehaviour,
+};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
 use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::atomic::AtomicU32;
@@ -36,6 +40,45 @@ fn static_init() {
 lazy_static! {
     static ref NEXT_NETWORK_ID: AtomicU32 = AtomicU32::new(1);
 }
+static mut SCENE_IDS: Lazy<HashMap<u64, RevelWeak<NetworkIdentity>>> = Lazy::new(|| HashMap::new());
+
+#[allow(unused)]
+pub(crate) trait IntoNum {
+    fn to_u32(&self) -> u32;
+    fn to_u64(&self) -> u64;
+}
+
+#[allow(unused)]
+impl IntoNum for str {
+    fn to_u32(&self) -> u32 {
+        self.parse::<u32>().unwrap_or(0)
+    }
+
+    fn to_u64(&self) -> u64 {
+        self.parse::<u64>().unwrap_or(0)
+    }
+}
+
+#[allow(unused)]
+#[derive(Eq, PartialEq, Default)]
+pub enum Visibility {
+    #[default]
+    Normal,
+    ForceHidden,
+    ForceShown,
+}
+
+impl Into<Visibility>
+    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+{
+    fn into(self) -> Visibility {
+        match self {
+            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::Default => Visibility::Normal,
+            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::ForceHidden => Visibility::ForceHidden,
+            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::ForceShown => Visibility::ForceShown,
+        }
+    }
+}
 
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
@@ -44,6 +87,19 @@ pub struct NetworkIdentity {
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
     connection: RevelWeak<NetworkConnection>,
+
+    pub is_server: bool,
+    pub server_only: bool,
+    pub is_client: bool,
+    pub is_owned: bool,
+
+    pub scene_id: u64,
+    _asset_id: u32,
+    destroy_called: bool,
+    pub visibility: Visibility,
+
+    owner_payload: Vec<u8>,
+    observers_payload: Vec<u8>,
 
     pub(crate) observers: Vec<RevelWeak<NetworkConnection>>,
 }
@@ -61,6 +117,7 @@ impl MonoBehaviour for NetworkIdentity {
 }
 
 impl NetworkIdentity {
+    const MAX_NETWORK_BEHAVIOURS: usize = 64;
     pub fn get_next_network_id() -> u32 {
         let curr = NEXT_NETWORK_ID.load(SeqCst);
         NEXT_NETWORK_ID.store(curr + 1, SeqCst);
@@ -69,6 +126,41 @@ impl NetworkIdentity {
 
     pub fn reset_server_statics() {
         NEXT_NETWORK_ID.store(1, SeqCst);
+    }
+
+    pub fn handle_remote_call(
+        &self,
+        component_index: u8,
+        function_hash: u16,
+        remote_call_type: RemoteCallType,
+        reader: &mut NetworkReader,
+        sender_connection: RevelArc<NetworkConnection>,
+    ) {
+        if component_index >= self.component_mapping.len() as u8 {
+            log::warn!(
+                "NetworkIdentity: handle_remote_call: component_index {} out of bounds for identity with net_id {}",
+                component_index,
+                self.net_id
+            );
+            return;
+        }
+        let invoke_component_chain = self.network_behaviours[component_index as usize].clone();
+
+        if !RemoteProcedureCalls.invoke(
+            function_hash,
+            &remote_call_type,
+            reader,
+            invoke_component_chain,
+            sender_connection,
+        ) {
+            log::error!(
+                "Found no receiver for incoming {:?} [{}] on {}, the server and client should have the same NetworkBehaviour instances [netId={}].",
+                remote_call_type,
+                function_hash,
+                self.name(),
+                self.net_id
+            );
+        }
     }
 }
 
@@ -241,5 +333,13 @@ impl NetworkIdentity {
 
     pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>> {
         &self.network_behaviours
+    }
+
+    pub fn is_server_only(&self) -> bool {
+        self.is_server && !self.is_client
+    }
+
+    pub fn is_client_only(&self) -> bool {
+        !self.is_server && self.is_client
     }
 }
