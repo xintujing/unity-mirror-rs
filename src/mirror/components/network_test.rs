@@ -29,7 +29,7 @@ pub struct NetworkTest {
 
 impl MonoBehaviour for NetworkTest {
     fn awake(&mut self) {
-        println!("Mirror: NetworkAnimator Awake");
+        // println!("Mirror: NetworkAnimator Awake");
     }
 }
 

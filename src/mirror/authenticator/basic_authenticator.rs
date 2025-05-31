@@ -8,22 +8,24 @@ use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::{Authenticator, NetworkServer};
 use unity_mirror_macro::{namespace, AuthenticatorFactory, Message};
+use crate::commons::action::SelfMutAction;
 
 #[namespace(prefix = "Mirror.Authenticators")]
 #[derive(AuthenticatorFactory)]
-pub struct BasicAuthenticator {}
+pub struct BasicAuthenticator {
+    on_server_authenticated: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
+}
 impl BasicAuthenticator {
     pub fn on_auth_request_message(
         mut connection: RevelArc<NetworkConnection>,
         message: BasicAuthenticatorRequestMessage,
         channel: TransportChannel,
-    ) {
-    }
+    ) {}
 }
 
 impl Authenticator for BasicAuthenticator {
     fn new() -> Box<dyn Authenticator> {
-        Box::new(BasicAuthenticator {})
+        Box::new(BasicAuthenticator { on_server_authenticated: Default::default() })
     }
 
     fn on_start_server(&self) {
@@ -37,7 +39,16 @@ impl Authenticator for BasicAuthenticator {
         NetworkServer.unregister_handler::<BasicAuthenticatorRequestMessage>();
     }
 
-    fn on_server_authenticate(&self, _connection: &mut NetworkConnection) {
+    fn set_on_server_authenticated(&mut self, event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>) {
+        self.on_server_authenticated = event;
+    }
+
+    fn get_on_server_authenticated(&self, f: fn(&SelfMutAction<(RevelArc<NetworkConnection>,), ()>)) {
+        f(&self.on_server_authenticated);
+    }
+
+
+    fn on_server_authenticate(&self, connection: RevelArc<NetworkConnection>) {
         // do nothing...wait for BasicAuthenticatorRequestMessage from client
     }
 }

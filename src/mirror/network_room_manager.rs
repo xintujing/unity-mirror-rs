@@ -1,10 +1,13 @@
 use crate::commons::action::SelfMutAction;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::mirror::NetworkManager;
+use crate::mirror::{NetworkConnection, NetworkManager};
 use crate::mirror::NetworkManagerCallbacks;
 use crate::unity_engine::MonoBehaviour;
 use std::any::Any;
+use std::error::Error;
 use unity_mirror_macro::{namespace, network_manager, NetworkManagerFactory};
+use crate::commons::revel_arc::RevelArc;
+use crate::mirror::transport::TransportError;
 
 #[network_manager(parent(NetworkManager, callbacks = NetworkManagerCallbacks))]
 #[namespace(prefix = "Mirror")]
@@ -24,6 +27,18 @@ impl NetworkManagerCallbacks for NetworkRoomManager {
     }
 
     fn on_stop_server(&mut self) {}
+
+    fn on_server_connect(&mut self, connection: RevelArc<NetworkConnection>) {}
+
+    fn on_server_change_scene(&mut self, scene_name: String) {}
+
+    fn on_server_scene_changed(&mut self, scene_name: String) {}
+
+    fn on_server_disconnect(&self, connection: RevelArc<NetworkConnection>) {}
+
+    fn on_server_error(&self, connection: RevelArc<NetworkConnection>, error: TransportError, reason: String) {}
+
+    fn on_server_transport_exception(&self, connection: RevelArc<NetworkConnection>, error: Box<dyn Error>) {}
 }
 
 impl MonoBehaviour for NetworkRoomManager {
@@ -42,13 +57,13 @@ impl MonoBehaviour for NetworkRoomManager {
             //     parent.set_callbacks(instance.clone());
             // }
         }
-        println!("NetworkRoomManager awake");
+        // println!("NetworkRoomManager awake");
     }
     fn update(&mut self) {
         if let Some(parent) = self.parent.get() {
             parent.update();
         }
-        println!("Mirror: NetworkRoomManager update");
+        // println!("Mirror: NetworkRoomManager update");
     }
 }
 
@@ -71,9 +86,9 @@ impl NetworkRoomManager {
     }
 
     fn on_client_scene_changed(&mut self) {
-        let name = std::any::type_name::<Self>();
-        println!("{}", name.split("::").last().unwrap_or_default());
-        println!("NetworkManager: Client scene changed 111");
+        // let name = std::any::type_name::<Self>();
+        // println!("{}", name.split("::").last().unwrap_or_default());
+        // println!("NetworkManager: Client scene changed 111");
         // 这里可以添加更多的逻辑处理
     }
 }

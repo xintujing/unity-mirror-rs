@@ -23,7 +23,7 @@ impl MetadataComponentWrapper {
     pub fn register<T: Settings + 'static + for<'a> serde::Deserialize<'a>>() {
         let name = T::get_full_name();
         let type_name = std::any::type_name::<T>();
-        println!("Register component: {} {}", type_name, name);
+        // println!("Register component: {} {}", type_name, name);
         let parser = |value: serde_json::Value| -> Result<Box<dyn Settings>, serde_json::Error> {
             T::parse(value).map(|c| c as Box<dyn Settings>)
         };

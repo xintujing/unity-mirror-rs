@@ -15,12 +15,9 @@ pub struct NetworkAnimator {
 
 impl MonoBehaviour for NetworkAnimator {
     fn awake(&mut self) {
-        println!("Mirror: NetworkAnimator Awake");
-        self.test_target_rpc()
     }
 
     fn update(&mut self) {
-        self.test_target_rpc()
     }
 }
 

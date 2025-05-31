@@ -27,19 +27,19 @@ pub struct RigidBody {}
 
 impl MonoBehaviour for RigidBody {
     fn awake(&mut self) {
-        println!("UnityEngine: RigidBody Awake");
+        // println!("UnityEngine: RigidBody Awake");
     }
     fn update(&mut self) {
-        println!("UnityEngine: RigidBody Update");
+        // println!("UnityEngine: RigidBody Update");
     }
     fn on_destroy(&mut self) {
-        println!("UnityEngine: RigidBody Destroyed");
+        // println!("UnityEngine: RigidBody Destroyed");
     }
 }
 
 impl RigidBody {
     fn instance(settings: &MetadataRigidBody) -> Self {
-        println!("UnityEngine: RigidBody Instance");
+        // println!("UnityEngine: RigidBody Instance");
         Self {}
     }
 }

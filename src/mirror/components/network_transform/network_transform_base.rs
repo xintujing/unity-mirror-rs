@@ -58,19 +58,19 @@ impl MonoBehaviour for NetworkTransformBase {
         if let Some(parent) = self.parent.get() {
             parent.awake();
         }
-        println!("Mirror: NetworkTransformBase Awake");
+        // println!("Mirror: NetworkTransformBase Awake");
     }
     fn start(&mut self) {
-        println!("Mirror: NetworkTransformBase Start");
+        // println!("Mirror: NetworkTransformBase Start");
     }
     fn fixed_update(&mut self) {
-        println!("Mirror: NetworkTransformBase FixedUpdate");
+        // println!("Mirror: NetworkTransformBase FixedUpdate");
     }
     fn update(&mut self) {
-        println!("Mirror: NetworkTransformBase Update");
+        // println!("Mirror: NetworkTransformBase Update");
     }
     fn late_update(&mut self) {
-        println!("Mirror: NetworkTransformBase LateUpdate");
+        // println!("Mirror: NetworkTransformBase LateUpdate");
     }
 }
 

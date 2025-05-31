@@ -28,7 +28,7 @@ impl RemoteProcedureCalls {
         func: RemoteCallDelegate,
         cmd_requires_authority: bool,
     ) -> u16 {
-        println!("Registering remote procedure call: {}", function_full_name);
+        // println!("Registering remote procedure call: {}", function_full_name);
 
         self.register_delegate::<T>(
             function_full_name,

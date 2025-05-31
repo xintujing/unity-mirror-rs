@@ -22,10 +22,11 @@ use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
 use crate::mirror::{NetworkIdentity, RemoteCallType};
-use crate::unity_engine::Time;
+use crate::unity_engine::{GameObject, Time};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use crate::mirror::messages::scene_message::SceneMessage;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -40,8 +41,8 @@ pub struct NetworkServerStatic {
     full_update_duration: TimeSample,
     late_send_time: f64,
 
-    disconnect_inactive_connections: bool,
-    disconnect_inactive_timeout: f32,
+    pub(crate) disconnect_inactive_connections: bool,
+    pub(crate) disconnect_inactive_timeout: f32,
 
     actual_tick_rate_counter: i32,
     actual_tick_rate_start: f64,
@@ -50,8 +51,8 @@ pub struct NetworkServerStatic {
     early_update_duration: TimeSample,
     late_update_duration: TimeSample,
 
-    is_loading_scene: bool,
-    exceptions_disconnect: bool,
+    pub(crate) is_loading_scene: bool,
+    pub(crate) exceptions_disconnect: bool,
 
     pub client_snapshot_settings: SnapshotInterpolationSettings,
 
@@ -126,6 +127,7 @@ pub enum RemovePlayerOptions {
 }
 
 pub struct NetworkServer;
+
 
 impl NetworkServer {
     pub fn send_rate(&self) -> i32 {
@@ -707,6 +709,14 @@ impl NetworkServer {
     fn cleanup_spawned(&mut self) {
         // todo: 清理已生成的对象
     }
+
+    pub fn add_player_for_connection(connection: RevelArc<NetworkConnection>, player: RevelArc<GameObject>) {}
+
+    pub fn send_to_all(message: SceneMessage) {}
+
+    pub fn set_all_clients_not_ready() {}
+
+    pub fn spawn_objects(){}
 }
 
 impl Deref for NetworkServer {

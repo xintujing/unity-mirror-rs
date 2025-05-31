@@ -81,7 +81,7 @@ impl GameObject {
     ) -> RevelArc<GameObject> {
         // 随机数
         let mut rng = rand::rng();
-        println!("new game object: {}", metadata_prefab.name);
+        // println!("new game object: {}", metadata_prefab.name);
         let mut game_object = GameObject {
             id: rng.next_u64(),
             name: metadata_prefab.name.clone(),

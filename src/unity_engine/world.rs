@@ -103,7 +103,7 @@ impl WorldManager {
             }
             ACTIVE_WORLD_INDEX.store(index as isize, SeqCst);
             {
-                println!("Active world index: {} [{}]", index, WORLDS.len());
+                // println!("Active world index: {} [{}]", index, WORLDS.len());
                 let active_world = WORLDS.get(index).unwrap();
                 // Self::active_world(active_world)
             }

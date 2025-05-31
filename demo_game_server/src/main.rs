@@ -1,6 +1,5 @@
-use unity_mirror_rs::mirror::components::network_room_player::NetworkRoomPlayer;
-use unity_mirror_rs::mirror::NetworkManager;
-use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
+use unity_mirror_rs::mirror::{NetworkManager, NetworkServer};
+use unity_mirror_rs::unity_engine::{LoadSceneMode, WorldManager};
 
 #[ctor::ctor]
 fn init_logger() {
@@ -63,6 +62,6 @@ fn main() {
     //     let x = weak_network_transform_unreliable.unwrap();
     //     println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
     // }
-
+NetworkServer::listen()
     // GameLooper::new().run();
 }

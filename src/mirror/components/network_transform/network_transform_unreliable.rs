@@ -28,29 +28,29 @@ pub struct NetworkTransformUnreliable {
 
 impl MonoBehaviour for NetworkTransformUnreliable {
     fn awake(&mut self) {
-        if let Some(parent) = self.parent.get() {
-            parent.awake();
-        }
-        println!("Mirror: NetworkTransformUnreliable Awake");
+        // if let Some(parent) = self.parent.get() {
+        //     parent.awake();
+        // }
+        // println!("Mirror: NetworkTransformUnreliable Awake");
     }
     fn start(&mut self) {
-        println!("Mirror: NetworkTransformUnreliable Start");
+        // println!("Mirror: NetworkTransformUnreliable Start");
     }
     fn fixed_update(&mut self) {
-        let elapsed = Time::unscaled_time().elapsed();
-        println!(
-            "Mirror: NetworkTransformUnreliable FixedUpdate {:?}",
-            elapsed
-        );
+        // let elapsed = Time::unscaled_time().elapsed();
+        // println!(
+        //     "Mirror: NetworkTransformUnreliable FixedUpdate {:?}",
+        //     elapsed
+        // );
     }
     fn update(&mut self) {
         // if let Some(parent) = self.parent.get() {
         //     parent.update();
         // }
-        let elapsed = Time::unscaled_time().elapsed();
-        println!("Mirror: NetworkTransformUnreliable Update {:?}", elapsed);
+        // let elapsed = Time::unscaled_time().elapsed();
+        // println!("Mirror: NetworkTransformUnreliable Update {:?}", elapsed);
 
-        let game_object = &self.ancestor.get().unwrap().game_object;
+        let game_object = &self.game_object;
 
         // let game_object = root_game_object.get().unwrap();
         let weak_game_object = game_object
@@ -68,15 +68,15 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         // let weak_network_transform_unreliable =
         //     weak_game_object.to::<NetworkTransformUnreliable>();
         // let x = weak_network_transform_unreliable.get().unwrap();
-        println!("{}", x1.buffer_reset_multiplier);
+        // println!("{}", x1.buffer_reset_multiplier);
     }
     fn late_update(&mut self) {
         let elapsed = Time::unscaled_time().elapsed();
 
-        println!(
-            "Mirror: NetworkTransformUnreliable LateUpdate {:?}",
-            elapsed
-        );
+        // println!(
+        //     "Mirror: NetworkTransformUnreliable LateUpdate {:?}",
+        //     elapsed
+        // );
     }
 }
 

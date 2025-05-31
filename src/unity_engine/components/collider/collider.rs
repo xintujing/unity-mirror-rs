@@ -27,19 +27,19 @@ pub struct Collider {}
 
 impl MonoBehaviour for Collider {
     fn awake(&mut self) {
-        println!("UnityEngine: Collider Awake");
+        // println!("UnityEngine: Collider Awake");
     }
     fn update(&mut self) {
-        println!("UnityEngine: Collider Update");
+        // println!("UnityEngine: Collider Update");
     }
     fn on_destroy(&mut self) {
-        println!("UnityEngine: Collider Destroyed");
+        // println!("UnityEngine: Collider Destroyed");
     }
 }
 
 impl Collider {
     fn instance(settings: &MetadataCollider) -> Self {
-        println!("UnityEngine: Collider Instance");
+        // println!("UnityEngine: Collider Instance");
         Self {}
     }
 }

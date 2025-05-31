@@ -69,7 +69,7 @@ pub enum Visibility {
 }
 
 impl Into<Visibility>
-    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
 {
     fn into(self) -> Visibility {
         match self {
@@ -106,13 +106,13 @@ pub struct NetworkIdentity {
 
 impl MonoBehaviour for NetworkIdentity {
     fn awake(&mut self) {
-        println!("Mirror: NetworkIdentity Awake");
+        // println!("Mirror: NetworkIdentity Awake");
     }
     fn update(&mut self) {
-        println!("Mirror: NetworkIdentity Update");
+        // println!("Mirror: NetworkIdentity Update");
     }
     fn on_destroy(&mut self) {
-        println!("Mirror: NetworkIdentity Destroyed");
+        // println!("Mirror: NetworkIdentity Destroyed");
     }
 }
 
@@ -310,7 +310,7 @@ impl NetworkIdentity {
             }
         }
 
-        println!("Mirror: NetworkIdentity Instance");
+        // println!("Mirror: NetworkIdentity Instance");
 
         identity
     }

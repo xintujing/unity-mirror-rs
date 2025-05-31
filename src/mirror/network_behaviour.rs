@@ -112,7 +112,7 @@ impl NetworkBehaviour {
 
 impl MonoBehaviour for NetworkBehaviour {
     fn awake(&mut self) {
-        println!("NetworkBehaviour: awake");
+        // println!("NetworkBehaviour: awake");
     }
 }
 
