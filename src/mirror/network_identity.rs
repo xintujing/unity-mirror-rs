@@ -44,6 +44,8 @@ pub struct NetworkIdentity {
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
     connection: RevelWeak<NetworkConnection>,
+
+    pub(crate) observers: Vec<RevelWeak<NetworkConnection>>,
 }
 
 impl MonoBehaviour for NetworkIdentity {
@@ -84,9 +86,9 @@ impl NetworkIdentity {
 
                 if initial_state
                     || (dirty
-                        && (network_behaviour
-                            .get_sync_direction()
-                            .eq(&SyncDirection::ServerToClient)))
+                    && (network_behaviour
+                    .get_sync_direction()
+                    .eq(&SyncDirection::ServerToClient)))
                 {
                     owner_mask |= nth_bit;
                 }

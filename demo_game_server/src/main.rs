@@ -1,5 +1,6 @@
+use unity_mirror_rs::mirror::components::network_room_player::NetworkRoomPlayer;
 use unity_mirror_rs::mirror::NetworkManager;
-use unity_mirror_rs::unity_engine::GameLooper;
+use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
 
 #[ctor::ctor]
 fn init_logger() {
@@ -50,7 +51,7 @@ fn main() {
     //     network_room_manager.awake()
     // });
 
-    // WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
+    WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
     //
     // let root_game_objects = WorldManager::root_game_objects();
     //

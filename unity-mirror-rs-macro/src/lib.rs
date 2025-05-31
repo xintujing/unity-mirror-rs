@@ -145,3 +145,13 @@ pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
 pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {
     mirror::component::command::handler(attr, item)
 }
+
+#[proc_macro_attribute]
+pub fn client_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
+    mirror::component::client_rpc::handler(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn target_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
+    mirror::component::target_rpc::handler(attr, item)
+}

@@ -83,8 +83,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 item_struct.fields,
                 "The component macro only supports named fields.",
             )
-            .to_compile_error()
-            .into();
+                .to_compile_error()
+                .into();
         }
     }
 
@@ -185,6 +185,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut deserialize_sync_var_ts = Vec::new();
     let mut sync_variable_getter_setter = vec![];
     let mut on_change_callback_ts = Vec::new();
+    let mut parent_slot = None;
 
     for (field_index, (field, field_type)) in sync_var_fields.iter().enumerate() {
         let get_sync_field_ident = format_ident!("get_{}", field);
@@ -258,6 +259,22 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         ext_fields.push(parse_quote! {
             pub(super) parent: crate::commons::revel_weak::RevelWeak<Box<#parent_path>>
         });
+
+        parent_slot = Some(quote! {
+            impl core::ops::Deref for #struct_ident {
+                type Target = Box<#parent_path>;
+
+                fn deref(&self) -> &Self::Target {
+                    self.parent.get().unwrap()
+                }
+            }
+
+            impl core::ops::DerefMut for #struct_ident {
+                fn deref_mut(&mut self) -> &mut Self::Target {
+                    self.parent.get().unwrap()
+                }
+            }
+        })
     }
 
     // obj偏移
@@ -289,6 +306,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             use super::*;
 
             #item_struct
+
+            #parent_slot
 
             impl #struct_ident {
                 pub fn factory(

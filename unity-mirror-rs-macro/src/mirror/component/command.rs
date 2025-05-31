@@ -11,6 +11,7 @@ struct CommandArgs {
 }
 
 mod kw {
+    syn::custom_keyword!(struct_path);
     syn::custom_keyword!(authority);
 }
 
@@ -24,17 +25,19 @@ impl Parse for CommandArgs {
         };
         let mut authority = false;
 
-        if input.peek(Token![,]) {
-            input.parse::<Token![,]>()?;
-        }
-
         while !input.is_empty() {
-            let lookahead = input.lookahead1();
-            if lookahead.peek(kw::authority) {
+            if input.peek(kw::struct_path) {
+                input.parse::<kw::struct_path>()?;
+            } else if input.peek(kw::authority) {
                 let _ = input.parse::<kw::authority>()?;
-                let _: Token![=] = input.parse()?;
-                let value: syn::LitBool = input.parse()?;
-                authority = value.value();
+                authority = true;
+            } else if input.peek(Token![,]) {
+                input.parse::<Token![,]>()?;
+                if input.is_empty() {
+                    break;
+                }
+            } else {
+                return Err(syn::Error::new(input.span(), "Expected a struct path"));
             }
         }
 

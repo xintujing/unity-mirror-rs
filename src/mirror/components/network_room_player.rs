@@ -8,7 +8,8 @@ use crate::mirror::TNetworkBehaviour;
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
-use unity_mirror_macro::{command, namespace, network_behaviour};
+use unity_mirror_macro::{command, namespace, network_behaviour, target_rpc};
+use crate::mirror::transport::TransportChannel;
 
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 #[namespace(prefix = "Mirror")]
@@ -19,9 +20,10 @@ pub struct NetworkRoomPlayer {
     index: i32,
 }
 
+
 // #[rpc_impl]
 impl NetworkRoomPlayer {
-    #[command(NetworkRoomPlayer, authority = true)]
+    #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         // // Self::COMPONENT_NAME;
         // let x = stringify!(NetworkRoomPlayer);

@@ -30,6 +30,7 @@ mod batching;
 mod compress;
 
 mod network_connection;
+pub use network_connection::*;
 mod network_server;
 mod remote_calls;
 pub use remote_calls::*;

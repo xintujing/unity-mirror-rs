@@ -3,7 +3,8 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::mirror::NetworkBehaviour;
 use crate::unity_engine::MonoBehaviour;
-use unity_mirror_macro::{namespace, network_behaviour};
+use unity_mirror_macro::{client_rpc, namespace, network_behaviour, target_rpc};
+use crate::mirror::transport::TransportChannel;
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkAnimator))]
@@ -15,6 +16,11 @@ pub struct NetworkAnimator {
 impl MonoBehaviour for NetworkAnimator {
     fn awake(&mut self) {
         println!("Mirror: NetworkAnimator Awake");
+        self.test_target_rpc()
+    }
+
+    fn update(&mut self) {
+        self.test_target_rpc()
     }
 }
 
@@ -28,3 +34,16 @@ impl TNetworkBehaviour for NetworkAnimator {
 }
 
 impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
+
+
+impl NetworkAnimator {
+    #[target_rpc(channel = TransportChannel::Unreliable)]
+    pub fn test_target_rpc(&self) {
+        println!("NetworkRoomPlayer: test_target_rpc");
+    }
+
+    #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
+    pub fn test_client_rpc(&self) {
+        println!("NetworkRoomPlayer: test_target_rpc");
+    }
+}
