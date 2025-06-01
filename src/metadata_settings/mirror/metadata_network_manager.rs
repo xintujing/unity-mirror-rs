@@ -7,6 +7,13 @@ use unity_mirror_macro::{namespace, MetadataSettingsWrapper};
 
 #[derive(Deserialize_repr, Clone)]
 #[repr(u8)]
+pub enum ConnectionQualityMethod {
+    Simple = 0,     // simple estimation based on rtt and jitter
+    Pragmatic = 1,   // based on snapshot interpolation adjustment
+}
+
+#[derive(Deserialize_repr, Clone)]
+#[repr(u8)]
 pub enum HeadlessStartOptions {
     DoNothing = 0,
     AutoStartServer = 1,
@@ -77,7 +84,7 @@ pub struct MetadataNetworkManager {
     #[serde(rename = "snapshotSettings")]
     pub snapshot_settings: MetadataSnapshotSettings,
     #[serde(rename = "evaluationMethod")]
-    pub evaluation_method: i32,
+    pub evaluation_method: ConnectionQualityMethod,
     #[serde(rename = "evaluationInterval")]
     pub evaluation_interval: f32,
     #[serde(rename = "timeInterpolationGui")]

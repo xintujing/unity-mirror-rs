@@ -1,18 +1,42 @@
 use crate::commons::action::SelfMutAction;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::mirror::{NetworkConnection, NetworkManager};
+use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkManager};
 use crate::mirror::NetworkManagerCallbacks;
 use crate::unity_engine::MonoBehaviour;
 use std::any::Any;
+use std::collections::HashSet;
 use std::error::Error;
 use unity_mirror_macro::{namespace, network_manager, NetworkManagerFactory};
 use crate::commons::revel_arc::RevelArc;
+use crate::commons::revel_weak::RevelWeak;
+use crate::metadata_settings::mirror::metadata_network_root_manager::MetadataNetworkRootManager;
+use crate::mirror::components::network_room_player::NetworkRoomPlayer;
 use crate::mirror::transport::TransportError;
+
+pub struct PendingPlayer {
+    pub connection: RevelWeak<NetworkConnection>,
+    pub room_player: RevelWeak<NetworkIdentity>,
+}
 
 #[network_manager(parent(NetworkManager, callbacks = NetworkManagerCallbacks))]
 #[namespace(prefix = "Mirror")]
 #[derive(NetworkManagerFactory)]
-pub struct NetworkRoomManager {}
+pub struct NetworkRoomManager {
+    // 最少可以自动启动游戏的玩家数量
+    pub min_players: i32,
+    // 预制可用于房间播放器
+    pub room_player_prefab: String,
+    pub room_slots: HashSet<NetworkRoomPlayer>,
+    // 用于房间的场景 这类似于 NetworkRoomManager 的 offline scene
+    pub room_scene: String,
+    // 从房间玩游戏的场景 这类似于 NetworkRoomManager 的online scene。
+    pub gameplay_scene: String,
+    // 房间里的玩家名单
+    pub pending_players: Vec<PendingPlayer>,
+    // 诊断标志 表明所有玩家都准备好玩
+    all_players_ready: bool,
+    client_index: usize,
+}
 //
 // impl crate::commons::action::Arguments for &NetworkRoomManager {}
 // impl FromArguments for NetworkRoomManager {
@@ -75,12 +99,13 @@ impl MonoBehaviour for NetworkRoomManager {
 
 impl NetworkRoomManagerInitialize for NetworkRoomManager {
     fn initialize(&mut self, metadata: &MetadataNetworkManagerWrapper) {
-        // let weak = self.weak.clone();
-        // self.on_client_scene_changed = Some(ActionWrapper::new(move || {
-        //     if let Some(this) = weak.upgrade() {
-        //         Self::on_client_scene_changed(unsafe { &mut **this.get() }, );
-        //     }
-        // }));
+        let config = metadata.get::<MetadataNetworkRootManager>();
+        self.min_players = config.min_players;
+        self.room_player_prefab = config.room_player_prefab.asset_path.clone();
+        self.room_slots = Default::default();
+        self.room_scene = config.room_scene.clone();
+        self.gameplay_scene = config.gameplay_scene.clone();
+        self.client_index = config.client_index;
     }
 }
 

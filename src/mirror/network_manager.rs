@@ -69,6 +69,13 @@ pub enum PlayerSpawnMethod {
     RoundRobin = 1,
 }
 
+#[derive(Default)]
+pub enum ConnectionQualityMethod
+{
+    #[default]
+    Simple = 0,     // simple estimation based on rtt and jitter
+    Pragmatic = 1,   // based on snapshot interpolation adjustment
+}
 
 #[network_manager]
 #[namespace(prefix = "Mirror")]
@@ -90,10 +97,9 @@ pub struct NetworkManager {
 
     pub send_rate: i32,
 
-    start_scene: String,
-    offline_scene: String,
-    online_scene: String,
-
+    pub start_scene: String,
+    pub offline_scene: String,
+    pub online_scene: String,
     network_scene_name: String,
 
     pub offline_scene_load_delay: f32,
@@ -101,7 +107,7 @@ pub struct NetworkManager {
     pub auto_create_player: bool,
     pub exceptions_disconnect: bool,
     pub snapshot_settings: SnapshotInterpolationSettings,
-    pub evaluation_method: i32,
+    pub evaluation_method: ConnectionQualityMethod,
     pub evaluation_interval: f32,
     pub time_interpolation_gui: bool,
     pub spawn_prefabs: Vec<String>,
@@ -122,6 +128,9 @@ pub struct NetworkManager {
 }
 
 impl NetworkManager {
+    pub fn get_network_scene_name(&self) -> String {
+        self.network_scene_name.clone()
+    }
     fn set_network_scene_name(&mut self, name: &str) {
         self.network_scene_name = name.to_string();
     }
@@ -161,19 +170,6 @@ impl MonoBehaviour for NetworkManager {
 
 impl NetworkManagerInitialize for NetworkManager {
     fn initialize(&mut self, metadata: &MetadataNetworkManagerWrapper) {
-        // let config = metadata.get::<MetadataNetworkManager>();
-        // config.authenticator.initialize(self);
-
-        self.authenticator = Some(AuthenticatorFactory::create(
-            "Mirror.Authenticators.BasicAuthenticator",
-        ));
-
-        self.transport = Some(RevelArc::new(Kcp2kTransport::new(Some(Kcp2KConfig {
-            ..Kcp2KConfig::default()
-        }))));
-
-        self.send_rate = 60;
-
         let config = metadata.get::<MetadataNetworkManager>();
 
         self.dont_destroy_on_load = config.dont_destroy_on_load;
@@ -185,6 +181,42 @@ impl NetworkManagerInitialize for NetworkManager {
         if let Some(online_scene) = &config.online_scene {
             self.online_scene = online_scene.asset_path.clone()
         }
+
+        self.offline_scene_load_delay = config.offline_scene_load_delay;
+        self.player_prefab = config.player_prefab.asset_path.clone();
+        self.auto_create_player = config.auto_create_player;
+        self.exceptions_disconnect = config.exceptions_disconnect;
+        self.snapshot_settings = SnapshotInterpolationSettings {
+            buffer_time_multiplier: config.snapshot_settings.buffer_time_multiplier,
+            buffer_limit: config.snapshot_settings.buffer_limit,
+            catchup_negative_threshold: config.snapshot_settings.catchup_negative_threshold,
+            catchup_positive_threshold: config.snapshot_settings.catchup_positive_threshold,
+            catchup_speed: config.snapshot_settings.catchup_speed,
+            slowdown_speed: config.snapshot_settings.slowdown_speed,
+            drift_ema_duration: config.snapshot_settings.drift_ema_duration,
+            dynamic_adjustment: config.snapshot_settings.dynamic_adjustment,
+            dynamic_adjustment_tolerance: config.snapshot_settings.dynamic_adjustment_tolerance,
+            delivery_time_ema_duration: config.snapshot_settings.delivery_time_ema_duration,
+        };
+
+        // self.evaluation_method = config.evaluation_method.clone().into();
+        // self.evaluation_interval = config.evaluation_interval;
+        // self.time_interpolation_gui = config.time_interpolation_gui;
+
+        self.spawn_prefabs = config.spawn_prefabs.iter().map(|prefab| prefab.asset_path.clone()).collect::<Vec<_>>();
+        self.max_connections = 100;
+        // self.disconnect_inactive_connections = config.disconnect_inactive_connections;
+        self.disconnect_inactive_timeout = 60f32;
+
+        self.authenticator = Some(AuthenticatorFactory::create(
+            "Mirror.Authenticators.BasicAuthenticator",
+        ));
+
+        self.transport = Some(RevelArc::new(Kcp2kTransport::new(Some(Kcp2KConfig {
+            ..Kcp2KConfig::default()
+        }))));
+
+        self.send_rate = 60;
     }
 }
 
