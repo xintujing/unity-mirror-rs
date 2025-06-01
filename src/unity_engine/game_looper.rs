@@ -1,6 +1,7 @@
 use crate::unity_engine::time::Time;
 use crate::unity_engine::world::WorldManager;
 use std::time::Instant;
+use crate::mirror::NetworkLoop;
 
 pub struct GameLooper {
     last_frame_time: Instant,
@@ -34,8 +35,10 @@ impl GameLooper {
         {
             if elapsed.elapsed() >= Time::get_frame_rate_duration() {
                 self.last_frame_time = Instant::now();
+                NetworkLoop.network_early_update(); // TODO 补充注册逻辑
                 WorldManager::update();
                 WorldManager::late_update();
+                NetworkLoop.network_late_update(); // TODO 补充注册逻辑
             }
         }
     }

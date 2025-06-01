@@ -29,6 +29,7 @@ use once_cell::sync::Lazy;
 use std::any::Any;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use crate::mirror::accurate_interval::AccurateInterval;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -174,7 +175,7 @@ impl NetworkServer {
 
         self.connections.clear();
 
-        NetworkTime::reset_statics();
+        NetworkTime.reset_statics();
 
         self.add_transport_handlers();
         self.initialized = true;
@@ -405,13 +406,15 @@ impl NetworkServer {
     }
 
     fn register_message_handlers(&mut self) {
-        let arc = RevelArc::new(Box::new(Self)).downgrade();
-        self.register_handler::<ReadyMessage>(SelfMutAction::new(arc.clone(), Self::on_client_ready_message), true);
-        self.register_handler::<CommandMessage>(SelfMutAction::new(arc.clone(), Self::on_client_command_message), true);
-        self.register_handler::<NetworkPingMessage>(SelfMutAction::new(arc.clone(), Self::on_client_network_ping_message), false);
-        self.register_handler::<NetworkPongMessage>(SelfMutAction::new(arc.clone(), Self::on_client_network_pong_message), false);
-        self.register_handler::<EntityStateMessage>(SelfMutAction::new(arc.clone(), Self::on_client_entity_state_message), true);
-        self.register_handler::<TimeSnapshotMessage>(SelfMutAction::new(arc.clone(), Self::on_client_time_snapshot_message), false);
+        let network_server_arc = RevelArc::new(Box::new(Self)).downgrade();
+        self.register_handler::<ReadyMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_ready_message), true);
+        self.register_handler::<CommandMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_command_message), true);
+        self.register_handler::<EntityStateMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_entity_state_message), true);
+        self.register_handler::<TimeSnapshotMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_time_snapshot_message), false);
+
+        let network_time_arc = RevelArc::new(Box::new(NetworkTime)).downgrade();
+        self.register_handler::<NetworkPingMessage>(SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_ping), false);
+        self.register_handler::<NetworkPongMessage>(SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_pong), false);
     }
 
     fn on_client_ready_message(
@@ -534,36 +537,6 @@ impl NetworkServer {
                 }
             }
         }
-    }
-
-    fn on_client_network_ping_message(
-        &mut self,
-        mut connection: RevelArc<NetworkConnection>,
-        message: NetworkPingMessage,
-        _: TransportChannel,
-    ) {
-        let local_time = Time::unscaled_time_f64();
-        let unadjusted_error = local_time - message.local_time;
-        let adjusted_error = local_time - message.predicted_time_adjusted;
-
-        let mut pong_message =
-            NetworkPongMessage::new(message.local_time, unadjusted_error, adjusted_error);
-        connection.send_message(&mut pong_message, Reliable);
-    }
-
-    fn on_client_network_pong_message(
-        &mut self,
-        mut connection: RevelArc<NetworkConnection>,
-        message: NetworkPongMessage,
-        _: TransportChannel,
-    ) {
-        let local_time = Time::unscaled_time_f64();
-        if message.local_time > local_time {
-            return;
-        }
-
-        let new_rtt = local_time - message.local_time;
-        connection._rtt.add(new_rtt);
     }
 
     fn on_client_entity_state_message(
@@ -746,6 +719,63 @@ impl NetworkServer {
     pub fn set_all_clients_not_ready() {}
 
     pub fn spawn_objects() {}
+
+    pub fn broadcast() {}
+}
+
+impl NetworkServer {
+    pub(crate) fn network_early_update() {
+        if Self.active {
+            Self.early_update_duration.begin();
+            Self.full_update_duration.begin();
+        }
+
+        if let Some(active) = TransportManager.active.get() {
+            active.server_early_update();
+        }
+
+        for (_, connection) in Self.connections.iter_mut() {
+            connection.update_time_interpolation()
+        }
+
+        if Self.active {
+            Self.early_update_duration.end();
+        }
+    }
+    pub(crate) fn network_late_update() {
+        if Self.active {
+            Self.late_update_duration.begin();
+        }
+
+        let send_interval_elapsed = AccurateInterval::elapsed(
+            NetworkTime.local_time(),
+            Self.send_interval(),
+            &mut Self.late_send_time,
+        );
+
+        if send_interval_elapsed {
+            Self::broadcast();
+        }
+
+        if let Some(active) = TransportManager.active.get() {
+            active.server_late_update();
+        }
+
+        if Self.active {
+            Self.actual_tick_rate_counter += 1;
+
+            if NetworkTime.local_time() >= Self.actual_tick_rate_start {
+                let elapsed = NetworkTime.local_time() - Self.actual_tick_rate_start;
+                Self.actual_tick_rate =
+                    (Self.actual_tick_rate_counter as f64 / elapsed) as i32;
+                Self.actual_tick_rate_start = NetworkTime.local_time();
+                Self.actual_tick_rate_counter = 0;
+            }
+
+            Self.late_update_duration.end();
+            Self.full_update_duration.end();
+        }
+    }
 }
 
 impl Deref for NetworkServer {
