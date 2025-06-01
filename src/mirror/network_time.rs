@@ -22,6 +22,7 @@ static mut NETWORK_TIME_STATIC: Lazy<NetworkTimeStatic> = Lazy::new(|| NetworkTi
     predicted_time: 0.0,
 });
 
+#[allow(unused)]
 pub struct NetworkTimeStatic {
     ping_interval: f32,
 
@@ -35,6 +36,7 @@ pub struct NetworkTimeStatic {
     predicted_time: f64,
 }
 
+#[allow(unused)]
 impl NetworkTimeStatic {
     pub fn local_time(&self) -> f64 {
         Time::unscaled_time_f64()

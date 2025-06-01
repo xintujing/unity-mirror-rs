@@ -4,7 +4,7 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::command_message::CommandMessage;
 use crate::mirror::messages::entity_state_message::EntityStateMessage;
-use crate::mirror::messages::message::{Message, MessageHandler, MessageHandlerFuncType, ID_SIZE};
+use crate::mirror::messages::message::{Message, MessageHandler, ID_SIZE};
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::messages::object_spawn_finished_message::ObjectSpawnFinishedMessage;

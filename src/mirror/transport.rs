@@ -1,11 +1,9 @@
 #![allow(dead_code)]
+use crate::commons::revel_weak::RevelWeak;
+use once_cell::sync::Lazy;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
-use once_cell::sync::Lazy;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-// static mut TRANSPORT: Option<Box<dyn Transport>> = None;
 
 pub enum TransportError {
     None,

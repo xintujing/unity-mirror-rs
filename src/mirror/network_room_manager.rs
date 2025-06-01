@@ -18,6 +18,7 @@ pub struct PendingPlayer {
     pub room_player: RevelWeak<NetworkIdentity>,
 }
 
+#[allow(unused)]
 #[network_manager(parent(NetworkManager, callbacks = NetworkManagerCallbacks))]
 #[namespace(prefix = "Mirror")]
 #[derive(NetworkManagerFactory)]

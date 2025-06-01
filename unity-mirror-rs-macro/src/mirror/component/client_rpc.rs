@@ -1,10 +1,9 @@
 use crate::utils::csharp::to_csharp_function_inputs;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::spanned::Spanned;
-use syn::{parse_macro_input, parse_quote, Expr, FnArg, LitBool, Pat, PatType, Token, Type};
+use syn::{parse_macro_input, parse_quote, Expr, FnArg, Pat, PatType, Token};
 
 mod kw {
     syn::custom_keyword!(channel);
@@ -58,22 +57,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut arg_block: Vec<proc_macro2::TokenStream> = vec![];
 
-    let mut to = quote! {None};
-
-    for (i, fn_arg) in item_fn.sig.inputs.iter().enumerate() {
-        if let FnArg::Typed(PatType { pat, ty, .. }) = fn_arg {
+    for (_, fn_arg) in item_fn.sig.inputs.iter().enumerate() {
+        if let FnArg::Typed(PatType { pat, .. }) = fn_arg {
             if let Pat::Ident(a) = pat.as_ref() {
                 let arg_name = &a.ident;
-                if let Type::Path(_) = &**ty {
-                    if i == 1 {
-                        to = quote! {Some(#arg_name)};
-                    }
-                }
-                if i > 1 {
-                    arg_block.push(quote! {
+                arg_block.push(quote! {
                         crate::mirror::network_writer::MethodParameterSerializer::serialize(#arg_name, &mut writer);
                     });
-                }
             }
         }
     }

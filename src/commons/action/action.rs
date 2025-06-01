@@ -1,4 +1,4 @@
-trait Handler<Args>: 'static {
+pub trait Handler<Args>: 'static {
     type Output;
     fn call(&self, args: Args) -> Self::Output;
 }
@@ -36,11 +36,11 @@ impl<Args, Return> Default for Action<Args, Return> {
         Self(Box::new(|_| panic!("Action called without a handler set")))
     }
 }
-
+//clippy::visibility_modifier
 impl<Args, Return> Action<Args, Return> {
     pub fn new<F>(handler: F) -> Self
     where
-        F: Handler<Args, Output = Return>,
+        F: Handler<Args, Output=Return>,
     {
         Self(Box::new(move |args| handler.call(args)))
     }

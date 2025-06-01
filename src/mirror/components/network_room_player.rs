@@ -11,6 +11,7 @@ use std::any::TypeId;
 use unity_mirror_macro::{command, namespace, network_behaviour, target_rpc};
 use crate::mirror::transport::TransportChannel;
 
+#[allow(unused)]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 #[namespace(prefix = "Mirror")]
 pub struct NetworkRoomPlayer {
@@ -41,6 +42,7 @@ impl MonoBehaviour for NetworkRoomPlayer {
     }
 }
 
+#[allow(unused)]
 impl NetworkRoomPlayer {
     fn instance(
         weak_game_object: RevelWeak<GameObject>,

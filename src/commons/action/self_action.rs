@@ -1,6 +1,6 @@
 use crate::commons::revel_weak::RevelWeak;
 
-trait SelfHandler<This, Args>: 'static {
+pub trait SelfHandler<This, Args>: 'static {
     type Output;
     fn call(&self, s: &This, args: Args) -> Self::Output;
 }

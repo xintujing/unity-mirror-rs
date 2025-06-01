@@ -12,11 +12,11 @@ pub struct TimeSample {
     average: f64,
 }
 
+#[allow(unused)]
 impl TimeSample {
     // const PRECISION_FACTOR: f64 = 1_000_000.0; // 1 million for microseconds precision
 
     // 新建一个 TimeSample
-    #[allow(unused)]
     pub fn new(n: u32) -> Self {
         Self {
             begin_time: Instant::now(),
@@ -26,13 +26,11 @@ impl TimeSample {
     }
 
     // 开始计时
-    #[allow(unused)]
     pub fn begin(&mut self) {
         self.begin_time = Instant::now();
     }
 
     // 结束计时
-    #[allow(unused)]
     pub fn end(&mut self) {
         // Add duration in seconds to accumulated durations
         let elapsed = self.begin_time.elapsed().as_secs_f64();
@@ -54,19 +52,17 @@ struct ExponentialMovingAverage {
     value: f64,
 }
 
+#[allow(unused)]
 impl ExponentialMovingAverage {
-    #[allow(unused)]
     fn new(n: u32) -> Self {
         Self { n, value: 0.0 }
     }
 
-    #[allow(unused)]
     fn add(&mut self, sample: f64) {
         let alpha = 2.0 / (self.n as f64 + 1.0);
         self.value = alpha * sample + (1.0 - alpha) * self.value;
     }
 
-    #[allow(unused)]
     fn value(&self) -> f64 {
         self.value
     }

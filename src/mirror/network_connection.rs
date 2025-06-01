@@ -13,6 +13,7 @@ use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
 use std::collections::{BTreeMap, HashMap};
 
+#[allow(unused)]
 pub struct NetworkConnection {
     // NetworkConnection
     pub id: u64,

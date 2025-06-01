@@ -19,7 +19,7 @@ pub trait MessageDeserializer {
 
 pub trait Message: Object + MessageSerializer + MessageDeserializer {}
 
-pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
+// pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
 
 type MessageHandlerWrappedFuncType =
 Box<dyn FnMut(RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;

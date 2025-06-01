@@ -1,9 +1,8 @@
 use crate::utils::csharp::to_csharp_function_inputs;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::spanned::Spanned;
 use syn::{parse_macro_input, parse_quote, Expr, FnArg, Pat, PatType, Token, Type};
 
 mod kw {

@@ -1,7 +1,7 @@
 use crate::commons::revel_weak::RevelWeak;
 use std::mem;
 
-trait SelfMutHandler<This, Args>: 'static {
+pub trait SelfMutHandler<This, Args>: 'static {
     type Output;
     fn call(&self, s: &mut This, args: Args) -> Self::Output;
 }
