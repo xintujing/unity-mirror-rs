@@ -1,5 +1,5 @@
 use unity_mirror_rs::mirror::{NetworkManager, NetworkServer};
-use unity_mirror_rs::unity_engine::{LoadSceneMode, WorldManager};
+use unity_mirror_rs::unity_engine::{GameLooper, LoadSceneMode, WorldManager};
 
 #[ctor::ctor]
 fn init_logger() {
@@ -42,7 +42,8 @@ fn main() {
     //
     // return;
 
-    NetworkManager::start("Assets/Prefabs/NetworkRoomManager.prefab");
+    NetworkManager::set_network_manager_prefab_path("Assets/Prefabs/NetworkRoomManager.prefab");
+    NetworkManager::init();
 
     // NetworkServer.aaa();
 
@@ -50,7 +51,7 @@ fn main() {
     //     network_room_manager.awake()
     // });
 
-    WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
+    // WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
     //
     // let root_game_objects = WorldManager::root_game_objects();
     //
@@ -62,6 +63,6 @@ fn main() {
     //     let x = weak_network_transform_unreliable.unwrap();
     //     println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
     // }
-NetworkServer::listen()
-    // GameLooper::new().run();
+    // NetworkServer::listen()
+    GameLooper::new().run();
 }

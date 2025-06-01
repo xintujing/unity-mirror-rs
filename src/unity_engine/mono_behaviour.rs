@@ -48,4 +48,8 @@ impl<T: ?Sized + MonoBehaviour + 'static> RevelWeak<Box<T>> {
         }
         Some(unsafe { &*(self as *const dyn Any as *const RevelWeak<Box<TO>>) })
     }
+
+    pub fn parallel<TO: Any>(&self) -> Option<&RevelWeak<TO>> {
+        Some(unsafe { &*(self as *const dyn Any as *const RevelWeak<TO>) })
+    }
 }

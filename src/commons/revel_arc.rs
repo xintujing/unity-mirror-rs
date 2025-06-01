@@ -67,8 +67,12 @@ impl<T> RevelArc<T> {
         let offset = size_of::<UnsafeCell<T>>() - size_of::<T>();
         (b_uc_ptr as *const u8).add(offset) as *const T == a_ptr
     }
+
+    pub fn as_ptr(&self) -> *const UnsafeCell<T> {
+        Arc::as_ptr(&self.0)
+    }
 }
 
-pub trait VecRevelArc {
-    fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>>;
-}
+// pub trait VecRevelArc {
+//     fn last_to_weak<T: MonoBehaviour>(&self) -> Option<RevelWeak<Box<T>>>;
+// }

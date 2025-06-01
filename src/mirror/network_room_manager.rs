@@ -59,6 +59,12 @@ impl MonoBehaviour for NetworkRoomManager {
         }
         // println!("NetworkRoomManager awake");
     }
+
+    fn start(&mut self) {
+        if let Some(parent) = self.parent.get() {
+            parent.start();
+        }
+    }
     fn update(&mut self) {
         if let Some(parent) = self.parent.get() {
             parent.update();

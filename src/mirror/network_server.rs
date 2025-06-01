@@ -10,23 +10,25 @@ use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::messages::object_spawn_finished_message::ObjectSpawnFinishedMessage;
 use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
+use crate::mirror::messages::scene_message::SceneMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_reader_pool::NetworkReaderPool;
+use crate::mirror::network_time::NetworkTime;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
-use crate::mirror::transport::{CallbackProcessor, TranSport, TransportChannel, TransportError};
+use crate::mirror::transport::{CallbackProcessor, TransportChannel, TransportError, TransportManager};
 use crate::mirror::{NetworkIdentity, RemoteCallType};
 use crate::unity_engine::{GameObject, Time};
 use once_cell::sync::Lazy;
+use std::any::Any;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
-use crate::mirror::messages::scene_message::SceneMessage;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -151,23 +153,35 @@ impl NetworkServer {
 
 impl NetworkServer {
     pub fn listen(&mut self, max_connections: i32) {
+        self.initialize();
+
+        self.max_connections = max_connections;
+
+        if self.listen {
+            if let Some(active) = TransportManager.active.get() {
+                active.server_start((self.address, self.port));
+            }
+        }
+        self.active = true;
+
+        self.register_message_handlers();
+    }
+
+    fn initialize(&mut self) {
         if self.initialized {
-            log::warn!("NetworkServer is already initialized.");
             return;
         }
+
         self.connections.clear();
+
+        NetworkTime::reset_statics();
+
         self.add_transport_handlers();
         self.initialized = true;
 
         self.early_update_duration = TimeSample::new(self.send_rate() as u32);
         self.late_update_duration = TimeSample::new(self.send_rate() as u32);
         self.full_update_duration = TimeSample::new(self.send_rate() as u32);
-        self.max_connections = max_connections;
-        if self.listen {
-            TranSport.active().server_start((self.address, self.port));
-        }
-        self.active = true;
-        self.register_message_handlers();
     }
 
     fn add_transport_handlers(&self) {
@@ -180,7 +194,9 @@ impl NetworkServer {
             on_server_transport_exception: Self::on_transport_exception,
             on_server_disconnected: Self::on_transport_disconnected,
         };
-        TranSport.active().init(processor);
+        if let Some(active) = TransportManager.active.get() {
+            active.init(processor);
+        }
     }
 
     fn remove_transport_handlers(&self) {
@@ -193,18 +209,20 @@ impl NetworkServer {
             on_server_transport_exception: |_, _| {},
             on_server_disconnected: |_| {},
         };
-        TranSport.active().init(processor);
+        if let Some(active) = TransportManager.active.get() {
+            active.init(processor);
+        }
     }
 
     fn on_transport_connected(conn_id: u64) {
-        Self::on_transport_connected_with_address(
-            conn_id,
-            TranSport
-                .active()
-                .server_get_client_address(conn_id)
-                .unwrap_or_default()
-                .as_str(),
-        );
+        if let Some(active) = TransportManager.active.get() {
+            Self::on_transport_connected_with_address(
+                conn_id,
+                active.server_get_client_address(conn_id)
+                    .unwrap_or_default()
+                    .as_str(),
+            );
+        }
     }
 
     fn on_transport_connected_with_address(conn_id: u64, address: &str) {
@@ -213,7 +231,9 @@ impl NetworkServer {
             Self::on_connected(RevelArc::new(connection));
             return;
         }
-        TranSport.active().server_disconnect(conn_id);
+        if let Some(active) = TransportManager.active.get() {
+            active.server_disconnect(conn_id);
+        }
     }
 
     fn is_connection_allowed(conn_id: u64, address: &str) -> bool {
@@ -385,15 +405,17 @@ impl NetworkServer {
     }
 
     fn register_message_handlers(&mut self) {
-        self.register_handler::<ReadyMessage>(Self::on_client_ready_message, true);
-        self.register_handler::<CommandMessage>(Self::on_client_command_message, true);
-        self.register_handler::<NetworkPingMessage>(Self::on_client_network_ping_message, false);
-        self.register_handler::<NetworkPongMessage>(Self::on_client_network_pong_message, false);
-        self.register_handler::<EntityStateMessage>(Self::on_client_entity_state_message, true);
-        self.register_handler::<TimeSnapshotMessage>(Self::on_client_time_snapshot_message, false);
+        let arc = RevelArc::new(Box::new(Self)).downgrade();
+        self.register_handler::<ReadyMessage>(SelfMutAction::new(arc.clone(), Self::on_client_ready_message), true);
+        self.register_handler::<CommandMessage>(SelfMutAction::new(arc.clone(), Self::on_client_command_message), true);
+        self.register_handler::<NetworkPingMessage>(SelfMutAction::new(arc.clone(), Self::on_client_network_ping_message), false);
+        self.register_handler::<NetworkPongMessage>(SelfMutAction::new(arc.clone(), Self::on_client_network_pong_message), false);
+        self.register_handler::<EntityStateMessage>(SelfMutAction::new(arc.clone(), Self::on_client_entity_state_message), true);
+        self.register_handler::<TimeSnapshotMessage>(SelfMutAction::new(arc.clone(), Self::on_client_time_snapshot_message), false);
     }
 
     fn on_client_ready_message(
+        &mut self,
         connection: RevelArc<NetworkConnection>,
         _: ReadyMessage,
         _: TransportChannel,
@@ -421,6 +443,7 @@ impl NetworkServer {
     }
 
     fn on_client_command_message(
+        &mut self,
         connection: RevelArc<NetworkConnection>,
         message: CommandMessage,
         channel: TransportChannel,
@@ -514,6 +537,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_ping_message(
+        &mut self,
         mut connection: RevelArc<NetworkConnection>,
         message: NetworkPingMessage,
         _: TransportChannel,
@@ -528,6 +552,7 @@ impl NetworkServer {
     }
 
     fn on_client_network_pong_message(
+        &mut self,
         mut connection: RevelArc<NetworkConnection>,
         message: NetworkPongMessage,
         _: TransportChannel,
@@ -542,6 +567,7 @@ impl NetworkServer {
     }
 
     fn on_client_entity_state_message(
+        &mut self,
         mut connection: RevelArc<NetworkConnection>,
         message: EntityStateMessage,
         _: TransportChannel,
@@ -596,6 +622,7 @@ impl NetworkServer {
     }
 
     fn on_client_time_snapshot_message(
+        &mut self,
         mut connection: RevelArc<NetworkConnection>,
         _: TimeSnapshotMessage,
         _: TransportChannel,
@@ -632,7 +659,7 @@ impl NetworkServer {
 
     pub fn register_handler<M>(
         &mut self,
-        func: MessageHandlerFuncType<M>,
+        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel,), ()>,
         require_authentication: bool,
     ) where
         M: Message + 'static,
@@ -653,7 +680,7 @@ impl NetworkServer {
 
     pub fn replace_handler<M>(
         &mut self,
-        func: MessageHandlerFuncType<M>,
+        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel,), ()>,
         require_authentication: bool,
     ) where
         M: Message + 'static,
@@ -676,7 +703,9 @@ impl NetworkServer {
     pub fn shutdown(&mut self) {
         if self.initialized {
             self.disconnect_all();
-            TranSport.active().server_stop();
+            if let Some(active) = TransportManager.active.get() {
+                active.server_stop();
+            }
 
             self.remove_transport_handlers();
 
@@ -716,7 +745,7 @@ impl NetworkServer {
 
     pub fn set_all_clients_not_ready() {}
 
-    pub fn spawn_objects(){}
+    pub fn spawn_objects() {}
 }
 
 impl Deref for NetworkServer {

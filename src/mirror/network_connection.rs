@@ -7,7 +7,7 @@ use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInterpolation;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
-use crate::mirror::transport::{TranSport, TransportChannel};
+use crate::mirror::transport::{TransportChannel, TransportManager};
 use crate::mirror::{Authenticator, NetworkIdentity, NetworkServer};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
@@ -60,8 +60,8 @@ impl NetworkConnection {
             delivery_time_ema: ExponentialMovingAverage::new(
                 NetworkServer.send_rate() as u32
                     * NetworkServer
-                        .client_snapshot_settings
-                        .delivery_time_ema_duration as u32,
+                    .client_snapshot_settings
+                    .delivery_time_ema_duration as u32,
             ),
             remote_timeline: 0.0,
             remote_timescale: 0.0,
@@ -159,9 +159,10 @@ impl NetworkConnection {
         for (channel, batcher) in self.batches.iter_mut() {
             NetworkWriterPool::get_return(|writer| {
                 while batcher.get_batcher_writer(writer) {
-                    TranSport
-                        .active()
-                        .server_send(self.id, writer.to_slice(), *channel);
+                    if let Some(active) = TransportManager.active.get() {
+                        active.server_send(self.id, writer.to_slice(), *channel);
+                    }
+
                     writer.reset();
                 }
             });
@@ -169,7 +170,9 @@ impl NetworkConnection {
     }
     pub fn disconnect(&mut self) {
         self.is_ready = false;
-        TranSport.active().server_disconnect(self.id);
+        if let Some(active) = TransportManager.active.get() {
+            active.server_disconnect(self.id);
+        }
     }
 
     pub fn add_to_observing(&mut self, weak_identity: RevelWeak<Box<NetworkIdentity>>) {

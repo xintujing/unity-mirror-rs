@@ -1,8 +1,11 @@
 #![allow(dead_code)]
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
-
-static mut TRANSPORT: Option<Box<dyn Transport>> = None;
+use std::ops::{Deref, DerefMut};
+use once_cell::sync::Lazy;
+use crate::commons::revel_arc::RevelArc;
+use crate::commons::revel_weak::RevelWeak;
+// static mut TRANSPORT: Option<Box<dyn Transport>> = None;
 
 pub enum TransportError {
     None,
@@ -54,18 +57,51 @@ impl Display for TransportError {
     }
 }
 
-pub struct TranSport;
+static mut TRANSPORT_STATIC: Lazy<TransportStatic> = Lazy::new(|| TransportStatic { active: RevelWeak::default() });
 
-impl TranSport {
-    pub fn active(&self) -> &'static mut Box<dyn Transport> {
+pub struct TransportStatic {
+    pub(crate) active: RevelWeak<Box<dyn Transport>>,
+}
+
+pub struct TransportManager;
+
+impl Deref for TransportManager {
+    type Target = TransportStatic;
+    fn deref(&self) -> &Self::Target {
         #[allow(static_mut_refs)]
         unsafe {
-            TRANSPORT.as_mut().unwrap_or_else(|| {
-                panic!("Transport not initialized. Call init_transport_manager first.")
-            })
+            &TRANSPORT_STATIC
+
+            // TRANSPORT_STATIC.as_ref().unwrap_or_else(|| {
+            //     panic!("Transport not initialized. Call init_transport_manager first.")
+            // })
         }
     }
 }
+
+impl DerefMut for TransportManager {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe {
+            &mut TRANSPORT_STATIC
+            // TRANSPORT_STATIC.as_mut().unwrap_or_else(|| {
+            //     panic!("Transport not initialized. Call init_transport_manager first.")
+            // })
+        }
+    }
+}
+
+
+// impl TransportManager {
+//     pub fn active(&self) -> &'static mut Box<dyn Transport> {
+//         #[allow(static_mut_refs)]
+//         unsafe {
+//             TRANSPORT.as_mut().unwrap_or_else(|| {
+//                 panic!("Transport not initialized. Call init_transport_manager first.")
+//             })
+//         }
+//     }
+// }
 
 pub struct CallbackProcessor {
     pub on_server_connected: fn(u64),

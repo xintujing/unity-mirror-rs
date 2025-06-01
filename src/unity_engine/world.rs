@@ -6,6 +6,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::Ordering::SeqCst;
+use crate::commons::action::SelfMutAction;
 
 static mut WORLDS: Lazy<Vec<RevelArc<World>>> = Lazy::new(|| Vec::new());
 static mut ACTIVE_WORLD_INDEX: AtomicIsize = AtomicIsize::new(-1);
@@ -18,6 +19,12 @@ pub struct World {
     scene_path: String,
     game_objects: HashMap<u64, RevelArc<GameObject>>,
 }
+
+// pub scene_loaded: SelfMutAction<(String, LoadSceneMode,), ()>,
+
+
+static mut SCENE_LOADED_ACTION: Lazy<SelfMutAction<(String, LoadSceneMode,), ()>> =
+    Lazy::new(|| SelfMutAction::default());
 
 impl World {
     fn new(scene_path: &str) -> Self {
@@ -72,13 +79,14 @@ pub enum LoadSceneMode {
     Additive,
 }
 
-pub struct WorldManager;
+pub struct WorldManager {}
+
 impl WorldManager {
     pub fn load_scene(scene_path: &str, mode: LoadSceneMode) -> usize {
         #[allow(static_mut_refs)]
         unsafe {
             let world = World::new(scene_path);
-            match mode {
+            let i = match mode {
                 LoadSceneMode::Single => {
                     WORLDS
                         .iter_mut()
@@ -91,7 +99,16 @@ impl WorldManager {
                     WORLDS.push(RevelArc::new(world));
                     WORLDS.len() - 1
                 }
-            }
+            };
+            SCENE_LOADED_ACTION.call((scene_path.to_string(), mode,));
+            i
+        }
+    }
+
+    pub fn set_scene_loaded(f: SelfMutAction<(String, LoadSceneMode,), ()>) {
+        #[allow(static_mut_refs)]
+        unsafe {
+            *SCENE_LOADED_ACTION = f;
         }
     }
 

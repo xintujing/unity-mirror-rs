@@ -1,3 +1,4 @@
+use crate::commons::action::SelfMutAction;
 use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::mirror::network_connection::NetworkConnection;
@@ -21,7 +22,7 @@ pub trait Message: Object + MessageSerializer + MessageDeserializer {}
 pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
 
 type MessageHandlerWrappedFuncType =
-    Box<dyn FnMut(RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
+Box<dyn FnMut(RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
 
 pub struct MessageHandler {
     #[allow(unused)]
@@ -32,13 +33,13 @@ pub struct MessageHandler {
 
 impl MessageHandler {
     pub fn new<M: Message + 'static>(
-        func: MessageHandlerFuncType<M>,
+        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel,), ()>,
         require_authentication: bool,
     ) -> Self {
         // 将泛型函数包装为动态分发函数
         let wrapped_func: MessageHandlerWrappedFuncType = Box::new(move |conn, reader, channel| {
             let msg = M::deserialize(reader);
-            func(conn, msg, channel)
+            func.call((conn, msg, channel))
         });
         Self {
             wrapped_func,

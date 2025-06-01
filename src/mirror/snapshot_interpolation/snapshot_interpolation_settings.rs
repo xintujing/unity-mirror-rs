@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#[derive(Default)]
 pub struct SnapshotInterpolationSettings {
     // 本地模拟落后 sendInterval * multiplier 秒。
     // 这保证了我们在缓冲区中始终有足够的快照来缓解延迟和抖动。

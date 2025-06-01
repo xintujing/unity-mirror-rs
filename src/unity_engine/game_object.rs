@@ -185,10 +185,13 @@ impl GameObject {
                 };
             }
         }
-        if let Some(mono_behaviour) = arc_mono_behaviours.last_mut() {
-            mono_behaviour.awake();
-        }
         self.components.push(arc_mono_behaviours);
+
+        if let Some(component) = self.components.last_mut() {
+            if let Some(component) = component.last_mut() {
+                component.awake();
+            }
+        }
     }
 
     pub fn try_get_component<T: MonoBehaviour + 'static>(
