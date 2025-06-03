@@ -106,10 +106,10 @@ pub struct NetworkAnimator {
     last_bool_parameters: Vec<bool>,
     pub(crate) parameters: Vec<AnimatorParameter>,
 
-    animation_hash: Vec<i32>,
-    transition_hash: Vec<i32>,
-    layer_weight: Vec<f32>,
-    next_send_time: f64,
+    // animation_hash: Vec<i32>,
+    // transition_hash: Vec<i32>,
+    // layer_weight: Vec<f32>,
+    // next_send_time: f64,
 }
 
 impl NetworkAnimator {
