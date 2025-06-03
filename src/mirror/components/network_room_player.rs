@@ -61,7 +61,7 @@ impl NetworkRoomPlayer {
 
 impl TNetworkBehaviour for NetworkRoomPlayer {
     fn new(
-        weak_game_object: &RevelWeak<GameObject>,
+        weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> Self
     where

@@ -135,7 +135,7 @@ impl MonoBehaviour for NetworkAnimator {
 }
 
 impl TNetworkBehaviour for NetworkAnimator {
-    fn new(weak_game_object: &RevelWeak<GameObject>,metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(weak_game_object: RevelWeak<GameObject>,metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {

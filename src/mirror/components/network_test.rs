@@ -36,7 +36,7 @@ impl MonoBehaviour for NetworkTest {
 
 impl TNetworkBehaviour for NetworkTest {
     fn new(
-        weak_game_object: &RevelWeak<GameObject>,
+        weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> Self
     where

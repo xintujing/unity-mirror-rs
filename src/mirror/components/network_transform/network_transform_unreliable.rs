@@ -94,7 +94,7 @@ impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
     fn new(
-        weak_game_object: &RevelWeak<GameObject>,
+        weak_game_object: RevelWeak<GameObject>,
         metadata: &MetadataNetworkBehaviourWrapper,
     ) -> Self
     where
