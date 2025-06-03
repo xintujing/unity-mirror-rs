@@ -1,3 +1,4 @@
+use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::{format_ident, quote};
@@ -5,7 +6,6 @@ use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::{parse_quote, Field, Fields, Path};
-use crate::utils::string_case::StringCase;
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
@@ -83,8 +83,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 item_struct.fields,
                 "The component macro only supports named fields.",
             )
-                .to_compile_error()
-                .into();
+            .to_compile_error()
+            .into();
         }
     }
 
@@ -511,9 +511,11 @@ pub(crate) fn ancestor_on_serialize(_: TokenStream, item: TokenStream) -> TokenS
 
     item_fn.block.stmts.insert(
         0,
-        parse_quote!(if let Some(mut ancestor) = self.ancestor.get() {
-            use crate::mirror::network_behaviour::NetworkBehaviourOnSerializer;
-            ancestor.on_serialize(writer, initial_state);
+        parse_quote!({
+            if let Some(mut ancestor) = self.ancestor.get() {
+                use crate::mirror::network_behaviour::NetworkBehaviourOnSerializer;
+                ancestor.on_serialize(writer, initial_state);
+            }
         }),
     );
 
@@ -527,9 +529,11 @@ pub(crate) fn ancestor_on_deserialize(_: TokenStream, item: TokenStream) -> Toke
 
     item_fn.block.stmts.insert(
         0,
-        parse_quote!(if let Some(mut ancestor) = self.ancestor.get() {
-            use crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer;
-            ancestor.on_deserialize(reader, initial_state);
+        parse_quote!({
+            if let Some(mut ancestor) = self.ancestor.get() {
+                use crate::mirror::network_behaviour::NetworkBehaviourOnDeserializer;
+                ancestor.on_deserialize(reader, initial_state);
+            }
         }),
     );
 

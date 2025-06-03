@@ -3,14 +3,23 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::mirror::network_behaviour::TNetworkBehaviour;
+use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::{
+    NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, TBaseNetworkBehaviour,
+};
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Time;
-use unity_mirror_macro::{namespace, network_behaviour};
+use nalgebra::{Quaternion, Vector3};
+use unity_mirror_macro::{
+    ancestor_on_deserialize, ancestor_on_serialize, namespace, network_behaviour,
+};
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(
     parent(NetworkTransformBase),
-    metadata(MetadataNetworkTransformUnreliable)
+    metadata(MetadataNetworkTransformUnreliable),
+    not_impl_nos
 )]
 pub struct NetworkTransformUnreliable {
     pub buffer_reset_multiplier: f32,
@@ -88,5 +97,34 @@ impl TNetworkBehaviour for NetworkTransformUnreliable {
         Self: Sized,
     {
         Self::default()
+    }
+}
+
+impl NetworkBehaviourOnSerializer for NetworkTransformUnreliable {
+    #[ancestor_on_serialize]
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
+        // TODO
+        if initial_state {
+            if self.sync_position {
+                writer.write_blittable(Vector3::default())
+            }
+            if self.sync_rotation {
+                writer.write_blittable(Quaternion::default())
+            }
+            if self.sync_scale {
+                writer.write_blittable(Vector3::default())
+            }
+        }
+    }
+}
+impl NetworkBehaviourOnDeserializer for NetworkTransformUnreliable {
+    #[ancestor_on_deserialize]
+    fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
+        // TODO
+        if initial_state {
+            if self.sync_position {}
+            if self.sync_rotation {}
+            if self.sync_scale {}
+        }
     }
 }

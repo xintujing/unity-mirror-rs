@@ -60,6 +60,11 @@ pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
     network_behaviour::handler(attr, item)
 }
 
+#[proc_macro_attribute]
+pub fn metadata(attr: TokenStream, item: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
 attribute_args!(NamespaceArgs, prefix, rename);
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
