@@ -55,6 +55,10 @@ pub struct NetworkTransformBase {
 impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
 impl NetworkTransformBase {
+
+}
+
+impl NetworkTransformBase {
     pub fn send_interval_multiplier(&self) -> u32 {
         if let Some(network_behaviour) = self.parent::<NetworkBehaviour>().get() {
             if network_behaviour.sync_interval > 0.0 {
