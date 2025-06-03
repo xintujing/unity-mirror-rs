@@ -69,7 +69,7 @@ pub enum Visibility {
 }
 
 impl Into<Visibility>
-for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
 {
     fn into(self) -> Visibility {
         match self {
@@ -83,6 +83,8 @@ for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibil
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkIdentity {
+    pub game_object: RevelWeak<GameObject>,
+
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
@@ -178,9 +180,9 @@ impl NetworkIdentity {
 
                 if initial_state
                     || (dirty
-                    && (network_behaviour
-                    .get_sync_direction()
-                    .eq(&SyncDirection::ServerToClient)))
+                        && (network_behaviour
+                            .get_sync_direction()
+                            .eq(&SyncDirection::ServerToClient)))
                 {
                     owner_mask |= nth_bit;
                 }
@@ -261,6 +263,7 @@ impl NetworkIdentity {
         settings: &MetadataNetworkIdentity,
     ) -> Self {
         let mut identity = Self {
+            game_object: weak_game_object.clone(),
             net_id: 12366,
             ..Default::default()
         };
@@ -323,6 +326,10 @@ impl NetworkIdentity {
         self.net_id
     }
 
+    pub fn set_net_id(&mut self, net_id: u32) {
+        self.net_id = net_id;
+    }
+
     pub fn connection(&self) -> RevelWeak<NetworkConnection> {
         self.connection.clone()
     }
@@ -341,5 +348,31 @@ impl NetworkIdentity {
 
     pub fn is_client_only(&self) -> bool {
         !self.is_server && self.is_client
+    }
+
+    pub fn is_scene_object(&self) -> bool {
+        self.scene_id != 0
+    }
+}
+
+impl NetworkIdentity {
+    pub fn on_start_server(&self) {
+        for network_behaviour in self.network_behaviours.iter() {
+            if let Some(weak_network_behaviour) = network_behaviour.last() {
+                if let Some(real_network_behaviour) = weak_network_behaviour.get() {
+                    real_network_behaviour.on_start_server();
+                }
+            }
+        }
+    }
+
+    pub fn on_stop_server(&self) {
+        for network_behaviour in self.network_behaviours.iter() {
+            if let Some(weak_network_behaviour) = network_behaviour.last() {
+                if let Some(real_network_behaviour) = weak_network_behaviour.get() {
+                    real_network_behaviour.on_stop_server();
+                }
+            }
+        }
     }
 }

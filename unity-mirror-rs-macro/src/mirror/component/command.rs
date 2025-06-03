@@ -3,16 +3,18 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, FnArg, Path, Token};
-
-struct CommandArgs {
-    struct_path: Path,
-    authority: bool,
-}
+use syn::{parse_macro_input, FnArg, LitStr, Path, Token};
 
 mod kw {
     syn::custom_keyword!(struct_path);
     syn::custom_keyword!(authority);
+    syn::custom_keyword!(rename);
+}
+
+struct CommandArgs {
+    struct_path: Path,
+    authority: bool,
+    rename: Option<String>,
 }
 
 impl Parse for CommandArgs {
@@ -24,6 +26,7 @@ impl Parse for CommandArgs {
             }
         };
         let mut authority = false;
+        let mut rename = None;
 
         while !input.is_empty() {
             if input.peek(kw::struct_path) {
@@ -31,6 +34,14 @@ impl Parse for CommandArgs {
             } else if input.peek(kw::authority) {
                 let _ = input.parse::<kw::authority>()?;
                 authority = true;
+            } else if input.peek(kw::rename) {
+                let _ = input.parse::<kw::rename>()?;
+                input.parse::<Token![=]>()?;
+                let value: LitStr = input.parse()?;
+                if value.value().is_empty() {
+                    return Err(input.error("Rename argument cannot be empty"));
+                }
+                rename = Some(value.value());
             } else if input.peek(Token![,]) {
                 input.parse::<Token![,]>()?;
                 if input.is_empty() {
@@ -44,6 +55,7 @@ impl Parse for CommandArgs {
         Ok(CommandArgs {
             struct_path,
             authority,
+            rename,
         })
     }
 }
@@ -52,12 +64,17 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let CommandArgs {
         struct_path,
         authority,
+        rename,
     } = parse_macro_input!(attr as CommandArgs);
 
     let item_fn = parse_macro_input!(item as syn::ItemFn);
 
     let fn_ident = &item_fn.sig.ident;
-    let fn_camel_name = fn_ident.to_string().to_camel_case();
+
+    let fn_name = match rename {
+        None => item_fn.sig.ident.to_string().to_camel_case(),
+        Some(rename) => rename,
+    };
 
     let invoke_user_code = format_ident!("__invoke_user_code_command_{}", fn_ident);
 
@@ -97,7 +114,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-            log::error!("Command {} invoke failed.", stringify!(#fn_camel_name));
+            log::error!("Command {} invoke failed.", #fn_name);
 
             #[ctor::ctor]
             fn __static_init() {
@@ -105,7 +122,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 let fn_full_name= format!(
                     "System.Void {}::{}({})",
                     #struct_path::get_full_name(),
-                    #fn_camel_name, #csharp_func_inputs,
+                    #fn_name, #csharp_func_inputs,
                 );
                 crate::mirror::RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, #authority);
             }
