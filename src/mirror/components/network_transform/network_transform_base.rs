@@ -8,6 +8,7 @@ use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::mirror::{NetworkBehaviour, NetworkServer};
 use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
+use nalgebra::{Quaternion, Vector3};
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
 use unity_mirror_macro::{namespace, network_behaviour};
@@ -76,6 +77,62 @@ impl NetworkTransformBase {
             return NetworkServer.send_interval() * self.send_interval_multiplier() as f64;
         }
         0.0
+    }
+
+    pub fn get_position(&self) -> Vector3<f32> {
+        if let Some(target) = self.target.get() {
+            return match self.coordinate_space {
+                CoordinateSpace::Local => target.local_position,
+                CoordinateSpace::World => target.position,
+            };
+        }
+        Vector3::new(0.0, 0.0, 0.0)
+    }
+    pub fn set_position(&self, value: Vector3<f32>) {
+        if let Some(target) = self.target.get() {
+            match self.coordinate_space {
+                CoordinateSpace::Local => {
+                    target.local_position = value;
+                }
+                CoordinateSpace::World => {
+                    target.position = value;
+                }
+            }
+        }
+    }
+
+    pub fn get_rotation(&self) -> Quaternion<f32> {
+        if let Some(target) = self.target.get() {
+            return match self.coordinate_space {
+                CoordinateSpace::Local => target.local_rotation,
+                CoordinateSpace::World => target.rotation,
+            };
+        }
+        Quaternion::identity()
+    }
+    pub fn set_rotation(&self, value: Quaternion<f32>) {
+        if let Some(target) = self.target.get() {
+            match self.coordinate_space {
+                CoordinateSpace::Local => {
+                    target.local_rotation = value;
+                }
+                CoordinateSpace::World => {
+                    target.rotation = value;
+                }
+            }
+        }
+    }
+
+    pub fn get_scale(&self) -> Vector3<f32> {
+        if let Some(target) = self.target.get() {
+            return target.local_scale;
+        }
+        Vector3::new(1.0, 1.0, 1.0)
+    }
+    pub fn set_scale(&self, value: Vector3<f32>) {
+        if let Some(target) = self.target.get() {
+            target.local_scale = value;
+        }
     }
 }
 

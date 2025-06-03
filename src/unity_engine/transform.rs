@@ -6,17 +6,17 @@ use nalgebra::{Quaternion, Vector3};
 
 #[derive(Default, Clone)]
 pub struct Transform {
-    pub(super) instance_id: i32,
+    pub instance_id: i32,
 
-    pub(super) parent: RevelWeak<Transform>,
-    pub(super) children: Vec<RevelWeak<Transform>>,
+    pub parent: RevelWeak<Transform>,
+    pub children: Vec<RevelWeak<Transform>>,
 
-    pub(super) game_object: RevelWeak<GameObject>,
-    pub(super) position: Vector3<f32>,
-    pub(super) local_position: Vector3<f32>,
-    pub(super) rotation: Quaternion<f32>,
-    pub(super) local_rotation: Quaternion<f32>,
-    pub(super) local_scale: Vector3<f32>,
+    pub game_object: RevelWeak<GameObject>,
+    pub position: Vector3<f32>,
+    pub local_position: Vector3<f32>,
+    pub rotation: Quaternion<f32>,
+    pub local_rotation: Quaternion<f32>,
+    pub local_scale: Vector3<f32>,
 }
 
 impl Transform {
