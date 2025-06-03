@@ -5,6 +5,7 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_anima
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::{
@@ -101,10 +102,10 @@ pub struct NetworkAnimator {
     animator_speed: f32,
     previous_speed: f32,
 
-    last_int_parameters: Vec<i32>,
-    last_float_parameters: Vec<f32>,
-    last_bool_parameters: Vec<bool>,
-    pub(crate) parameters: Vec<AnimatorParameter>,
+    pub(super) last_int_parameters: Vec<i32>,
+    pub(super) last_float_parameters: Vec<f32>,
+    pub(super) last_bool_parameters: Vec<bool>,
+    pub(super) parameters: Vec<AnimatorParameter>,
     // animation_hash: Vec<i32>,
     // transition_hash: Vec<i32>,
     // layer_weight: Vec<f32>,
@@ -121,13 +122,102 @@ impl NetworkAnimator {
     //     self.is_owned() && self.client_authority
     // }
 
-    fn next_dirty_bits(&self) -> u64 {
-        0
+    fn next_dirty_bits(&mut self) -> u64 {
+        let mut dirty_bits = 0u64;
+        for (i, par) in self.parameters.iter().enumerate() {
+            let mut changed = false;
+            if par.r#type == AnimatorParameterType::Int {
+                NetworkReaderPool::get_with_slice_return(&par.value, |reader| {
+                    let new_int_value = reader.read_blittable::<i32>();
+
+                    changed |= self.last_int_parameters[i] != new_int_value;
+                    if changed {
+                        self.last_int_parameters[i] = new_int_value;
+                    }
+                });
+            } else if par.r#type == AnimatorParameterType::Float {
+                NetworkReaderPool::get_with_slice_return(&par.value, |reader| {
+                    let new_float_value = reader.read_blittable::<f32>();
+                    changed |= (new_float_value - self.last_float_parameters[i]).abs() > 0.001;
+                    if changed {
+                        self.last_float_parameters[i] = new_float_value;
+                    }
+                });
+            } else if par.r#type == AnimatorParameterType::Bool {
+                NetworkReaderPool::get_with_slice_return(&par.value, |reader| {
+                    let new_bool_value = reader.read_blittable::<bool>();
+                    changed |= self.last_bool_parameters[i] != new_bool_value;
+                    if changed {
+                        self.last_bool_parameters[i] = new_bool_value;
+                    }
+                });
+            }
+            if changed {
+                dirty_bits |= 1 << i;
+            }
+        }
+        dirty_bits
     }
 
-    fn write_parameters(&mut self, writer: &mut NetworkWriter, force_all: bool) {
+    fn write_parameters(&mut self, writer: &mut NetworkWriter, force_all: bool) -> bool {
         let parameter_count = self.parameters.len() as u8;
         writer.write_blittable::<u8>(parameter_count);
+
+        let dirty_bits: u64;
+        if force_all {
+            dirty_bits = u64::MAX;
+        } else {
+            dirty_bits = self.next_dirty_bits();
+        }
+        writer.write_blittable::<u64>(dirty_bits);
+        for (i, par) in self.parameters.iter().enumerate() {
+            if dirty_bits & (1 << i) == 0 {
+                continue;
+            }
+
+            if par.r#type == AnimatorParameterType::Int {
+                NetworkReaderPool::get_with_slice_return(&par.value, |reader| {
+                    let int_value = reader.read_blittable::<i32>();
+                    writer.write_blittable(int_value);
+                });
+            } else if par.r#type == AnimatorParameterType::Float {
+                NetworkReaderPool::get_with_slice_return(&par.value, |reader| {
+                    let float_value = reader.read_blittable::<f32>();
+                    writer.write_blittable(float_value);
+                });
+            } else if par.r#type == AnimatorParameterType::Bool {
+                NetworkReaderPool::get_with_slice_return(&par.value, |reader| {
+                    let bool_value = reader.read_blittable::<bool>();
+                    writer.write_blittable(bool_value);
+                });
+            }
+        }
+        dirty_bits != 0
+    }
+
+    fn read_parameters(&mut self, reader: &mut NetworkReader) {
+        let parameter_count = reader.read_blittable::<u8>() as usize;
+
+        if parameter_count != self.parameters.len() {
+            log::error!("NetworkAnimator: serialized parameter count={} does not match expected parameter count={}. Are you changing animators at runtime?", parameter_count, self.parameters.len());
+            return;
+        }
+
+        let dirty_bits = reader.read_blittable::<u64>();
+
+        for i in 0..parameter_count {
+            if dirty_bits & (1 << i) == 0 {
+                continue;
+            }
+            let par = &self.animator.parameters[i];
+            if par.r#type == AnimatorParameterType::Int {
+                let int_value = reader.read_blittable::<i32>();
+            } else if par.r#type == AnimatorParameterType::Float {
+                let float_value = reader.read_blittable::<f32>();
+            } else if par.r#type == AnimatorParameterType::Bool {
+                let bool_value = reader.read_blittable::<bool>();
+            }
+        }
     }
 }
 
@@ -153,12 +243,35 @@ impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
 
 impl NetworkBehaviourOnSerializer for NetworkAnimator {
     #[parent_on_serialize]
-    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
+    fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
+        let ani_layers = &self.animator.layers;
+        let layer_count = ani_layers.len() as u8;
+        writer.write_blittable(layer_count);
+
+        for layer in ani_layers.iter() {
+            writer.write_blittable(layer.full_path_hash);
+            writer.write_blittable(layer.normalized_time);
+            writer.write_blittable(layer.layer_weight);
+        }
+
+        self.write_parameters(writer, true);
+    }
 }
 impl NetworkBehaviourOnDeserializer for NetworkAnimator {
     #[parent_on_deserialize]
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
+        let ani_layers = reader.read_blittable::<u8>() as usize;
+        if ani_layers != self.animator.layers.len() {
+            log::error!("Animator layers count mismatch");
+            return;
+        }
+        for _ in 0..ani_layers {
+            let _full_path_hash = reader.read_blittable::<i32>();
+            let _normalized_time = reader.read_blittable::<f32>();
+            let _layer_weight = reader.read_blittable::<f32>();
+        }
 
+        self.read_parameters(reader);
     }
 }
 
