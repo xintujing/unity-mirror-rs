@@ -3,46 +3,29 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::metadata::Metadata;
 use crate::metadata_settings::mirror::metadata_network_manager::{MetadataNetworkManager, MetadataNetworkManagerWrapper};
-use crate::mirror::network_manager_factory::NetworkManagerFactory;
-use crate::mirror::{network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection, NetworkServer, TNetworkManager};
-use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
-use once_cell::sync::Lazy;
-use std::any::Any;
-use std::cell::UnsafeCell;
-use std::collections::HashMap;
-use std::ops::Deref;
-use kcp2k_rust::kcp2k_config::Kcp2KConfig;
-use rand::Rng;
-use unity_mirror_macro::{callbacks, namespace, network_manager, NetworkManagerFactory};
 use crate::mirror::authenticator::basic_authenticator::BasicAuthenticatorRequestMessage;
 use crate::mirror::messages::add_player_message::AddPlayerMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::scene_message::{SceneMessage, SceneOperation};
+use crate::mirror::network_manager_factory::NetworkManagerFactory;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::transport::{Transport, TransportChannel, TransportError, TransportManager};
+use crate::mirror::{network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection, NetworkServer, TNetworkManager};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
+use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
+use kcp2k_rust::kcp2k_config::Kcp2KConfig;
+use once_cell::sync::Lazy;
+use rand::Rng;
+use std::any::Any;
+use std::cell::UnsafeCell;
+use std::collections::HashMap;
+use std::ops::Deref;
+use unity_mirror_macro::{virtual_trait, namespace, network_manager, NetworkManagerFactory};
 
 static mut NETWORK_MANAGER: Lazy<RevelWeak<Box<dyn network_manager_trait::TNetworkManager>>> =
     Lazy::new(|| RevelWeak::default());
 
-static mut NETWORK_MANAGER_PREFAB_PATH: Option<String> = None;
-
-impl NetworkManager {
-    pub fn set_network_manager_prefab_path(path: &str) {
-        #[allow(static_mut_refs)]
-        unsafe {
-            NETWORK_MANAGER_PREFAB_PATH = Some(path.to_string());
-        }
-    }
-
-    pub fn get_network_manager_prefab_path() -> Option<String> {
-        #[allow(static_mut_refs)]
-        unsafe {
-            NETWORK_MANAGER_PREFAB_PATH.clone()
-        }
-    }
-}
 impl NetworkManager {
     pub fn is_instance() -> bool {
         #[allow(static_mut_refs)]
@@ -77,10 +60,9 @@ pub enum ConnectionQualityMethod
     Pragmatic = 1,   // based on snapshot interpolation adjustment
 }
 
-#[network_manager]
 #[namespace(prefix = "Mirror")]
-#[derive(NetworkManagerFactory)]
-#[callbacks({
+#[network_manager]
+#[virtual_trait({
     on_start_server(&mut self);
     on_stop_server(&mut self);
     on_server_connect(& mut self, connection: RevelArc<NetworkConnection>);
@@ -159,11 +141,11 @@ impl MonoBehaviour for NetworkManager {
         // }
 
         // println!("Mirror: NetworkManager Update");
-        if let Some(callbacks) = self.callbacks.get() {
-            callbacks.on_start_server();
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            virtual_trait.on_start_server();
         } else {
             // default code
-            // println!("Mirror: NetworkManager Default callbacks");
+            // println!("Mirror: NetworkManager Default virtual_trait");
         }
     }
 }
@@ -229,8 +211,8 @@ impl NetworkManager {
 
         self.setup_server();
 
-        if let Some(callbacks) = self.callbacks.get() {
-            callbacks.on_start_server()
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            virtual_trait.on_start_server()
         }
         if self.is_server_online_scene_change_needed() {
             let online_scene = self.online_scene.clone();
@@ -258,38 +240,30 @@ impl NetworkManager {
         self.register_server_messages()
     }
 
-    pub fn init() {
+    pub fn init(prefab_path: &str) {
         if Self::is_instance() {
             return;
         }
-        if let Some(prefab_path) = Self::get_network_manager_prefab_path() {
-            let metadata = Metadata::get_network_manager(&prefab_path).unwrap();
-            let full_name = metadata.get_final_full_name();
+        let metadata = Metadata::get_network_manager(&prefab_path).unwrap();
+        let full_name = metadata.get_final_full_name();
 
-            let mut arc_game_object = RevelArc::new(GameObject::default());
+        let mut arc_game_object = RevelArc::new(GameObject::default());
 
-            let instances =
-                NetworkManagerFactory::create(&full_name, arc_game_object.downgrade(), metadata);
+        let instances =
+            NetworkManagerFactory::create(&full_name, arc_game_object.downgrade(), metadata);
 
-            // if let Some((instance, _)) = instances.last() {
-            //     #[allow(static_mut_refs)]
-            //     unsafe {
-            //         *NETWORK_MANAGER = instance.downgrade();
-            //     }
-            // }
-            let instances = instances
-                .into_iter()
-                .map(|(instance, type_id)| {
-                    let instance = unsafe {
-                        &*(&instance as *const dyn Any as *const RevelArc<Box<dyn MonoBehaviour>>)
-                    };
-                    (instance.clone(), type_id)
-                })
-                .collect::<Vec<_>>();
+        let instances = instances
+            .into_iter()
+            .map(|(instance, type_id)| {
+                let instance = unsafe {
+                    &*(&instance as *const dyn Any as *const RevelArc<Box<dyn MonoBehaviour>>)
+                };
+                (instance.clone(), type_id)
+            })
+            .collect::<Vec<_>>();
 
-            arc_game_object.add_component(instances);
-            WorldManager::dont_destroy_object(arc_game_object);
-        }
+        arc_game_object.add_component(instances);
+        WorldManager::dont_destroy_object(arc_game_object);
     }
 
     fn initialize_singleton(&self) -> bool {
@@ -340,8 +314,8 @@ impl NetworkManager {
         NetworkServer::set_all_clients_not_ready();
         self.set_network_scene_name(scene_name);
 
-        self.callbacks.get().map(|callbacks| {
-            callbacks.on_server_change_scene(scene_name.to_string())
+        self.virtual_trait.get().map(|virtual_trait| {
+            virtual_trait.on_server_change_scene(scene_name.to_string())
         });
 
         NetworkServer.is_loading_scene = true;
@@ -363,8 +337,8 @@ impl NetworkManager {
             connection.send_message(&mut message, TransportChannel::Reliable);
         }
 
-        if let Some(callbacks) = self.callbacks.get() {
-            callbacks.on_server_connect(connection.clone())
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            virtual_trait.on_server_connect(connection.clone())
         }
     }
 
@@ -391,18 +365,18 @@ impl NetworkManager {
         }
     }
     fn on_server_disconnect(&mut self, connection: RevelArc<NetworkConnection>) {
-        if let Some(callbacks) = self.callbacks.get() {
-            callbacks.on_server_disconnect(connection)
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            virtual_trait.on_server_disconnect(connection)
         }
     }
     fn on_server_error(&mut self, connection: RevelArc<NetworkConnection>, error: TransportError, reason: String) {
-        if let Some(callbacks) = self.callbacks.get() {
-            callbacks.on_server_error(connection, error, reason)
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            virtual_trait.on_server_error(connection, error, reason)
         }
     }
     fn on_server_transport_exception(&mut self, connection: RevelArc<NetworkConnection>, error: Box<dyn std::error::Error>) {
-        if let Some(callbacks) = self.callbacks.get() {
-            callbacks.on_server_transport_exception(connection, error)
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            virtual_trait.on_server_transport_exception(connection, error)
         }
     }
     fn on_server_add_player_internal(
@@ -439,26 +413,6 @@ impl NetworkManager {
     }
 
     fn get_start_position(&mut self) -> Option<Transform> {
-        // if self.start_positions.is_empty() {
-        //     return None;
-        // }
-        //
-        // Some(match &self.player_spawn_method {
-        //     PlayerSpawnMethod::Random => {
-        //         let index = rand::rng().random_range(0..self.start_positions.len());
-        //
-        //         if let Some(start_positions) = self.start_positions.get(&self.network_scene_name) {
-        //             return Some(start_positions[index].clone());
-        //         }
-        //         return None;
-        //     }
-        //     PlayerSpawnMethod::RoundRobin => {
-        //         let start_position = self.start_positions[self.start_position_index].clone();
-        //         self.start_position_index = (self.start_position_index + 1) % self.start_positions.len();
-        //         start_position
-        //     }
-        // })
-
         let current_scene = self.network_scene_name.clone();
 
         if !self.start_positions.contains_key(&current_scene) {

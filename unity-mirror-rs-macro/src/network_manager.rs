@@ -69,7 +69,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut item_struct = parse_macro_input!(item as syn::ItemStruct);
 
     item_struct.attrs.push(parse_quote! {
-        #[derive(Default)]
+        #[derive(Default, NetworkManagerFactory)]
     });
 
     let struct_ident = &item_struct.ident;
@@ -103,8 +103,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 item_struct.fields,
                 "NetworkManager can only be used on structs with named fields",
             )
-            .to_compile_error()
-            .into();
+                .to_compile_error()
+                .into();
         }
     };
 
@@ -160,7 +160,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 if let Some(weak_instance) = arc_instance.downgrade().downcast::<Self>() {
                     if let Some(real_instance) = weak_instance.get() {
                         if let Some(parent) = real_instance.parent.get() {
-                            parent.set_callbacks(instance.downgrade())
+                            parent.set_virtual_trait(instance.downgrade())
                         }
                         real_instance.weak = weak_instance.clone();
                         real_instance.initialize(metadata);
