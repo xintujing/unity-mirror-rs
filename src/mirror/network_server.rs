@@ -24,7 +24,7 @@ use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{CallbackProcessor, TransportChannel, TransportError, TransportManager};
 use crate::mirror::{NetworkIdentity, RemoteCallType};
-use crate::unity_engine::{GameObject, Time};
+use crate::unity_engine::{GameObject, Time, WorldManager};
 use once_cell::sync::Lazy;
 use std::any::Any;
 use std::collections::HashMap;
@@ -718,7 +718,11 @@ impl NetworkServer {
 
     pub fn set_all_clients_not_ready() {}
 
-    pub fn spawn_objects() {}
+        pub fn spawn_objects() {
+        // for x in WorldManager::root_game_objects().iter() {
+        //     let option = x.get().unwrap().try_get_component::<NetworkIdentity>();
+        // }
+    }
 
     pub fn broadcast() {}
 }
