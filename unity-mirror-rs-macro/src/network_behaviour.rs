@@ -5,7 +5,7 @@ use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{parse_quote, Field, Fields, Path};
+use syn::{parse_quote, Field, Fields, Path, VisRestricted, Visibility};
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
@@ -131,6 +131,20 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut sync_var_fields = Vec::new();
     // 遍历 struct 的 fields
     for field in &mut item_struct.fields {
+        if let Visibility::Inherited = &field.vis {
+            // 修改为 pub(super)
+            let vr = VisRestricted {
+                pub_token: Default::default(),
+                paren_token: Default::default(),
+                in_token: None,
+                path: Box::new(syn::Path::from(Ident::new(
+                    "super",
+                    proc_macro2::Span::call_site(),
+                ))),
+            };
+            field.vis = Visibility::Restricted(vr);
+        }
+
         for attr in &field.attrs {
             if attr.path().is_ident("sync_object") {
                 sync_obj_fields.push(field.ident.clone().unwrap());
@@ -138,7 +152,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
             if attr.path().is_ident("sync_variable") {
                 // 修改字段的可见性
-                field.vis = syn::Visibility::Inherited;
+                field.vis = Visibility::Inherited;
                 sync_var_fields.push((field.ident.clone().unwrap(), field.ty.clone()));
                 break;
             }
