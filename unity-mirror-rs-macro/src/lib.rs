@@ -55,6 +55,8 @@ macro_rules! attribute_args {
     };
 }
 
+//  #[sync_variable]
+//  #[sync_object]
 #[proc_macro_attribute]
 pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
     network_behaviour::handler(attr, item)
@@ -106,11 +108,6 @@ pub fn parent_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStrea
     network_behaviour::parent_on_deserialize(attr, item)
 }
 
-// #[proc_macro_derive(MessageRegistry)]
-// pub fn message_registry(input: TokenStream) -> TokenStream {
-//     message::message_registry_handler(input)
-// }
-
 #[proc_macro_derive(Message)]
 pub fn message(input: TokenStream) -> TokenStream {
     message::message_handler(input)
@@ -135,10 +132,6 @@ pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
 pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     virtual_trait::handler(attr, item)
 }
-// #[proc_macro_attribute]
-// pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
-//     virtual_trait::handler(attr, item)
-// }
 
 #[proc_macro_derive(AuthenticatorFactory)]
 pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
