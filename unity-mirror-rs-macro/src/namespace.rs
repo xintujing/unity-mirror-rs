@@ -1,47 +1,52 @@
-use crate::utils::write_to_file;
 use crate::NamespaceArgs;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, ItemStruct};
-
-pub(crate) fn namespace_attribute_handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(item as ItemStruct);
-    let attrs = parse_macro_input!(attr as NamespaceArgs);
-
-    let strict_ident = &input.ident;
-
-    let namespace = match attrs.value {
-        None => panic!("namespace attribute must have a value"),
-        Some(value) => value.clone(),
-    };
-
-    let full_path = match attrs.full_path {
-        None => String::new(),
-        Some(mut full_path) => match full_path.chars().last().unwrap() {
-            '.' | '+' | '\0' => full_path.clone(),
-            _ => {
-                full_path.push('.');
-                full_path.clone()
+impl NamespaceArgs {
+    pub(crate) fn get_full_name(&self, struct_ident: &syn::Ident) -> String {
+        let prefix = match &self.prefix {
+            None => String::new(),
+            Some(value) => match value.chars().last().unwrap() {
+                '.' | '+' | '\0' => value.clone(),
+                _ => {
+                    let mut value = value.clone();
+                    value.push('.');
+                    value
+                }
+            },
+        };
+        match &self.rename {
+            None => {
+                format!("{}{}", prefix, struct_ident)
             }
-        },
-    };
-
-    let output = TokenStream::from(quote! {
-        #input
-
-        impl crate::mirror::namespace::Namespace for #strict_ident {
-
-            fn get_namespace() -> &'static str {
-                #namespace
-            }
-
-            fn get_prefix() -> &'static str {
-                #full_path
+            Some(rename) => {
+                format!("{}{}", prefix, rename)
             }
         }
-    });
+    }
+}
 
-    write_to_file("namespace", output.to_string());
+pub(crate) fn handler(attr: TokenStream, input: TokenStream) -> TokenStream {
+    // 解析属性参数
+    let namespace_args = parse_macro_input!(attr as NamespaceArgs);
+    // 结构体
+    let item_struct = parse_macro_input!(input as ItemStruct);
+    // 结构体的标识符
+    let struct_ident = &item_struct.ident;
+    // 结构体的命名空间
+    let full_name = namespace_args.get_full_name(struct_ident);
 
-    output
+    quote! {
+        #item_struct
+
+        impl crate::commons::object::Object for #struct_ident {
+            fn get_full_name() -> &'static str
+            where
+                Self: Sized,
+            {
+                #full_name
+            }
+        }
+    }
+    .into()
 }

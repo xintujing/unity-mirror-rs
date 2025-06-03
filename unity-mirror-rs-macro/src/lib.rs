@@ -1,25 +1,21 @@
-extern crate proc_macro;
-use crate::component::component_attribute_handler;
-use crate::m_sync::m_sync_impl;
-use crate::namespace::namespace_attribute_handler;
-use crate::network_message::network_message_impl;
-use proc_macro::TokenStream;
-use quote::quote;
-use quote::ToTokens;
-use std::time::SystemTime;
-use syn::parse::Parse;
-use syn::parse::ParseStream;
-use syn::*;
-
-mod utils;
-
-mod command;
-mod component;
-mod m_sync;
 mod namespace;
-mod network_message;
-mod rpc;
-mod tools;
+mod network_behaviour;
+
+use proc_macro::TokenStream;
+
+mod callback_processor;
+mod message;
+mod metadata_settings;
+
+mod network_manager;
+
+mod network_manager_factory;
+
+pub(crate) mod utils;
+
+mod virtual_trait;
+
+mod mirror;
 
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
@@ -29,14 +25,15 @@ macro_rules! attribute_args {
             $($field_name: Option<String>,)*
         }
 
-        impl Parse for $type_name {
-            fn parse(input: ParseStream) -> Result<Self> {
-                $(let mut $field_name: String = "".to_string();)*
+
+        impl syn::parse::Parse for $type_name {
+            fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+                use quote::ToTokens;
 
                 let mut result= $type_name::default();
 
                 while !input.is_empty() {
-                    let name_value: MetaNameValue = input.parse()?;
+                    let name_value: syn::MetaNameValue = input.parse()?;
                     let key = name_value.path.to_token_stream().to_string();
                     let value = name_value.value.to_token_stream();
 
@@ -47,8 +44,8 @@ macro_rules! attribute_args {
                         _ => {}
                     }
 
-                    if input.peek(Token![,]) {
-                        input.parse::<Token![,]>()?;
+                    if input.peek(syn::Token![,]) {
+                        input.parse::<syn::Token![,]>()?;
                     }
                 }
 
@@ -59,76 +56,111 @@ macro_rules! attribute_args {
 }
 
 #[proc_macro_attribute]
-pub fn mirror(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    // 解析输入的 TokenStream 到 ItemImpl 结构
-    let mut input = parse_macro_input!(item as ItemFn);
-
-    // 只能在main方法上使用
-    if input.sig.ident != "main" {
-        panic!("Only main method can use mirror attribute");
-    }
-
-    // 在main方法上添加一个方法，用于注册命令
-    input.block.stmts.insert(
-        0,
-        parse_quote! {
-            unsafe {
-                for register_function in REGISTER_FUNCTIONS.iter() {
-                    register_function()
-                }
-            }
-        },
-    );
-
-    let stream = TokenStream::from(quote! {
-
-        pub static mut REGISTER_FUNCTIONS: Vec<fn()> = vec![];
-
-        #input
-
-    });
-
-    let timestamp = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-
-    std::fs::write(format!("{}_main.rs", timestamp), stream.to_string())
-        .expect("write file failed");
-
-    stream
+pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::handler(attr, item)
 }
 
-attribute_args!(ComponentArgs, namespace);
 #[proc_macro_attribute]
-pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
-    component_attribute_handler(attr, item)
+pub fn metadata(attr: TokenStream, item: TokenStream) -> TokenStream {
+    TokenStream::new()
 }
 
-/// 定义 command attribute 宏
-attribute_args!(CommandArgs, requires_authority);
-#[proc_macro_attribute]
-pub fn command(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
-}
-
-/// 定义 rpc attribute 宏
-#[proc_macro_attribute]
-pub fn rpc(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
-}
-
-attribute_args!(NamespaceArgs, value, full_path);
+attribute_args!(NamespaceArgs, prefix, rename);
 #[proc_macro_attribute]
 pub fn namespace(attr: TokenStream, item: TokenStream) -> TokenStream {
-    namespace_attribute_handler(attr, item)
-}
-#[proc_macro_derive(MSync, attributes(sync_var, sync_struct))]
-pub fn m_sync(input: TokenStream) -> TokenStream {
-    m_sync_impl(input)
+    namespace::handler(attr, item)
 }
 
-#[proc_macro_derive(NetworkMessage)]
-pub fn network_message(input: TokenStream) -> TokenStream {
-    network_message_impl(input)
+#[proc_macro_derive(MetadataSettingsWrapper)]
+pub fn derive_metadata_settings_wrapper(input: TokenStream) -> TokenStream {
+    metadata_settings::wrapper::handler(input)
+}
+
+#[proc_macro]
+pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
+    metadata_settings::wrapper_register::handler(input)
+}
+
+#[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
+pub fn derive_sync_state(_: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn ancestor_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::ancestor_on_serialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn ancestor_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::ancestor_on_deserialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn parent_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::parent_on_serialize(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn parent_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_behaviour::parent_on_deserialize(attr, item)
+}
+
+// #[proc_macro_derive(MessageRegistry)]
+// pub fn message_registry(input: TokenStream) -> TokenStream {
+//     message::message_registry_handler(input)
+// }
+
+#[proc_macro_derive(Message)]
+pub fn message(input: TokenStream) -> TokenStream {
+    message::message_handler(input)
+}
+
+#[proc_macro_derive(CallbackProcessor)]
+pub fn callback_processor(input: TokenStream) -> TokenStream {
+    callback_processor::callback_processor_handler(input)
+}
+
+#[proc_macro_attribute]
+pub fn network_manager(attr: TokenStream, item: TokenStream) -> TokenStream {
+    network_manager::handler(attr, item)
+}
+
+#[proc_macro_derive(NetworkManagerFactory)]
+pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
+    network_manager_factory::handler(item)
+}
+
+#[proc_macro_attribute]
+pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+    virtual_trait::handler(attr, item)
+}
+// #[proc_macro_attribute]
+// pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+//     virtual_trait::handler(attr, item)
+// }
+
+#[proc_macro_derive(AuthenticatorFactory)]
+pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
+    mirror::authenticator_factory::handler(item)
+}
+
+// #[proc_macro_attribute]
+// pub fn rpc_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+//     mirror::component::rpc_impl::handler(attr, item)
+// }
+
+#[proc_macro_attribute]
+pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {
+    mirror::component::command::handler(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn client_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
+    mirror::component::client_rpc::handler(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn target_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
+    mirror::component::target_rpc::handler(attr, item)
 }
