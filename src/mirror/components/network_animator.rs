@@ -93,8 +93,21 @@ pub struct Animator {
     not_impl_nos
 )]
 pub struct NetworkAnimator {
+    pub client_authority: bool,
+    pub animator: Animator,
     #[sync_variable]
-    pub animator_speed: f32,
+    animator_speed: f32,
+    previous_speed: f32,
+
+    last_int_parameters: Vec<i32>,
+    last_float_parameters: Vec<f32>,
+    last_bool_parameters: Vec<bool>,
+    parameters: Vec<AnimatorParameter>,
+
+    animation_hash: Vec<i32>,
+    transition_hash: Vec<i32>,
+    layer_weight: Vec<f32>,
+    next_send_time: f64,
 }
 
 impl MonoBehaviour for NetworkAnimator {
