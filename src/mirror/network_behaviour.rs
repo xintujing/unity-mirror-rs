@@ -145,10 +145,6 @@ impl NetworkBehaviour {
 
         vec![(arc_box_network_behaviour, TypeId::of::<NetworkBehaviour>())]
     }
-
-    pub fn parent<T: 'static>(&self) -> RevelWeak<Box<T>> {
-        RevelWeak::default()
-    }
 }
 
 impl NetworkBehaviour {

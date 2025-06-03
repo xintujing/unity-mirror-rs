@@ -24,7 +24,7 @@ use crate::unity_engine::{
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
-use std::any::Any;
+use std::any::{Any, TypeId};
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::ops::Deref;
