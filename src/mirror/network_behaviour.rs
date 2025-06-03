@@ -54,7 +54,7 @@ impl Into<SyncMode> for MetadataSyncMode {
 pub struct NetworkBehaviour {
     sync_direction: SyncDirection,
     sync_mode: SyncMode,
-    sync_interval: f32,
+    pub sync_interval: f32,
     last_sync_time: f64,
 
     net_id: u32,
