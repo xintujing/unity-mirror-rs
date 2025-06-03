@@ -147,11 +147,7 @@ impl NetworkBehaviour {
     }
 }
 
-impl MonoBehaviour for NetworkBehaviour {
-    fn awake(&mut self) {
-        // println!("NetworkBehaviour: awake");
-    }
-}
+impl MonoBehaviour for NetworkBehaviour {}
 
 impl TNetworkBehaviour for NetworkBehaviour {
     fn new(_: &RevelWeak<GameObject>, _: &MetadataNetworkBehaviourWrapper) -> Self
