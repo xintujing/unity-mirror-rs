@@ -19,8 +19,8 @@ pub(crate) fn to_csharp_function_inputs(
                 let param_type = format_ident!("{}", param_type_name);
                 params.push(quote! {
                     {
-                        use crate::mirror::namespace::Namespace;
-                        #param_type::get_full_path()
+                        use crate::commons::object::Object;
+                        #param_type::get_full_name()
                     }
                 });
             }
@@ -63,7 +63,9 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
                 "&str" | "String" => Some("System.String".to_string()),
                 "isize" => Some("System.IntPtr".to_string()),
                 "usize" => Some("System.UIntPtr".to_string()),
-                "crate::mirror::NetworkConnection" => Some("Mirror.NetworkConnectionToClient".to_string()),
+                "crate::mirror::NetworkConnection" => {
+                    Some("Mirror.NetworkConnectionToClient".to_string())
+                }
                 "nalgebra::Vector3" | "Vector3" => Some("UnityEngine.Vector3".to_string()),
                 "nalgebra::Quaternion" | "Quaternion" => Some("UnityEngine.Quaternion".to_string()),
                 "Vec" => process_generic_type(full_type, path, "System.Collections.Generic.List`1"),
@@ -71,7 +73,8 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
                     if let PathSegment {
                         arguments: PathArguments::AngleBracketed(args),
                         ..
-                    } = path.segments.last().unwrap() {
+                    } = path.segments.last().unwrap()
+                    {
                         if let GenericArgument::Type(ref ty) = args.args[0] {
                             // panic!("RevelArc or RevelWeak cannot be used as a generic argument. {}", ty.to_token_stream());
                             return type_to_csharp(ty);
