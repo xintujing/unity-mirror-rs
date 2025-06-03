@@ -4,6 +4,7 @@ use crate::metadata_settings::metadata::Metadata;
 use crate::unity_engine::game_object::GameObject;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
+use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::Ordering::SeqCst;
 use crate::commons::action::SelfMutAction;
@@ -19,9 +20,6 @@ pub struct World {
     scene_path: String,
     game_objects: HashMap<u64, RevelArc<GameObject>>,
 }
-
-// pub scene_loaded: SelfMutAction<(String, LoadSceneMode,), ()>,
-
 
 static mut SCENE_LOADED_ACTION: Lazy<SelfMutAction<(String, LoadSceneMode,), ()>> =
     Lazy::new(|| SelfMutAction::default());
@@ -79,12 +77,42 @@ pub enum LoadSceneMode {
     Additive,
 }
 
-pub struct WorldManager {}
+pub struct WorldManagerStatic {
+    loading: bool,
+}
+
+impl WorldManagerStatic {
+    pub(crate) fn loading(&self) -> bool {
+        self.loading
+    }
+}
+
+static mut WORLD_MANAGER_STATIC: Lazy<WorldManagerStatic> = Lazy::new(|| WorldManagerStatic { loading: false });
+
+
+pub struct WorldManager;
+
+impl Deref for WorldManager {
+    type Target = WorldManagerStatic;
+
+    fn deref(&self) -> &Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe { &*WORLD_MANAGER_STATIC }
+    }
+}
+
+impl DerefMut for WorldManager {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe { &mut *WORLD_MANAGER_STATIC }
+    }
+}
 
 impl WorldManager {
     pub fn load_scene(scene_path: &str, mode: LoadSceneMode) -> usize {
         #[allow(static_mut_refs)]
         unsafe {
+            Self.loading = true;
             let world = World::new(scene_path);
             let i = match mode {
                 LoadSceneMode::Single => {
@@ -101,6 +129,7 @@ impl WorldManager {
                 }
             };
             SCENE_LOADED_ACTION.call((scene_path.to_string(), mode,));
+            Self.loading = false;
             i
         }
     }
