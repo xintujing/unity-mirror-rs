@@ -35,9 +35,7 @@ impl<T> DerefMut for RevelArc<T> {
 
 impl<T: Default> Default for RevelArc<T> {
     fn default() -> Self {
-        Self(Arc::new(UnsafeCell::new(
-            Default::default(),
-        )))
+        Self(Arc::new(UnsafeCell::new(Default::default())))
     }
 }
 

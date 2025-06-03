@@ -1,8 +1,8 @@
 #![allow(dead_code)]
+use crate::mirror::compress::Compress;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::network_writer_pool::NetworkWriterPool;
 use std::collections::VecDeque;
-use crate::mirror::compress::Compress;
 
 pub struct Batcher {
     threshold: usize,

@@ -1,7 +1,7 @@
-use std::ops::{Deref, DerefMut};
-use once_cell::sync::Lazy;
 use crate::commons::action::SelfMutAction;
 use crate::mirror::NetworkServer;
+use once_cell::sync::Lazy;
+use std::ops::{Deref, DerefMut};
 
 static mut NETWORK_LOOP_STATIC: Lazy<NetworkLoopStatic> = Lazy::new(|| NetworkLoopStatic {
     on_early_update: vec![],
@@ -29,14 +29,18 @@ impl Deref for NetworkLoop {
 
     fn deref(&self) -> &Self::Target {
         #[allow(static_mut_refs)]
-        unsafe { &NETWORK_LOOP_STATIC }
+        unsafe {
+            &NETWORK_LOOP_STATIC
+        }
     }
 }
 
 impl DerefMut for NetworkLoop {
     fn deref_mut(&mut self) -> &mut Self::Target {
         #[allow(static_mut_refs)]
-        unsafe { &mut NETWORK_LOOP_STATIC }
+        unsafe {
+            &mut NETWORK_LOOP_STATIC
+        }
     }
 }
 impl NetworkLoop {

@@ -40,7 +40,7 @@ impl<Args, Return> Default for Action<Args, Return> {
 impl<Args, Return> Action<Args, Return> {
     pub fn new<F>(handler: F) -> Self
     where
-        F: Handler<Args, Output=Return>,
+        F: Handler<Args, Output = Return>,
     {
         Self(Box::new(move |args| handler.call(args)))
     }

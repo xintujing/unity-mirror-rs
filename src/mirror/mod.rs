@@ -45,8 +45,8 @@ pub use network_authenticator::*;
 mod network_authenticator_factory;
 pub use network_authenticator_factory::AuthenticatorFactory;
 
-mod network_time;
-mod network_loop;
 mod accurate_interval;
+mod network_loop;
+mod network_time;
 
 pub use network_loop::NetworkLoop;

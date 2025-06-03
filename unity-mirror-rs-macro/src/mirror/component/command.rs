@@ -3,7 +3,7 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, FnArg, LitStr, Path, Token};
+use syn::{FnArg, LitStr, Path, Token, parse_macro_input};
 
 mod kw {
     syn::custom_keyword!(struct_path);

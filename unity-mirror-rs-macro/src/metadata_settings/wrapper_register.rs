@@ -1,9 +1,9 @@
 #![allow(dead_code)]
+use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, Path, Token};
-use crate::utils::string_case::StringCase;
+use syn::{Path, Token, parse_macro_input};
 
 // 输入解析部分
 struct WrapperInput {

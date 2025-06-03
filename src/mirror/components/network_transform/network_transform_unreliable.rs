@@ -12,9 +12,7 @@ use crate::mirror::{
 use crate::unity_engine::Time;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
-use unity_mirror_macro::{
-    namespace, network_behaviour,
-};
+use unity_mirror_macro::{namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(

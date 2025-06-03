@@ -5,8 +5,7 @@ use serde_repr::Deserialize_repr;
 use unity_mirror_macro::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
 
 #[namespace(prefix = "Mirror", rename = "NetworkIdentity")]
-#[derive(Deserialize, MetadataSettingsWrapper)]
-#[derive(Clone)]
+#[derive(Deserialize, MetadataSettingsWrapper, Clone)]
 pub struct MetadataNetworkIdentity {
     #[serde(rename = "assetId")]
     pub asset_id: u32,

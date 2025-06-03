@@ -8,7 +8,10 @@ impl Compress {
     pub const QUATERNION_MIN_RANGE: f32 = -FRAC_1_SQRT_2;
     pub const QUATERNION_MAX_RANGE: f32 = FRAC_1_SQRT_2;
     pub const TEN_BITS_MAX: u32 = 1023;
-    pub fn largest_absolute_component_index(&self, q: &Quaternion<f32>) -> (usize, f32, Vector3<f32>) {
+    pub fn largest_absolute_component_index(
+        &self,
+        q: &Quaternion<f32>,
+    ) -> (usize, f32, Vector3<f32>) {
         let abs = Vector4::new(q.i.abs(), q.j.abs(), q.k.abs(), q.w.abs());
 
         let mut largest_abs = abs.x;
@@ -83,7 +86,11 @@ impl Compress {
         (result, Vector3::new(x, y, z))
     }
 
-    pub fn vector3float_to_long3(&self, value: Vector3<f32>, precision: f32) -> (bool, i64, i64, i64) {
+    pub fn vector3float_to_long3(
+        &self,
+        value: Vector3<f32>,
+        precision: f32,
+    ) -> (bool, i64, i64, i64) {
         let mut result = true;
         let (res, x) = self.float_to_long(value.x, precision);
         result &= res;

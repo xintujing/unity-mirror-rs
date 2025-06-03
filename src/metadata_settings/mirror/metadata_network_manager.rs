@@ -8,8 +8,8 @@ use unity_mirror_macro::{namespace, MetadataSettingsWrapper};
 #[derive(Deserialize_repr, Clone)]
 #[repr(u8)]
 pub enum ConnectionQualityMethod {
-    Simple = 0,     // simple estimation based on rtt and jitter
-    Pragmatic = 1,   // based on snapshot interpolation adjustment
+    Simple = 0,    // simple estimation based on rtt and jitter
+    Pragmatic = 1, // based on snapshot interpolation adjustment
 }
 
 #[derive(Deserialize_repr, Clone)]

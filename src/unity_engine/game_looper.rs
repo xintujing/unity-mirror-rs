@@ -1,7 +1,7 @@
+use crate::mirror::NetworkLoop;
 use crate::unity_engine::time::Time;
 use crate::unity_engine::world::WorldManager;
 use std::time::Instant;
-use crate::mirror::NetworkLoop;
 
 pub struct GameLooper {
     last_frame_time: Instant,

@@ -3,7 +3,7 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, parse_quote, Expr, FnArg, LitStr, Pat, PatType, Token, Type};
+use syn::{Expr, FnArg, LitStr, Pat, PatType, Token, Type, parse_macro_input, parse_quote};
 
 mod kw {
     syn::custom_keyword!(channel);

@@ -1,4 +1,4 @@
-use quote::{format_ident, quote, ToTokens};
+use quote::{ToTokens, format_ident, quote};
 use syn::punctuated::Punctuated;
 use syn::{
     FnArg, GenericArgument, Path, PathArguments, PathSegment, Token, Type, TypeArray, TypePath,
@@ -63,7 +63,9 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
                 "&str" | "String" => Some("System.String".to_string()),
                 "isize" => Some("System.IntPtr".to_string()),
                 "usize" => Some("System.UIntPtr".to_string()),
-                "crate::mirror::NetworkConnection" => Some("Mirror.NetworkConnectionToClient".to_string()),
+                "crate::mirror::NetworkConnection" => {
+                    Some("Mirror.NetworkConnectionToClient".to_string())
+                }
                 "nalgebra::Vector3" | "Vector3" => Some("UnityEngine.Vector3".to_string()),
                 "nalgebra::Quaternion" | "Quaternion" => Some("UnityEngine.Quaternion".to_string()),
                 "Vec" => process_generic_type(full_type, path, "System.Collections.Generic.List`1"),
@@ -71,7 +73,8 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
                     if let PathSegment {
                         arguments: PathArguments::AngleBracketed(args),
                         ..
-                    } = path.segments.last().unwrap() {
+                    } = path.segments.last().unwrap()
+                    {
                         if let GenericArgument::Type(ref ty) = args.args[0] {
                             // panic!("RevelArc or RevelWeak cannot be used as a generic argument. {}", ty.to_token_stream());
                             return type_to_csharp(ty);
