@@ -5,13 +5,14 @@ use crate::mirror::components::network_transform::transform_snapshot::TransformS
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::mirror::network_behaviour::TNetworkBehaviour;
-use crate::mirror::{NetworkBehaviour, NetworkServer};
+use crate::mirror::transport::TransportChannel;
+use crate::mirror::{NetworkBehaviour, NetworkServer, SyncDirection};
 use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
-use unity_mirror_macro::{namespace, network_behaviour};
+use unity_mirror_macro::{client_rpc, command, namespace, network_behaviour};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 #[allow(unused)]
@@ -54,19 +55,49 @@ pub struct NetworkTransformBase {
 // sync hooks
 impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
+// 远程调用
 impl NetworkTransformBase {
+    #[command(NetworkTransformBase, authority)]
+    fn cmd_teleport(&self, destination: Vector3<f32>) {
+        if self.sync_direction != SyncDirection::ClientToServer {
+            return;
+        }
 
+        // self.on_teleport(destination);
+        self.rpc_teleport(destination);
+    }
+
+    #[command(NetworkTransformBase, authority)]
+    fn cmd_teleport_(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {
+        if self.sync_direction != SyncDirection::ClientToServer {
+            return;
+        }
+
+        // self.on_teleport_(destination, rotation);
+        self.rpc_teleport_(destination, rotation);
+    }
+
+    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    fn rpc_teleport(&self, destination: Vector3<f32>) {}
+
+    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    fn rpc_teleport_(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {}
+
+    pub fn server_teleport(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {
+        // self.on_teleport(destination, rotation);
+        self.rpc_teleport_(destination, rotation);
+    }
+
+    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    fn rpc_reset_state(&self) {}
 }
 
 impl NetworkTransformBase {
     pub fn send_interval_multiplier(&self) -> u32 {
-        if let Some(network_behaviour) = self.parent::<NetworkBehaviour>().get() {
-            if network_behaviour.sync_interval > 0.0 {
-                let multiplier =
-                    (network_behaviour.sync_interval / NetworkServer.send_interval() as f32);
-                if multiplier > 1.0 {
-                    return multiplier.round() as u32;
-                }
+        if self.sync_interval > 0.0 {
+            let multiplier = (self.sync_interval / NetworkServer.send_interval() as f32);
+            if multiplier > 1.0 {
+                return multiplier.round() as u32;
             }
         }
         1

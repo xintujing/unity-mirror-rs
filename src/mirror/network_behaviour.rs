@@ -52,8 +52,8 @@ impl Into<SyncMode> for MetadataSyncMode {
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkBehaviour {
-    sync_direction: SyncDirection,
-    sync_mode: SyncMode,
+    pub sync_direction: SyncDirection,
+    pub sync_mode: SyncMode,
     pub sync_interval: f32,
     last_sync_time: f64,
 
