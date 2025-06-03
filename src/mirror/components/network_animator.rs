@@ -112,14 +112,14 @@ pub struct NetworkAnimator {
 }
 
 impl NetworkAnimator {
-    pub fn send_messages_allowed(&self) -> bool {
-        if self.is_server() {
-            if !self.client_authority {
-                return false;
-            }
-        }
-        self.is_owned() && self.client_authority
-    }
+    // pub fn send_messages_allowed(&self) -> bool {
+    //     if self.is_server() {
+    //         if !self.client_authority {
+    //             return false;
+    //         }
+    //     }
+    //     self.is_owned() && self.client_authority
+    // }
 
     fn write_parameters(&mut self, writer: &mut NetworkWriter, force_all: bool) {
         let parameter_count = self.parameters.len() as u8;
