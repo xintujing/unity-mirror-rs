@@ -40,7 +40,7 @@ impl NetworkManager {
             NETWORK_MANAGER.upgradable()
         }
     }
-    pub fn singleton<T: network_manager_trait::TNetworkManager + 'static>(f: fn(&mut T)) {
+    pub fn singleton<T: TNetworkManager + 'static>(f: fn(&mut T)) {
         #[allow(static_mut_refs)]
         unsafe {
             if let Some(weak) = NETWORK_MANAGER.downcast::<T>() {
