@@ -1,3 +1,4 @@
+use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::{
     MetadataAnimator, MetadataNetworkAnimator, MetadataParameterType,
 };
@@ -9,7 +10,7 @@ use crate::mirror::transport::TransportChannel;
 use crate::mirror::{
     NetworkBehaviour, NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer,
 };
-use crate::unity_engine::MonoBehaviour;
+use crate::unity_engine::{GameObject, MonoBehaviour};
 use std::ops::{Deref, DerefMut};
 use unity_mirror_macro::{
     client_rpc, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize,
@@ -134,7 +135,7 @@ impl MonoBehaviour for NetworkAnimator {
 }
 
 impl TNetworkBehaviour for NetworkAnimator {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(weak_game_object: &RevelWeak<GameObject>,metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {

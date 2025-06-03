@@ -1,3 +1,4 @@
+use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_unreliable::MetadataNetworkTransformUnreliable;
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
@@ -8,8 +9,8 @@ use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::{
     NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, TBaseNetworkBehaviour,
 };
-use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Time;
+use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use unity_mirror_macro::{
     ancestor_on_deserialize, ancestor_on_serialize, namespace, network_behaviour,
@@ -92,7 +93,10 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {}
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: &RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {

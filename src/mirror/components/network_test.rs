@@ -1,4 +1,5 @@
 #![allow(unused)]
+use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_animator::MetadataNetworkAnimator;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::mirror::network_behaviour::{
@@ -9,7 +10,7 @@ use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::sync_list::SyncList;
 use crate::mirror::NetworkBehaviour;
-use crate::unity_engine::MonoBehaviour;
+use crate::unity_engine::{GameObject, MonoBehaviour};
 use unity_mirror_macro::{
     ancestor_on_deserialize, ancestor_on_serialize, namespace, network_behaviour,
 };
@@ -34,7 +35,10 @@ impl MonoBehaviour for NetworkTest {
 }
 
 impl TNetworkBehaviour for NetworkTest {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: &RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {

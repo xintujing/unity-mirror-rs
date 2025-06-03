@@ -120,7 +120,7 @@ impl NetworkBehaviour {
         _: &mut u8,
         _: &mut u8,
     ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
-        let mut network_behaviour = Self::new(metadata);
+        let mut network_behaviour = Self::new(&weak_game_object, metadata);
 
         {
             let config = metadata.get::<MetadataNetworkBehaviour>();
@@ -154,7 +154,7 @@ impl MonoBehaviour for NetworkBehaviour {
 }
 
 impl TNetworkBehaviour for NetworkBehaviour {
-    fn new(_: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(_: &RevelWeak<GameObject>, _: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
@@ -221,7 +221,10 @@ pub trait TBaseNetworkBehaviour: TNetworkBehaviour {}
 pub trait TNetworkBehaviour:
     MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: &RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized;
     fn on_start_server(&mut self) {}

@@ -3,13 +3,13 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
+use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkBehaviour;
 use crate::mirror::TNetworkBehaviour;
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
 use unity_mirror_macro::{command, namespace, network_behaviour, target_rpc};
-use crate::mirror::transport::TransportChannel;
 
 #[allow(unused)]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
@@ -20,7 +20,6 @@ pub struct NetworkRoomPlayer {
     // #[sync_var]
     index: i32,
 }
-
 
 // #[rpc_impl]
 impl NetworkRoomPlayer {
@@ -61,7 +60,10 @@ impl NetworkRoomPlayer {
 }
 
 impl TNetworkBehaviour for NetworkRoomPlayer {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: &RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {

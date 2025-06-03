@@ -320,7 +320,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                     let mut network_behaviour_chain = #parent::factory(weak_game_object.clone(), metadata, weak_network_behaviour, sync_object_offset, sync_var_offset);
 
-                    let mut this = Self::new(metadata);
+                    let mut this = Self::new(&weak_game_object, metadata);
 
                     // 同步偏移
                     {

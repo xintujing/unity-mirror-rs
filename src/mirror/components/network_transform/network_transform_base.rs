@@ -6,8 +6,8 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
 use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::mirror::NetworkBehaviour;
-use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::Transform;
+use crate::unity_engine::{GameObject, MonoBehaviour};
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
 use unity_mirror_macro::{namespace, network_behaviour};
@@ -77,7 +77,10 @@ impl MonoBehaviour for NetworkTransformBase {
 impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
 impl TNetworkBehaviour for NetworkTransformBase {
-    fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: &RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {
