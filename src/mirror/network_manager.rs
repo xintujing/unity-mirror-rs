@@ -2,7 +2,9 @@ use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::metadata::Metadata;
-use crate::metadata_settings::mirror::metadata_network_manager::{MetadataNetworkManager, MetadataNetworkManagerWrapper};
+use crate::metadata_settings::mirror::metadata_network_manager::{
+    MetadataNetworkManager, MetadataNetworkManagerWrapper,
+};
 use crate::mirror::authenticator::basic_authenticator::BasicAuthenticatorRequestMessage;
 use crate::mirror::messages::add_player_message::AddPlayerMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
@@ -11,9 +13,14 @@ use crate::mirror::messages::scene_message::{SceneMessage, SceneOperation};
 use crate::mirror::network_manager_factory::NetworkManagerFactory;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::transport::{Transport, TransportChannel, TransportError, TransportManager};
-use crate::mirror::{network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection, NetworkServer, TNetworkManager};
+use crate::mirror::{
+    network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection, NetworkServer,
+    TNetworkManager,
+};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
-use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
+use crate::unity_engine::{
+    GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager,
+};
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
@@ -21,7 +28,7 @@ use std::any::Any;
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::ops::Deref;
-use unity_mirror_macro::{virtual_trait, namespace, network_manager, NetworkManagerFactory};
+use unity_mirror_macro::{namespace, network_manager, virtual_trait, NetworkManagerFactory};
 
 static mut NETWORK_MANAGER: Lazy<RevelWeak<Box<dyn network_manager_trait::TNetworkManager>>> =
     Lazy::new(|| RevelWeak::default());
@@ -53,11 +60,10 @@ pub enum PlayerSpawnMethod {
 }
 
 #[derive(Default)]
-pub enum ConnectionQualityMethod
-{
+pub enum ConnectionQualityMethod {
     #[default]
-    Simple = 0,     // simple estimation based on rtt and jitter
-    Pragmatic = 1,   // based on snapshot interpolation adjustment
+    Simple = 0, // simple estimation based on rtt and jitter
+    Pragmatic = 1, // based on snapshot interpolation adjustment
 }
 
 #[namespace(prefix = "Mirror")]
@@ -106,7 +112,6 @@ pub struct NetworkManager {
     transport: Option<RevelArc<Box<dyn Transport>>>,
 
     pub on_client_scene_changed: SelfMutAction<(), ()>,
-
 }
 
 impl NetworkManager {
@@ -189,7 +194,11 @@ impl NetworkManagerInitialize for NetworkManager {
         // self.evaluation_interval = config.evaluation_interval;
         // self.time_interpolation_gui = config.time_interpolation_gui;
 
-        self.spawn_prefabs = config.spawn_prefabs.iter().map(|prefab| prefab.asset_path.clone()).collect::<Vec<_>>();
+        self.spawn_prefabs = config
+            .spawn_prefabs
+            .iter()
+            .map(|prefab| prefab.asset_path.clone())
+            .collect::<Vec<_>>();
         self.max_connections = 100;
         // self.disconnect_inactive_connections = config.disconnect_inactive_connections;
         self.disconnect_inactive_timeout = 60f32;
@@ -222,7 +231,7 @@ impl NetworkManager {
             let online_scene = self.online_scene.clone();
             self.server_change_scene(&online_scene);
         } else {
-            NetworkServer::spawn_objects()
+            NetworkServer::spawn_objects();
         }
     }
     fn setup_server(&mut self) {
@@ -234,7 +243,10 @@ impl NetworkManager {
 
         if let Some(ref mut authenticator) = self.authenticator {
             authenticator.on_start_server();
-            authenticator.set_on_server_authenticated(SelfMutAction::new(self.weak.clone(), Self::on_server_authenticated))
+            authenticator.set_on_server_authenticated(SelfMutAction::new(
+                self.weak.clone(),
+                Self::on_server_authenticated,
+            ))
         }
 
         self.configure_headless_frame_rate();
@@ -277,14 +289,18 @@ impl NetworkManager {
 
         if let Some(game_object) = self.game_object.get() {
             if let Some(component) = game_object.components.get(0).unwrap().last() {
-                if let Some(t_network_manager) = component.downgrade().parallel::<Box<dyn TNetworkManager>>() {
-                    unsafe { *NETWORK_MANAGER = t_network_manager.clone(); }
+                if let Some(t_network_manager) =
+                    component.downgrade().parallel::<Box<dyn TNetworkManager>>()
+                {
+                    unsafe {
+                        *NETWORK_MANAGER = t_network_manager.clone();
+                    }
                 }
             }
         }
 
         if self.transport.is_none() {
-            log::error!( "No Transport on Network Manager...add a transport and assign it.");
+            log::error!("No Transport on Network Manager...add a transport and assign it.");
         }
 
         if let Some(transport) = &self.transport {
@@ -307,7 +323,7 @@ impl NetworkManager {
         }
 
         if NetworkServer.is_loading_scene && scene_name == self.network_scene_name {
-            log::error!("Scene change is already in progress for {}",scene_name);
+            log::error!("Scene change is already in progress for {}", scene_name);
             return;
         }
         if !NetworkServer.active && scene_name != self.offline_scene {
@@ -318,9 +334,9 @@ impl NetworkManager {
         NetworkServer::set_all_clients_not_ready();
         self.set_network_scene_name(scene_name);
 
-        self.virtual_trait.get().map(|virtual_trait| {
-            virtual_trait.on_server_change_scene(scene_name.to_string())
-        });
+        self.virtual_trait
+            .get()
+            .map(|virtual_trait| virtual_trait.on_server_change_scene(scene_name.to_string()));
 
         NetworkServer.is_loading_scene = true;
 
@@ -339,7 +355,11 @@ impl NetworkManager {
         connection.is_authenticated = true;
 
         if self.network_scene_name != "" && self.network_scene_name != self.offline_scene {
-            let mut message = SceneMessage::new(self.network_scene_name.clone(), SceneOperation::Normal, false);
+            let mut message = SceneMessage::new(
+                self.network_scene_name.clone(),
+                SceneOperation::Normal,
+                false,
+            );
             connection.send_message(&mut message, TransportChannel::Reliable);
         }
 
@@ -348,19 +368,27 @@ impl NetworkManager {
         }
     }
 
-
     fn configure_headless_frame_rate(&self) {
         Time::set_frame_rate(self.send_rate as u16)
     }
 
     fn register_server_messages(&self) {
-        NetworkServer.on_connected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
-        NetworkServer.on_disconnected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
+        NetworkServer.on_connected_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
+        NetworkServer.on_disconnected_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
         NetworkServer.on_error_event = SelfMutAction::new(self.weak.clone(), Self::on_server_error);
-        NetworkServer.on_transport_exception_event = SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
+        NetworkServer.on_transport_exception_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
 
-        NetworkServer.register_handler::<AddPlayerMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal), false);
-        NetworkServer.replace_handler::<ReadyMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal), false);
+        NetworkServer.register_handler::<AddPlayerMessage>(
+            SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal),
+            false,
+        );
+        NetworkServer.replace_handler::<ReadyMessage>(
+            SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal),
+            false,
+        );
     }
 
     fn on_server_connect_internal(&mut self, connection: RevelArc<NetworkConnection>) {
@@ -375,12 +403,21 @@ impl NetworkManager {
             virtual_trait.on_server_disconnect(connection)
         }
     }
-    fn on_server_error(&mut self, connection: RevelArc<NetworkConnection>, error: TransportError, reason: String) {
+    fn on_server_error(
+        &mut self,
+        connection: RevelArc<NetworkConnection>,
+        error: TransportError,
+        reason: String,
+    ) {
         if let Some(virtual_trait) = self.virtual_trait.get() {
             virtual_trait.on_server_error(connection, error, reason)
         }
     }
-    fn on_server_transport_exception(&mut self, connection: RevelArc<NetworkConnection>, error: Box<dyn std::error::Error>) {
+    fn on_server_transport_exception(
+        &mut self,
+        connection: RevelArc<NetworkConnection>,
+        error: Box<dyn std::error::Error>,
+    ) {
         if let Some(virtual_trait) = self.virtual_trait.get() {
             virtual_trait.on_server_transport_exception(connection, error)
         }
@@ -437,8 +474,7 @@ impl NetworkManager {
         };
 
         if let Some(start_position) = start_positions.get(index) {
-            self.start_position_index =
-                (self.start_position_index + 1) % start_positions.len();
+            self.start_position_index = (self.start_position_index + 1) % start_positions.len();
             return Some(start_position.clone());
         }
 
@@ -461,7 +497,7 @@ impl NetworkManager {
     fn on_scene_loaded(&mut self, _: String, mode: LoadSceneMode) {
         if let LoadSceneMode::Additive = mode {
             if NetworkServer.active {
-                NetworkServer::spawn_objects()
+                NetworkServer::spawn_objects();
             }
         }
     }

@@ -1,10 +1,9 @@
 use crate::utils::csharp::to_csharp_function_inputs;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
-use proc_macro2::Ident;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Expr, FnArg, LitStr, Pat, PatType, Token, Type, parse_macro_input, parse_quote};
+use syn::{parse_macro_input, parse_quote, Expr, FnArg, LitStr, Pat, PatType, Token, Type};
 
 mod kw {
     syn::custom_keyword!(channel);
