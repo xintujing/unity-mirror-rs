@@ -88,11 +88,17 @@ impl TNetworkBehaviour for NetworkTransformBase {
 
         {
             let config = metadata.get::<MetadataNetworkTransformBase>();
-            // TODO
-            config.target.instance_id;
-            // base.target
+            if let Some(game) = weak_game_object.get() {
+                if let Some(transform) = game.find_transform(&config.target.instance_id) {
+                    base.target = transform;
+                } else {
+                    log::error!(
+                        "Mirror: NetworkTransformBase target Transform with instance_id {} not found",
+                        config.target.instance_id
+                    );
+                }
+            }
         }
-
         base
     }
 }

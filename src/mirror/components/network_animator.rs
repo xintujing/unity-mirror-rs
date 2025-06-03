@@ -105,7 +105,6 @@ pub struct NetworkAnimator {
     last_float_parameters: Vec<f32>,
     last_bool_parameters: Vec<bool>,
     pub(crate) parameters: Vec<AnimatorParameter>,
-
     // animation_hash: Vec<i32>,
     // transition_hash: Vec<i32>,
     // layer_weight: Vec<f32>,
@@ -122,6 +121,10 @@ impl NetworkAnimator {
     //     self.is_owned() && self.client_authority
     // }
 
+    fn next_dirty_bits(&self) -> u64 {
+        0
+    }
+
     fn write_parameters(&mut self, writer: &mut NetworkWriter, force_all: bool) {
         let parameter_count = self.parameters.len() as u8;
         writer.write_blittable::<u8>(parameter_count);
@@ -135,7 +138,10 @@ impl MonoBehaviour for NetworkAnimator {
 }
 
 impl TNetworkBehaviour for NetworkAnimator {
-    fn new(weak_game_object: RevelWeak<GameObject>,metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {
@@ -151,7 +157,9 @@ impl NetworkBehaviourOnSerializer for NetworkAnimator {
 }
 impl NetworkBehaviourOnDeserializer for NetworkAnimator {
     #[parent_on_deserialize]
-    fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
+    fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
+
+    }
 }
 
 impl NetworkAnimator {

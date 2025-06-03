@@ -148,6 +148,10 @@ impl MonoBehaviour for NetworkManager {
             // println!("Mirror: NetworkManager Default virtual_trait");
         }
     }
+
+    fn late_update(&mut self) {
+        self.update_scene()
+    }
 }
 
 impl NetworkManagerInitialize for NetworkManager {
@@ -320,6 +324,8 @@ impl NetworkManager {
 
         NetworkServer.is_loading_scene = true;
 
+        WorldManager::load_scene(scene_name, LoadSceneMode::Single);
+
         if NetworkServer.active {
             let message = SceneMessage::new(scene_name.to_string(), SceneOperation::Normal, false);
             NetworkServer::send_to_all(message)
@@ -462,5 +468,8 @@ impl NetworkManager {
 
     fn apply_configuration(&self) {
         NetworkServer.tick_rate = self.send_rate as u32;
+    }
+
+    fn update_scene(&self){
     }
 }
