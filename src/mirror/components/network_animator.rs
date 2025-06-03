@@ -106,28 +106,14 @@ pub struct NetworkAnimator {
     pub(super) last_float_parameters: Vec<f32>,
     pub(super) last_bool_parameters: Vec<bool>,
     pub(super) parameters: Vec<AnimatorParameter>,
-    // animation_hash: Vec<i32>,
-    // transition_hash: Vec<i32>,
-    // layer_weight: Vec<f32>,
-    // next_send_time: f64,
 }
 
 // sync hook
 impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
 
 // 远程过程调用
-// impl NetworkAnimator {
-//     #[target_rpc(channel = TransportChannel::Unreliable)]
-//     pub fn test_target_rpc(&self) {
-//         println!("NetworkRoomPlayer: test_target_rpc");
-//     }
-//
-//     #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
-//     pub fn test_client_rpc(&self) {
-//         println!("NetworkRoomPlayer: test_target_rpc");
-//     }
-// }
 impl NetworkAnimator {
+    // CmdOnAnimationServerMessage(int stateHash, float normalizedTime, int layerId, float weight, byte[] parameters)
     #[command(NetworkAnimator)]
     fn cmd_on_animation_server_message(
         &self,
@@ -150,6 +136,7 @@ impl NetworkAnimator {
         );
     }
 
+    // RpcOnAnimationClientMessage(int stateHash, float normalizedTime, int layerId, float weight, byte[] parameters)
     #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
     fn rpc_on_animation_client_message(
         &self,
@@ -242,15 +229,6 @@ impl TNetworkBehaviour for NetworkAnimator {
 
 // 序列化、反序列化相关
 impl NetworkAnimator {
-    // pub fn send_messages_allowed(&self) -> bool {
-    //     if self.is_server() {
-    //         if !self.client_authority {
-    //             return false;
-    //         }
-    //     }
-    //     self.is_owned() && self.client_authority
-    // }
-
     fn next_dirty_bits(&mut self) -> u64 {
         let mut dirty_bits = 0u64;
         for (i, par) in self.parameters.iter().enumerate() {
