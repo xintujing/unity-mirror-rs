@@ -108,11 +108,6 @@ pub fn parent_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStrea
     network_behaviour::parent_on_deserialize(attr, item)
 }
 
-// #[proc_macro_derive(MessageRegistry)]
-// pub fn message_registry(input: TokenStream) -> TokenStream {
-//     message::message_registry_handler(input)
-// }
-
 #[proc_macro_derive(Message)]
 pub fn message(input: TokenStream) -> TokenStream {
     message::message_handler(input)
@@ -137,20 +132,11 @@ pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
 pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     virtual_trait::handler(attr, item)
 }
-// #[proc_macro_attribute]
-// pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
-//     virtual_trait::handler(attr, item)
-// }
 
 #[proc_macro_derive(AuthenticatorFactory)]
 pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
     mirror::authenticator_factory::handler(item)
 }
-
-// #[proc_macro_attribute]
-// pub fn rpc_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
-//     mirror::component::rpc_impl::handler(attr, item)
-// }
 
 #[proc_macro_attribute]
 pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {

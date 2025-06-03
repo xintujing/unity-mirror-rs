@@ -3,17 +3,18 @@ use crate::unity_engine::time::Time;
 use crate::unity_engine::world::WorldManager;
 use std::time::Instant;
 
-pub struct GameLooper {
+pub struct PlayerLooper {
     last_frame_time: Instant,
     last_fixed_time: Instant,
 }
 
-impl GameLooper {
-    pub fn new() -> Self {
-        GameLooper {
+impl PlayerLooper {
+    pub fn run() {
+        PlayerLooper {
             last_frame_time: Instant::now(),
             last_fixed_time: Instant::now(),
         }
+        ._run()
     }
 
     pub fn fixed_update(&mut self) {
@@ -43,7 +44,7 @@ impl GameLooper {
         }
     }
 
-    pub fn run(&mut self) {
+    fn _run(&mut self) {
         Time::start_instant();
         loop {
             let tmp_instant = Instant::now();

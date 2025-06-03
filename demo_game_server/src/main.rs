@@ -1,5 +1,5 @@
 use unity_mirror_rs::mirror::NetworkManager;
-use unity_mirror_rs::unity_engine::GameLooper;
+use unity_mirror_rs::unity_engine::PlayerLooper;
 
 #[ctor::ctor]
 fn init_logger() {
@@ -33,35 +33,6 @@ fn init_logger() {
 }
 
 fn main() {
-    // let manager = NetworkRoomManager::default();
-    // let arc = RevelArc::new(Box::new(manager));
-    // let weak = arc.downgrade();
-    // let action = Action::new(weak, NetworkRoomManager::qwer);
-    //
-    // println!("{}", action.call((5,)));
-    //
-    // return;
-
     NetworkManager::init("Assets/Prefabs/NetworkRoomManager.prefab");
-
-    // NetworkServer.aaa();
-
-    // NetworkManager::singleton::<NetworkRoomManager>(|network_room_manager| {
-    //     network_room_manager.awake()
-    // });
-
-    // WorldManager::load_scene("Assets/Scenes/RoomScene.unity", LoadSceneMode::Single);
-    //
-    // let root_game_objects = WorldManager::root_game_objects();
-    //
-    // for root_game_object in root_game_objects.iter() {
-    //     let game_object = root_game_object.get().unwrap();
-    //     let weak_game_object = game_object.try_get_component::<NetworkBehaviour>().unwrap();
-    //     let weak_network_transform_unreliable =
-    //         weak_game_object.downcast::<NetworkTransformUnreliable>();
-    //     let x = weak_network_transform_unreliable.unwrap();
-    //     println!("qqqqqq {}", x.get().unwrap().buffer_reset_multiplier);
-    // }
-    // NetworkServer::listen()
-    GameLooper::new().run();
+    PlayerLooper::run();
 }

@@ -17,8 +17,8 @@ mod transform;
 pub use transform::*;
 
 mod components;
-mod game_looper;
-pub use game_looper::GameLooper;
+mod player_looper;
+pub use player_looper::PlayerLooper;
 
 #[allow(static_mut_refs)]
 mod time;
