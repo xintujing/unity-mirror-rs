@@ -102,10 +102,10 @@ pub struct NetworkAnimator {
     animator_speed: f32,
     previous_speed: f32,
 
-    pub(super) last_int_parameters: Vec<i32>,
-    pub(super) last_float_parameters: Vec<f32>,
-    pub(super) last_bool_parameters: Vec<bool>,
-    pub(super) parameters: Vec<AnimatorParameter>,
+    last_int_parameters: Vec<i32>,
+    last_float_parameters: Vec<f32>,
+    last_bool_parameters: Vec<bool>,
+    parameters: Vec<AnimatorParameter>,
 }
 
 // sync hook
