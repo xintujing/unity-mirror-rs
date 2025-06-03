@@ -470,6 +470,19 @@ impl NetworkManager {
         NetworkServer.tick_rate = self.send_rate as u32;
     }
 
-    fn update_scene(&self){
+    fn update_scene(&self) {
+        if !WorldManager.loading() {
+            self.finish_load_scene()
+        }
+    }
+
+    fn finish_load_scene(&self) {
+        NetworkServer.is_loading_scene = false;
+
+        NetworkServer::spawn_objects();
+        if let Some(virtual_trait) = self.virtual_trait.get() {
+            let network_scene_name = self.network_scene_name.clone();
+            virtual_trait.on_server_scene_changed(network_scene_name)
+        }
     }
 }
