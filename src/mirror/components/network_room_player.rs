@@ -27,6 +27,7 @@ impl NetworkRoomPlayer {
     #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         self.set_ready_to_begin(ready_state);
+        // TODO: Implement the logic to handle the change in ready state
     }
 }
 
