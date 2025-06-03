@@ -13,7 +13,7 @@ use crate::unity_engine::Time;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use unity_mirror_macro::{
-    ancestor_on_deserialize, ancestor_on_serialize, namespace, network_behaviour,
+    namespace, network_behaviour,
 };
 
 #[namespace(prefix = "Mirror")]
@@ -105,7 +105,6 @@ impl TNetworkBehaviour for NetworkTransformUnreliable {
 }
 
 impl NetworkBehaviourOnSerializer for NetworkTransformUnreliable {
-    #[ancestor_on_serialize]
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
         // TODO
         if initial_state {
@@ -122,7 +121,6 @@ impl NetworkBehaviourOnSerializer for NetworkTransformUnreliable {
     }
 }
 impl NetworkBehaviourOnDeserializer for NetworkTransformUnreliable {
-    #[ancestor_on_deserialize]
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
         // TODO
         if initial_state {
