@@ -4,18 +4,18 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
     MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
     MetadataSyncMode,
 };
+use crate::mirror::messages::message::MessageSerializer;
+use crate::mirror::messages::rpc_message::RpcMessage;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::network_writer_pool::NetworkWriterPool;
+use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkIdentity;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
 use std::any::TypeId;
 use unity_mirror_macro::namespace;
-use crate::mirror::messages::message::MessageSerializer;
-use crate::mirror::messages::rpc_message::RpcMessage;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_writer_pool::NetworkWriterPool;
-use crate::mirror::transport::TransportChannel;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub enum SyncDirection {
@@ -66,6 +66,43 @@ pub struct NetworkBehaviour {
 
     pub sync_var_dirty_bits: u64,
     pub sync_object_dirty_bits: u64,
+}
+
+impl NetworkBehaviour {
+    pub fn is_server(&self) -> bool {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.is_server;
+        }
+        false
+    }
+
+    pub fn is_client(&self) -> bool {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.is_client;
+        }
+        false
+    }
+
+    pub fn is_server_only(&self) -> bool {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.is_server_only();
+        }
+        false
+    }
+
+    pub fn is_client_only(&self) -> bool {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.is_client_only();
+        }
+        false
+    }
+
+    pub fn is_owned(&self) -> bool {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.is_owned;
+        }
+        false
+    }
 }
 
 #[ctor::ctor]
@@ -182,7 +219,7 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
 
 pub trait TBaseNetworkBehaviour: TNetworkBehaviour {}
 pub trait TNetworkBehaviour:
-MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
+    MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
     fn new(metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
@@ -217,7 +254,6 @@ pub trait NetworkBehaviourDeserializer: NetworkBehaviourOnDeserializer {
     fn deserialize_sync_vars(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
 }
 
-
 impl NetworkBehaviour {
     pub fn send_rpc_internal(
         &self,
@@ -243,7 +279,9 @@ impl NetworkBehaviour {
                 MessageSerializer::serialize(&mut message, writer);
 
                 for observer in network_identity.observers.iter() {
-                    if let (Some(observer), Some(connection)) = (observer.get(), network_identity.connection().get()) {
+                    if let (Some(observer), Some(connection)) =
+                        (observer.get(), network_identity.connection().get())
+                    {
                         let is_owner = observer.id == connection.id;
 
                         if (!is_owner || include_owner) && observer.is_ready {
@@ -282,10 +320,8 @@ impl NetworkBehaviour {
             return;
         }
 
-
         message.component_index = self.component_index;
         message.net_id = self.net_id;
-
 
         let mut connection = target_rpc_conn.unwrap();
 
@@ -297,7 +333,6 @@ impl NetworkBehaviour {
         }
     }
 }
-
 
 impl NetworkBehaviour {
     pub fn connection_to_client(&self) -> Option<RevelWeak<NetworkConnection>> {

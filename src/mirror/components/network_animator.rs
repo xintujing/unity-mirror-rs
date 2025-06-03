@@ -10,6 +10,7 @@ use crate::mirror::{
     NetworkBehaviour, NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer,
 };
 use crate::unity_engine::MonoBehaviour;
+use std::ops::{Deref, DerefMut};
 use unity_mirror_macro::{
     client_rpc, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize,
     target_rpc,
@@ -102,12 +103,28 @@ pub struct NetworkAnimator {
     last_int_parameters: Vec<i32>,
     last_float_parameters: Vec<f32>,
     last_bool_parameters: Vec<bool>,
-    parameters: Vec<AnimatorParameter>,
+    pub(crate) parameters: Vec<AnimatorParameter>,
 
     animation_hash: Vec<i32>,
     transition_hash: Vec<i32>,
     layer_weight: Vec<f32>,
     next_send_time: f64,
+}
+
+impl NetworkAnimator {
+    pub fn send_messages_allowed(&self) -> bool {
+        if self.is_server() {
+            if !self.client_authority {
+                return false;
+            }
+        }
+        self.is_owned() && self.client_authority
+    }
+
+    fn write_parameters(&mut self, writer: &mut NetworkWriter, force_all: bool) {
+        let parameter_count = self.parameters.len() as u8;
+        writer.write_blittable::<u8>(parameter_count);
+    }
 }
 
 impl MonoBehaviour for NetworkAnimator {
