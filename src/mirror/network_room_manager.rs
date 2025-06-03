@@ -1,7 +1,7 @@
 use crate::commons::action::SelfMutAction;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkManager};
-use crate::mirror::NetworkManagerCallbacks;
+use crate::mirror::NetworkManagerVirtualTrait;
 use crate::unity_engine::MonoBehaviour;
 use std::any::Any;
 use std::collections::HashSet;
@@ -18,10 +18,8 @@ pub struct PendingPlayer {
     pub room_player: RevelWeak<NetworkIdentity>,
 }
 
-#[allow(unused)]
-#[network_manager(parent(NetworkManager, callbacks = NetworkManagerCallbacks))]
 #[namespace(prefix = "Mirror")]
-#[derive(NetworkManagerFactory)]
+#[network_manager(parent(NetworkManager, callbacks = NetworkManagerVirtualTrait))]
 pub struct NetworkRoomManager {
     // 最少可以自动启动游戏的玩家数量
     pub min_players: i32,
@@ -38,18 +36,9 @@ pub struct NetworkRoomManager {
     all_players_ready: bool,
     client_index: usize,
 }
-//
-// impl crate::commons::action::Arguments for &NetworkRoomManager {}
-// impl FromArguments for NetworkRoomManager {
-//     fn to_args(&self) -> Self {
-//         self
-//     }
-// }
 
-impl NetworkManagerCallbacks for NetworkRoomManager {
-    fn on_start_server(&mut self) {
-        // self.qwer()
-    }
+impl NetworkManagerVirtualTrait for NetworkRoomManager {
+    fn on_start_server(&mut self) {}
 
     fn on_stop_server(&mut self) {}
 
@@ -68,21 +57,9 @@ impl NetworkManagerCallbacks for NetworkRoomManager {
 
 impl MonoBehaviour for NetworkRoomManager {
     fn awake(&mut self) {
-        self.on_client_scene_changed =
-            SelfMutAction::new(self.weak.clone(), Self::on_client_scene_changed);
-
         if let Some(parent) = self.parent.get() {
             parent.awake();
-            // if let Some(game_object) = self.game_object.get() {
-            //     let option = game_object.find_component(self).unwrap();
-            //     let instance = unsafe {
-            //         &*(&option as *const dyn Any
-            //             as *const RevelWeak<Box<dyn NetworkManagerCallbacks>>)
-            //     };
-            //     parent.set_callbacks(instance.clone());
-            // }
         }
-        // println!("NetworkRoomManager awake");
     }
 
     fn start(&mut self) {
@@ -94,7 +71,6 @@ impl MonoBehaviour for NetworkRoomManager {
         if let Some(parent) = self.parent.get() {
             parent.update();
         }
-        // println!("Mirror: NetworkRoomManager update");
     }
 }
 
@@ -107,16 +83,13 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
         self.room_scene = config.room_scene.clone();
         self.gameplay_scene = config.gameplay_scene.clone();
         self.client_index = config.client_index;
+
+        self.on_client_scene_changed =
+            SelfMutAction::new(self.weak.clone(), Self::on_client_scene_changed);
     }
 }
 
 impl NetworkRoomManager {
-    pub fn qwer(&mut self, i: i32) -> i32 {
-        // self.qwe();
-        println!("NetworkRoomManager qwer {}", i);
-        77
-    }
-
     fn on_client_scene_changed(&mut self) {
         // let name = std::any::type_name::<Self>();
         // println!("{}", name.split("::").last().unwrap_or_default());

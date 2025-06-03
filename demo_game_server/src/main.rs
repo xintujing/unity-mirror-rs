@@ -42,8 +42,7 @@ fn main() {
     //
     // return;
 
-    NetworkManager::set_network_manager_prefab_path("Assets/Prefabs/NetworkRoomManager.prefab");
-    NetworkManager::init();
+    NetworkManager::init("Assets/Prefabs/NetworkRoomManager.prefab");
 
     // NetworkServer.aaa();
 

@@ -13,7 +13,7 @@ mod network_manager_factory;
 
 pub(crate) mod utils;
 
-mod callbacks;
+mod virtual_trait;
 
 mod mirror;
 
@@ -132,9 +132,13 @@ pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn callbacks(attr: TokenStream, item: TokenStream) -> TokenStream {
-    callbacks::handler(attr, item)
+pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+    virtual_trait::handler(attr, item)
 }
+// #[proc_macro_attribute]
+// pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+//     virtual_trait::handler(attr, item)
+// }
 
 #[proc_macro_derive(AuthenticatorFactory)]
 pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
