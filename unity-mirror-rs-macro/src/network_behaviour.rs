@@ -385,6 +385,25 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<#struct_ident>(#struct_ident::factory);
             }
 
+            impl #struct_ident {
+                pub fn parent<T: 'static>(&self) -> crate::commons::revel_weak::RevelWeak<Box<T>> {
+                    use std::any::Any;
+                    match self.parent.type_id() == std::any::TypeId::of::<crate::commons::revel_weak::RevelWeak<Box<T>>>() {
+                        true => {
+                            if let Some(value) = self.parent.downcast::<T>() {
+                                return value.clone();
+                            }
+                        }
+                        false => {
+                            if let Some(value) = self.parent.get() {
+                                return value.parent::<T>();
+                            }
+                        }
+                    }
+                    crate::commons::revel_weak::RevelWeak::default()
+                }
+            }
+
             // impl crate::mirror::network_behaviour::NetworkBehaviourOnSerializer for #struct_ident {
             #(#on_serialize_ts)*
 

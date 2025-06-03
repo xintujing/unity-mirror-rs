@@ -19,8 +19,8 @@ pub(crate) fn to_csharp_function_inputs(
                 let param_type = format_ident!("{}", param_type_name);
                 params.push(quote! {
                     {
-                        use crate::mirror::namespace::Namespace;
-                        #param_type::get_full_path()
+                        use crate::commons::object::Object;
+                        #param_type::get_full_name()
                     }
                 });
             }

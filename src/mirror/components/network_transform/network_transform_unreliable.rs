@@ -3,16 +3,19 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_unreliable::MetadataNetworkTransformUnreliable;
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
+use crate::mirror::components::network_transform::transform_sync_data::SyncData;
 use crate::mirror::network_behaviour::TNetworkBehaviour;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::transport::TransportChannel;
 use crate::mirror::{
-    NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, TBaseNetworkBehaviour,
+    NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, SyncDirection,
+    TBaseNetworkBehaviour,
 };
 use crate::unity_engine::Time;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
-use unity_mirror_macro::{namespace, network_behaviour};
+use unity_mirror_macro::{client_rpc, command, namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(
@@ -32,6 +35,24 @@ pub struct NetworkTransformUnreliable {
     pub cached_snapshot_comparison: bool,
     pub cached_changed_comparison: u8,
     pub has_sent_unchanged_position: bool,
+}
+
+impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {}
+
+impl NetworkTransformUnreliable {
+    // CmdClientToServerSync(SyncData syncData)
+    #[command(NetworkTransformUnreliable, authority)]
+    fn cmd_client_to_server_sync(&self, sync_data: SyncData) {
+        if self.sync_direction != SyncDirection::ClientToServer {
+            return;
+        }
+
+        self.rpc_server_to_client_sync(sync_data);
+    }
+
+    // RpcServerToClientSync(SyncData syncData)
+    #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
+    fn rpc_server_to_client_sync(&self, sync_data: SyncData) {}
 }
 
 impl MonoBehaviour for NetworkTransformUnreliable {
@@ -87,8 +108,6 @@ impl MonoBehaviour for NetworkTransformUnreliable {
         // );
     }
 }
-
-impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {}
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
     fn new(

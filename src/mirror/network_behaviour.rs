@@ -14,7 +14,7 @@ use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkIdentity;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
-use std::any::TypeId;
+use std::any::{Any, TypeId};
 use unity_mirror_macro::namespace;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -52,9 +52,9 @@ impl Into<SyncMode> for MetadataSyncMode {
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkBehaviour {
-    sync_direction: SyncDirection,
-    sync_mode: SyncMode,
-    sync_interval: f32,
+    pub sync_direction: SyncDirection,
+    pub sync_mode: SyncMode,
+    pub sync_interval: f32,
     last_sync_time: f64,
 
     net_id: u32,
@@ -145,19 +145,102 @@ impl NetworkBehaviour {
 
         vec![(arc_box_network_behaviour, TypeId::of::<NetworkBehaviour>())]
     }
-}
 
-impl MonoBehaviour for NetworkBehaviour {}
-
-impl TNetworkBehaviour for NetworkBehaviour {
-    fn new(_: RevelWeak<GameObject>, _: &MetadataNetworkBehaviourWrapper) -> Self
-    where
-        Self: Sized,
-    {
-        Self::default()
+    pub fn parent<T: 'static>(&self) -> RevelWeak<Box<T>> {
+        RevelWeak::default()
     }
 }
 
+impl NetworkBehaviour {
+    pub fn send_rpc_internal(
+        &self,
+        _function_full_name: &str,
+        function_hash_code: u16,
+        writer: &mut NetworkWriter,
+        channel_id: TransportChannel,
+        include_owner: bool,
+    ) {
+        if let Some(network_identity) = self.network_identity.get() {
+            if network_identity.observers.is_empty() {
+                return;
+            }
+
+            let mut message = RpcMessage::new(
+                self.net_id,
+                self.component_index,
+                function_hash_code,
+                writer.to_vec(),
+            );
+
+            NetworkWriterPool::get_return(|writer| {
+                MessageSerializer::serialize(&mut message, writer);
+
+                for observer in network_identity.observers.iter() {
+                    if let (Some(observer), Some(connection)) =
+                        (observer.get(), network_identity.connection().get())
+                    {
+                        let is_owner = observer.id == connection.id;
+
+                        if (!is_owner || include_owner) && observer.is_ready {
+                            observer.send_message(&mut message.clone(), channel_id.into());
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    pub fn send_target_rpc_internal(
+        &self,
+        mut target_rpc_conn: Option<RevelArc<NetworkConnection>>,
+        function_full_name: &str,
+        function_hash_code: u16,
+        writer: &mut NetworkWriter,
+        channel_id: TransportChannel,
+    ) {
+        // rpc消息
+        let mut message = RpcMessage::new(0, 0, function_hash_code, writer.to_vec());
+        // 找出需要的数据
+
+        if target_rpc_conn.is_none() {
+            if let Some(connection) = self.connection_to_client().upgrade() {
+                target_rpc_conn = Some(connection);
+            }
+        }
+
+        if target_rpc_conn.is_none() {
+            log::error!(
+                "TargetRPC '{}' can't be sent because it was given a null connection. Make sure {} is owned by a connection, or if you pass a connection manually then make sure it's not null. For example, TargetRpcs can be called on Player/Pet which are owned by a connection. However, they can not be called on Monsters/Npcs which don't have an owner connection.",
+                self.game_object.get().unwrap().name,
+                function_full_name,
+            );
+            return;
+        }
+
+        message.component_index = self.component_index;
+        message.net_id = self.net_id;
+
+        let mut connection = target_rpc_conn.unwrap();
+
+        if connection.is_ready {
+            NetworkWriterPool::get_return(|writer| {
+                MessageSerializer::serialize(&mut message, writer);
+                connection.send_message(&mut message, channel_id);
+            });
+        }
+    }
+}
+
+impl NetworkBehaviour {
+    pub fn connection_to_client(&self) -> RevelWeak<NetworkConnection> {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.connection();
+        }
+        RevelWeak::default()
+    }
+}
+
+impl MonoBehaviour for NetworkBehaviour {}
 impl NetworkBehaviourBase for NetworkBehaviour {
     fn is_dirty(&self) -> bool {
         (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64
@@ -174,6 +257,15 @@ impl NetworkBehaviourBase for NetworkBehaviour {
     fn clear_all_dirty_bits(&mut self) {
         self.sync_var_dirty_bits = 0;
         self.sync_object_dirty_bits = 0;
+    }
+}
+
+impl TNetworkBehaviour for NetworkBehaviour {
+    fn new(_: RevelWeak<GameObject>, _: &MetadataNetworkBehaviourWrapper) -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
     }
 }
 
@@ -251,93 +343,4 @@ pub trait NetworkBehaviourDeserializer: NetworkBehaviourOnDeserializer {
     fn deserialize_objects_all(&mut self, reader: &mut NetworkReader) {}
     fn deserialize_sync_object_delta(&mut self, reader: &mut NetworkReader) {}
     fn deserialize_sync_vars(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
-}
-
-impl NetworkBehaviour {
-    pub fn send_rpc_internal(
-        &self,
-        _function_full_name: &str,
-        function_hash_code: u16,
-        writer: &mut NetworkWriter,
-        channel_id: TransportChannel,
-        include_owner: bool,
-    ) {
-        if let Some(network_identity) = self.network_identity.get() {
-            if network_identity.observers.is_empty() {
-                return;
-            }
-
-            let mut message = RpcMessage::new(
-                self.net_id,
-                self.component_index,
-                function_hash_code,
-                writer.to_vec(),
-            );
-
-            NetworkWriterPool::get_return(|writer| {
-                MessageSerializer::serialize(&mut message, writer);
-
-                for observer in network_identity.observers.iter() {
-                    if let (Some(observer), Some(connection)) =
-                        (observer.get(), network_identity.connection().get())
-                    {
-                        let is_owner = observer.id == connection.id;
-
-                        if (!is_owner || include_owner) && observer.is_ready {
-                            observer.send_message(&mut message.clone(), channel_id.into());
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    pub fn send_target_rpc_internal(
-        &self,
-        mut target_rpc_conn: Option<RevelArc<NetworkConnection>>,
-        function_full_name: &str,
-        function_hash_code: u16,
-        writer: &mut NetworkWriter,
-        channel_id: TransportChannel,
-    ) {
-        // rpc消息
-        let mut message = RpcMessage::new(0, 0, function_hash_code, writer.to_vec());
-        // 找出需要的数据
-
-        if target_rpc_conn.is_none() {
-            if let Some(weak_connection) = self.connection_to_client() {
-                target_rpc_conn = weak_connection.upgrade();
-            }
-        }
-
-        if target_rpc_conn.is_none() {
-            log::error!(
-                "TargetRPC '{}' can't be sent because it was given a null connection. Make sure {} is owned by a connection, or if you pass a connection manually then make sure it's not null. For example, TargetRpcs can be called on Player/Pet which are owned by a connection. However, they can not be called on Monsters/Npcs which don't have an owner connection.",
-                self.game_object.get().unwrap().name,
-                function_full_name,
-            );
-            return;
-        }
-
-        message.component_index = self.component_index;
-        message.net_id = self.net_id;
-
-        let mut connection = target_rpc_conn.unwrap();
-
-        if connection.is_ready {
-            NetworkWriterPool::get_return(|writer| {
-                MessageSerializer::serialize(&mut message, writer);
-                connection.send_message(&mut message, channel_id);
-            });
-        }
-    }
-}
-
-impl NetworkBehaviour {
-    pub fn connection_to_client(&self) -> Option<RevelWeak<NetworkConnection>> {
-        if let Some(network_identity) = self.network_identity.get() {
-            return Some(network_identity.connection());
-        }
-        None
-    }
 }

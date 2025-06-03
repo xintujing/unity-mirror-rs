@@ -114,7 +114,7 @@ impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
 // 远程过程调用
 impl NetworkAnimator {
     // CmdOnAnimationServerMessage(int stateHash, float normalizedTime, int layerId, float weight, byte[] parameters)
-    #[command(NetworkAnimator)]
+    #[command(NetworkAnimator, authority)]
     fn cmd_on_animation_server_message(
         &self,
         state_hash: i32,

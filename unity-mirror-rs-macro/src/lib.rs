@@ -57,6 +57,8 @@ macro_rules! attribute_args {
     };
 }
 
+//  #[sync_variable]
+//  #[sync_object]
 #[proc_macro_attribute]
 pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
     network_behaviour::handler(attr, item)
@@ -138,11 +140,13 @@ pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
     mirror::authenticator_factory::handler(item)
 }
 
+// #[command(NetworkAnimator, authority)]
 #[proc_macro_attribute]
 pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {
     mirror::component::command::handler(attr, item)
 }
 
+// #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
 #[proc_macro_attribute]
 pub fn client_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
     mirror::component::client_rpc::handler(attr, item)
