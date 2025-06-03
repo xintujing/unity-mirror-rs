@@ -62,7 +62,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             if let Pat::Ident(a) = pat.as_ref() {
                 let arg_name = &a.ident;
                 arg_block.push(quote! {
-                        crate::mirror::network_writer::MethodParameterSerializer::serialize(#arg_name, &mut writer);
+                        crate::mirror::network_writer::DataTypeSerializer::serialize(&#arg_name, &mut writer);
                     });
             }
         }

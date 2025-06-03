@@ -309,3 +309,12 @@ impl<T: DataTypeSerializer> DataTypeSerializer for Vec<T> {
         }
     }
 }
+
+impl<T: DataTypeSerializer> DataTypeSerializer for &[T] {
+    fn serialize(&self, writer: &mut NetworkWriter) {
+        writer.write_blittable_compress::<u64>(self.len() as u64 + 1);
+        for item in *self {
+            item.serialize(writer);
+        }
+    }
+}

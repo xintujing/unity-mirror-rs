@@ -101,6 +101,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             #[ctor::ctor]
             fn __static_init() {
+                use crate::commons::object::Object;
                 let fn_full_name= format!(
                     "System.Void {}::{}({})",
                     #struct_path::get_full_name(),

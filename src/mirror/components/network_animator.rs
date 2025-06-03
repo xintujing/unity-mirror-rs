@@ -14,7 +14,7 @@ use crate::mirror::{
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use std::ops::{Deref, DerefMut};
 use unity_mirror_macro::{
-    client_rpc, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize,
+    client_rpc, command, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize,
     target_rpc,
 };
 
@@ -112,6 +112,135 @@ pub struct NetworkAnimator {
     // next_send_time: f64,
 }
 
+// sync hook
+impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
+
+// 远程过程调用
+// impl NetworkAnimator {
+//     #[target_rpc(channel = TransportChannel::Unreliable)]
+//     pub fn test_target_rpc(&self) {
+//         println!("NetworkRoomPlayer: test_target_rpc");
+//     }
+//
+//     #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
+//     pub fn test_client_rpc(&self) {
+//         println!("NetworkRoomPlayer: test_target_rpc");
+//     }
+// }
+impl NetworkAnimator {
+    #[command(NetworkAnimator)]
+    fn cmd_on_animation_server_message(
+        &self,
+        state_hash: i32,
+        normalized_time: f32,
+        layer_id: i32,
+        weight: f32,
+        parameters: &[u8],
+    ) {
+        if !self.client_authority {
+            return;
+        }
+
+        self.rpc_on_animation_client_message(
+            state_hash,
+            normalized_time,
+            layer_id,
+            weight,
+            parameters,
+        );
+    }
+
+    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    fn rpc_on_animation_client_message(
+        &self,
+        state_hash: i32,
+        normalized_time: f32,
+        layer_id: i32,
+        weight: f32,
+        parameters: &[u8],
+    ) {
+        let _ = state_hash;
+        let _ = normalized_time;
+        let _ = layer_id;
+        let _ = weight;
+        let _ = parameters;
+    }
+
+    // CmdOnAnimationParametersServerMessage(byte[] parameters)
+    #[command(NetworkAnimator)]
+    fn cmd_on_animation_parameters_server_message(&self, parameters: &[u8]) {
+        if !self.client_authority {
+            return;
+        }
+
+        self.rpc_on_animation_parameters_client_message(parameters);
+    }
+
+    // RpcOnAnimationParametersClientMessage(byte[] parameters)
+    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    fn rpc_on_animation_parameters_client_message(&self, parameters: &[u8]) {
+        let _ = parameters;
+    }
+
+    // CmdOnAnimationTriggerServerMessage(int hash)
+    #[command(NetworkAnimator)]
+    fn cmd_on_animation_trigger_server_message(&self, hash: i32) {
+        if !self.client_authority {
+            return;
+        }
+
+        self.rpc_on_animation_trigger_client_message(hash);
+    }
+
+    // RpcOnAnimationTriggerClientMessage(int hash)
+    #[client_rpc(channel = TransportChannel::Reliable)]
+    fn rpc_on_animation_trigger_client_message(&self, hash: i32) {
+        let _ = hash;
+    }
+
+    // CmdOnAnimationResetTriggerServerMessage(int hash)
+    #[command(NetworkAnimator)]
+    fn cmd_on_animation_reset_trigger_server_message(&self, hash: i32) {
+        if !self.client_authority {
+            return;
+        }
+
+        self.rpc_on_animation_reset_trigger_client_message(hash);
+    }
+
+    // RpcOnAnimationResetTriggerClientMessage(int hash)
+    #[client_rpc(channel = TransportChannel::Reliable)]
+    fn rpc_on_animation_reset_trigger_client_message(&self, hash: i32) {
+        let _ = hash;
+    }
+
+    // CmdSetAnimatorSpeed(float newSpeed)
+    #[command(NetworkAnimator)]
+    fn cmd_set_animator_speed(&mut self, new_speed: f32) {
+        self.set_animator_speed(new_speed);
+    }
+}
+
+// MonoBehaviour
+impl MonoBehaviour for NetworkAnimator {
+    fn awake(&mut self) {}
+
+    fn update(&mut self) {}
+}
+// TNetworkBehaviour
+impl TNetworkBehaviour for NetworkAnimator {
+    fn new(
+        weak_game_object: RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
+    where
+        Self: Sized,
+    {
+        Self::default()
+    }
+}
+
+// 序列化、反序列化相关
 impl NetworkAnimator {
     // pub fn send_messages_allowed(&self) -> bool {
     //     if self.is_server() {
@@ -220,27 +349,6 @@ impl NetworkAnimator {
         }
     }
 }
-
-impl MonoBehaviour for NetworkAnimator {
-    fn awake(&mut self) {}
-
-    fn update(&mut self) {}
-}
-
-impl TNetworkBehaviour for NetworkAnimator {
-    fn new(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Self
-    where
-        Self: Sized,
-    {
-        Self::default()
-    }
-}
-
-impl NetworkAnimatorOnChangeCallback for NetworkAnimator {}
-
 impl NetworkBehaviourOnSerializer for NetworkAnimator {
     #[parent_on_serialize]
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
@@ -272,17 +380,5 @@ impl NetworkBehaviourOnDeserializer for NetworkAnimator {
         }
 
         self.read_parameters(reader);
-    }
-}
-
-impl NetworkAnimator {
-    #[target_rpc(channel = TransportChannel::Unreliable)]
-    pub fn test_target_rpc(&self) {
-        println!("NetworkRoomPlayer: test_target_rpc");
-    }
-
-    #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
-    pub fn test_client_rpc(&self) {
-        println!("NetworkRoomPlayer: test_target_rpc");
     }
 }
