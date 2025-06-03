@@ -1,17 +1,17 @@
 use crate::commons::action::SelfMutAction;
+use crate::commons::revel_arc::RevelArc;
+use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkManager};
+use crate::metadata_settings::mirror::metadata_network_root_manager::MetadataNetworkRootManager;
+use crate::mirror::components::network_room_player::NetworkRoomPlayer;
+use crate::mirror::transport::TransportError;
 use crate::mirror::NetworkManagerVirtualTrait;
+use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkManager};
 use crate::unity_engine::MonoBehaviour;
 use std::any::Any;
 use std::collections::HashSet;
 use std::error::Error;
 use unity_mirror_macro::{namespace, network_manager, NetworkManagerFactory};
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::metadata_network_root_manager::MetadataNetworkRootManager;
-use crate::mirror::components::network_room_player::NetworkRoomPlayer;
-use crate::mirror::transport::TransportError;
 
 pub struct PendingPlayer {
     pub connection: RevelWeak<NetworkConnection>,
@@ -50,9 +50,20 @@ impl NetworkManagerVirtualTrait for NetworkRoomManager {
 
     fn on_server_disconnect(&self, connection: RevelArc<NetworkConnection>) {}
 
-    fn on_server_error(&self, connection: RevelArc<NetworkConnection>, error: TransportError, reason: String) {}
+    fn on_server_error(
+        &self,
+        connection: RevelArc<NetworkConnection>,
+        error: TransportError,
+        reason: String,
+    ) {
+    }
 
-    fn on_server_transport_exception(&self, connection: RevelArc<NetworkConnection>, error: Box<dyn Error>) {}
+    fn on_server_transport_exception(
+        &self,
+        connection: RevelArc<NetworkConnection>,
+        error: Box<dyn Error>,
+    ) {
+    }
 }
 
 impl MonoBehaviour for NetworkRoomManager {

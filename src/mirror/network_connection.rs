@@ -61,8 +61,8 @@ impl NetworkConnection {
             delivery_time_ema: ExponentialMovingAverage::new(
                 NetworkServer.send_rate() as u32
                     * NetworkServer
-                    .client_snapshot_settings
-                    .delivery_time_ema_duration as u32,
+                        .client_snapshot_settings
+                        .delivery_time_ema_duration as u32,
             ),
             remote_timeline: 0.0,
             remote_timescale: 0.0,

@@ -22,7 +22,7 @@ pub trait Message: Object + MessageSerializer + MessageDeserializer {}
 // pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
 
 type MessageHandlerWrappedFuncType =
-Box<dyn FnMut(RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
+    Box<dyn FnMut(RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
 
 pub struct MessageHandler {
     #[allow(unused)]
@@ -33,7 +33,7 @@ pub struct MessageHandler {
 
 impl MessageHandler {
     pub fn new<M: Message + 'static>(
-        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel,), ()>,
+        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) -> Self {
         // 将泛型函数包装为动态分发函数

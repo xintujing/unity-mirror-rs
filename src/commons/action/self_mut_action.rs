@@ -52,7 +52,7 @@ impl<Args, Return> Default for SelfMutAction<Args, Return> {
 impl<Args, Return> SelfMutAction<Args, Return> {
     pub fn new<F, This: 'static>(s: RevelWeak<Box<This>>, handler: F) -> Self
     where
-        F: SelfMutHandler<This, Args, Output=Return>,
+        F: SelfMutHandler<This, Args, Output = Return>,
     {
         Self {
             f: Box::new(move |args| handler.call(&mut **(s.upgrade().unwrap()), args)),

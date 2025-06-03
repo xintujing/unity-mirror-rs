@@ -6,10 +6,10 @@ use kcp2k_rust::kcp2k_callback::{Callback, CallbackType};
 use kcp2k_rust::kcp2k_channel::Kcp2KChannel;
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use kcp2k_rust::kcp2k_connection::Kcp2KConnection;
+use kcp2k_rust::kcp2k_peer::Kcp2KPeer;
 use std::net::ToSocketAddrs;
 use std::process::exit;
 use std::str::FromStr;
-use kcp2k_rust::kcp2k_peer::Kcp2KPeer;
 use unity_mirror_macro::CallbackProcessor;
 
 const SCHEMA: &str = "kcp";

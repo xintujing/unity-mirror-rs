@@ -1,8 +1,8 @@
 #![allow(dead_code)]
+use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, DeriveInput, GenericArgument, PathArguments, Type, TypePath};
-use crate::utils::string_case::StringCase;
+use syn::{DeriveInput, GenericArgument, PathArguments, Type, TypePath, parse_macro_input};
 
 pub(crate) fn callback_processor_handler(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

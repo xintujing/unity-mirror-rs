@@ -1,7 +1,7 @@
 use crate::NamespaceArgs;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ItemStruct};
+use syn::{ItemStruct, parse_macro_input};
 impl NamespaceArgs {
     pub(crate) fn get_full_name(&self, struct_ident: &syn::Ident) -> String {
         let prefix = match &self.prefix {

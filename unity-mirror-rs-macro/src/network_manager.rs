@@ -103,8 +103,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 item_struct.fields,
                 "NetworkManager can only be used on structs with named fields",
             )
-                .to_compile_error()
-                .into();
+            .to_compile_error()
+            .into();
         }
     };
 

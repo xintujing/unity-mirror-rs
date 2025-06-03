@@ -1,2 +1,2 @@
-mod rigidbody;
 mod collider;
+mod rigidbody;

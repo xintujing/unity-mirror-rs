@@ -55,7 +55,9 @@ impl Display for TransportError {
     }
 }
 
-static mut TRANSPORT_STATIC: Lazy<TransportStatic> = Lazy::new(|| TransportStatic { active: RevelWeak::default() });
+static mut TRANSPORT_STATIC: Lazy<TransportStatic> = Lazy::new(|| TransportStatic {
+    active: RevelWeak::default(),
+});
 
 pub struct TransportStatic {
     pub(crate) active: RevelWeak<Box<dyn Transport>>,
@@ -88,7 +90,6 @@ impl DerefMut for TransportManager {
         }
     }
 }
-
 
 // impl TransportManager {
 //     pub fn active(&self) -> &'static mut Box<dyn Transport> {

@@ -1,13 +1,13 @@
 #![allow(dead_code)]
 
-use crate::commons::object::Object;
-use crate::mirror::network_connection::NetworkConnection;
-use once_cell::sync::Lazy;
-use std::any::Any;
 use crate::commons::action::SelfMutAction;
+use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::mirror::network_connection::NetworkConnection;
 use crate::unity_engine::MonoBehaviour;
+use once_cell::sync::Lazy;
+use std::any::Any;
 
 static mut ON_SERVER_AUTHENTICATED: Lazy<Option<fn(&mut NetworkConnection)>> = Lazy::new(|| None);
 
@@ -32,8 +32,14 @@ pub trait Authenticator: MonoBehaviour {
         Self: Sized;
     fn on_start_server(&self) {}
     fn on_stop_server(&self) {}
-    fn set_on_server_authenticated(&mut self, event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>);
-    fn get_on_server_authenticated(&self, f: Box<dyn Fn(&SelfMutAction<(RevelArc<NetworkConnection>,), ()>)>);
+    fn set_on_server_authenticated(
+        &mut self,
+        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
+    );
+    fn get_on_server_authenticated(
+        &self,
+        f: Box<dyn Fn(&SelfMutAction<(RevelArc<NetworkConnection>,), ()>)>,
+    );
     fn server_accept(&self, connection: RevelArc<NetworkConnection>) {
         // self.get_on_server_authenticated(Box::new(|f| {
         //     let connection_clone = connection.clone();

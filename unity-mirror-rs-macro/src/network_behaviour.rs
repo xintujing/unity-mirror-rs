@@ -5,7 +5,7 @@ use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{parse_quote, Field, Fields, Path, VisRestricted, Visibility};
+use syn::{Field, Fields, Path, VisRestricted, Visibility, parse_quote};
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,

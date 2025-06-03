@@ -1,9 +1,9 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use quote::{format_ident, quote, ToTokens};
+use quote::{ToTokens, format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, parse_quote, Fields, FnArg, Token};
+use syn::{Fields, FnArg, Token, parse_macro_input, parse_quote};
 
 struct VirtualTraitArgs {
     virtual_fns: Punctuated<VirtualTraitArgsSignature, Token![;]>,
@@ -50,7 +50,7 @@ impl ToTokens for VirtualTraitArgs {
                 quote! {
                     fn #ident(#inputs);
                 }
-                    .to_token_stream(),
+                .to_token_stream(),
             );
         }
     }

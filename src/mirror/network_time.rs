@@ -1,12 +1,12 @@
-use std::ops::{Deref, DerefMut};
-use once_cell::sync::Lazy;
 use crate::commons::revel_arc::RevelArc;
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
-use crate::mirror::{NetworkConnection, NetworkServer};
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::transport::TransportChannel::Reliable;
+use crate::mirror::{NetworkConnection, NetworkServer};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
+use once_cell::sync::Lazy;
+use std::ops::{Deref, DerefMut};
 
 const DEFAULT_PING_INTERVAL: f32 = 0.1;
 pub const PING_WINDOW_SIZE: i32 = 50;
@@ -101,7 +101,8 @@ impl NetworkTime {
         &mut self,
         mut connection: RevelArc<NetworkConnection>,
         message: NetworkPingMessage,
-        _: TransportChannel) {
+        _: TransportChannel,
+    ) {
         let unadjusted_error = self.local_time() - message.local_time;
         let adjusted_error = self.local_time() - message.predicted_time_adjusted;
 

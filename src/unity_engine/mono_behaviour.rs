@@ -1,6 +1,6 @@
 use crate::commons::object::Object;
 use crate::commons::revel_weak::RevelWeak;
-use std::any::Any;
+use std::any::{Any, TypeId};
 
 pub trait MonoBehaviour: Object + MonoBehaviourAny {
     fn awake(&mut self) {}
@@ -18,6 +18,8 @@ pub trait MonoBehaviourAny {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
     fn type_name(&self) -> String;
+
+    fn self_type_id(&self) -> TypeId;
     // fn downcast<TO>(&self) -> Option<&TO>;
 }
 
@@ -38,6 +40,10 @@ impl<T: MonoBehaviour + 'static> MonoBehaviourAny for T {
 
     fn type_name(&self) -> String {
         format!("{}", std::any::type_name::<T>())
+    }
+
+    fn self_type_id(&self) -> TypeId {
+        TypeId::of::<T>()
     }
 }
 

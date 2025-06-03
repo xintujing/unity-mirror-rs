@@ -1,3 +1,4 @@
+use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::metadata::Metadata;
@@ -7,7 +8,6 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::Ordering::SeqCst;
-use crate::commons::action::SelfMutAction;
 
 static mut WORLDS: Lazy<Vec<RevelArc<World>>> = Lazy::new(|| Vec::new());
 static mut ACTIVE_WORLD_INDEX: AtomicIsize = AtomicIsize::new(-1);
@@ -21,7 +21,7 @@ pub struct World {
     game_objects: HashMap<u64, RevelArc<GameObject>>,
 }
 
-static mut SCENE_LOADED_ACTION: Lazy<SelfMutAction<(String, LoadSceneMode,), ()>> =
+static mut SCENE_LOADED_ACTION: Lazy<SelfMutAction<(String, LoadSceneMode), ()>> =
     Lazy::new(|| SelfMutAction::default());
 
 impl World {
@@ -87,8 +87,8 @@ impl WorldManagerStatic {
     }
 }
 
-static mut WORLD_MANAGER_STATIC: Lazy<WorldManagerStatic> = Lazy::new(|| WorldManagerStatic { loading: false });
-
+static mut WORLD_MANAGER_STATIC: Lazy<WorldManagerStatic> =
+    Lazy::new(|| WorldManagerStatic { loading: false });
 
 pub struct WorldManager;
 
@@ -97,14 +97,18 @@ impl Deref for WorldManager {
 
     fn deref(&self) -> &Self::Target {
         #[allow(static_mut_refs)]
-        unsafe { &*WORLD_MANAGER_STATIC }
+        unsafe {
+            &*WORLD_MANAGER_STATIC
+        }
     }
 }
 
 impl DerefMut for WorldManager {
     fn deref_mut(&mut self) -> &mut Self::Target {
         #[allow(static_mut_refs)]
-        unsafe { &mut *WORLD_MANAGER_STATIC }
+        unsafe {
+            &mut *WORLD_MANAGER_STATIC
+        }
     }
 }
 
@@ -128,13 +132,13 @@ impl WorldManager {
                     WORLDS.len() - 1
                 }
             };
-            SCENE_LOADED_ACTION.call((scene_path.to_string(), mode,));
+            SCENE_LOADED_ACTION.call((scene_path.to_string(), mode));
             Self.loading = false;
             i
         }
     }
 
-    pub fn set_scene_loaded(f: SelfMutAction<(String, LoadSceneMode,), ()>) {
+    pub fn set_scene_loaded(f: SelfMutAction<(String, LoadSceneMode), ()>) {
         #[allow(static_mut_refs)]
         unsafe {
             *SCENE_LOADED_ACTION = f;
