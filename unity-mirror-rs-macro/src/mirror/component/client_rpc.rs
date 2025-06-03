@@ -3,22 +3,25 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, parse_quote, Expr, FnArg, Pat, PatType, Token};
+use syn::{parse_macro_input, parse_quote, Expr, FnArg, LitStr, Pat, PatType, Token};
 
 mod kw {
     syn::custom_keyword!(channel);
     syn::custom_keyword!(include_owner);
+    syn::custom_keyword!(rename);
 }
 
 struct TargetRpcArgs {
     channel: Option<Expr>,
     include_owner: bool,
+    rename: Option<String>,
 }
 
 impl Parse for TargetRpcArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut channel = None;
         let mut include_owner = false;
+        let mut rename = None;
 
         while !input.is_empty() {
             if input.peek(kw::channel) {
@@ -28,6 +31,14 @@ impl Parse for TargetRpcArgs {
             } else if input.peek(kw::include_owner) {
                 input.parse::<kw::include_owner>()?;
                 include_owner = true;
+            } else if input.peek(kw::rename) {
+                let _ = input.parse::<kw::rename>()?;
+                input.parse::<Token![=]>()?;
+                let value: LitStr = input.parse()?;
+                if value.value().is_empty() {
+                    return Err(input.error("Rename argument cannot be empty"));
+                }
+                rename = Some(value.value());
             } else if input.peek(Token![,]) {
                 input.parse::<Token![,]>()?;
                 if input.is_empty() {
@@ -41,13 +52,17 @@ impl Parse for TargetRpcArgs {
         Ok(TargetRpcArgs {
             channel,
             include_owner,
+            rename,
         })
     }
 }
 
-
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let TargetRpcArgs { mut channel, include_owner } = parse_macro_input!(attr as TargetRpcArgs);
+    let TargetRpcArgs {
+        mut channel,
+        include_owner,
+        rename,
+    } = parse_macro_input!(attr as TargetRpcArgs);
 
     if channel.is_none() {
         channel = Some(parse_quote! {1})
@@ -69,7 +84,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let csharp_func_inputs = to_csharp_function_inputs(item_fn.sig.inputs.clone());
-    let fn_ident = item_fn.sig.ident.to_string().to_camel_case();
+
+    let fn_name = match rename {
+        None => item_fn.sig.ident.to_string().to_camel_case(),
+        Some(rename) => rename,
+    };
 
     item_fn.block.stmts.insert(
         0,
@@ -86,7 +105,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     let full_path_str = format!(
                         "System.Void {}::{}({})",
                         Self::get_full_name(),
-                        #fn_ident,
+                        #fn_name,
                         #csharp_func_inputs,
                     );
 

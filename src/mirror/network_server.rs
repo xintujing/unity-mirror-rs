@@ -1,6 +1,7 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::mirror::accurate_interval::AccurateInterval;
 use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::command_message::CommandMessage;
 use crate::mirror::messages::entity_state_message::EntityStateMessage;
@@ -22,14 +23,15 @@ use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel::Reliable;
-use crate::mirror::transport::{CallbackProcessor, TransportChannel, TransportError, TransportManager};
+use crate::mirror::transport::{
+    CallbackProcessor, TransportChannel, TransportError, TransportManager,
+};
 use crate::mirror::{NetworkIdentity, RemoteCallType};
-use crate::unity_engine::{GameObject, Time, WorldManager};
+use crate::unity_engine::{GameObject, MonoBehaviour, Time, WorldManager};
 use once_cell::sync::Lazy;
 use std::any::Any;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
-use crate::mirror::accurate_interval::AccurateInterval;
 
 #[allow(unused)]
 pub struct NetworkServerStatic {
@@ -131,7 +133,6 @@ pub enum RemovePlayerOptions {
 
 pub struct NetworkServer;
 
-
 impl NetworkServer {
     pub fn send_rate(&self) -> i32 {
         self.tick_rate as i32
@@ -219,7 +220,8 @@ impl NetworkServer {
         if let Some(active) = TransportManager.active.get() {
             Self::on_transport_connected_with_address(
                 conn_id,
-                active.server_get_client_address(conn_id)
+                active
+                    .server_get_client_address(conn_id)
                     .unwrap_or_default()
                     .as_str(),
             );
@@ -407,14 +409,38 @@ impl NetworkServer {
 
     fn register_message_handlers(&mut self) {
         let network_server_arc = RevelArc::new(Box::new(Self)).downgrade();
-        self.register_handler::<ReadyMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_ready_message), true);
-        self.register_handler::<CommandMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_command_message), true);
-        self.register_handler::<EntityStateMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_entity_state_message), true);
-        self.register_handler::<TimeSnapshotMessage>(SelfMutAction::new(network_server_arc.clone(), Self::on_client_time_snapshot_message), false);
+        self.register_handler::<ReadyMessage>(
+            SelfMutAction::new(network_server_arc.clone(), Self::on_client_ready_message),
+            true,
+        );
+        self.register_handler::<CommandMessage>(
+            SelfMutAction::new(network_server_arc.clone(), Self::on_client_command_message),
+            true,
+        );
+        self.register_handler::<EntityStateMessage>(
+            SelfMutAction::new(
+                network_server_arc.clone(),
+                Self::on_client_entity_state_message,
+            ),
+            true,
+        );
+        self.register_handler::<TimeSnapshotMessage>(
+            SelfMutAction::new(
+                network_server_arc.clone(),
+                Self::on_client_time_snapshot_message,
+            ),
+            false,
+        );
 
         let network_time_arc = RevelArc::new(Box::new(NetworkTime)).downgrade();
-        self.register_handler::<NetworkPingMessage>(SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_ping), false);
-        self.register_handler::<NetworkPongMessage>(SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_pong), false);
+        self.register_handler::<NetworkPingMessage>(
+            SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_ping),
+            false,
+        );
+        self.register_handler::<NetworkPongMessage>(
+            SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_pong),
+            false,
+        );
     }
 
     fn on_client_ready_message(
@@ -632,7 +658,7 @@ impl NetworkServer {
 
     pub fn register_handler<M>(
         &mut self,
-        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel,), ()>,
+        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) where
         M: Message + 'static,
@@ -653,7 +679,7 @@ impl NetworkServer {
 
     pub fn replace_handler<M>(
         &mut self,
-        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel,), ()>,
+        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) where
         M: Message + 'static,
@@ -712,16 +738,125 @@ impl NetworkServer {
         // todo: 清理已生成的对象
     }
 
-    pub fn add_player_for_connection(connection: RevelArc<NetworkConnection>, player: RevelArc<GameObject>) {}
+    pub fn add_player_for_connection(
+        connection: RevelArc<NetworkConnection>,
+        player: RevelArc<GameObject>,
+    ) {
+    }
 
     pub fn send_to_all(message: SceneMessage) {}
 
     pub fn set_all_clients_not_ready() {}
 
-        pub fn spawn_objects() {
-        // for x in WorldManager::root_game_objects().iter() {
-        //     let option = x.get().unwrap().try_get_component::<NetworkIdentity>();
-        // }
+    pub fn spawn_objects() -> bool {
+        if !Self.active {
+            return false;
+        }
+
+        let mut identities = vec![];
+
+        for root_game_object in WorldManager::root_game_objects().iter() {
+            if let Some(game_object) = root_game_object.get() {
+                identities = game_object.get_components::<NetworkIdentity>();
+            }
+        }
+
+        for identity in identities.iter() {
+            if let Some(weak_identity) = identity.downcast::<NetworkIdentity>() {
+                if let Some(real_identity) = weak_identity.get() {
+                    if real_identity.is_scene_object() && real_identity.net_id() == 0 {
+                        if let Some(game_object) = real_identity.game_object.get() {
+                            game_object.set_active(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        for identity in identities.iter() {
+            if let Some(weak_identity) = identity.downcast::<NetworkIdentity>() {
+                if let Some(real_identity) = weak_identity.get() {
+                    if real_identity.is_scene_object()
+                        && real_identity.net_id() == 0
+                        && Self::valid_parent(real_identity)
+                    {
+                        if let Some(game_object) = real_identity.game_object.get() {
+                            Self::spawn(
+                                real_identity.game_object.clone(),
+                                real_identity.connection(),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        true
+    }
+
+    fn spawn(game_object: RevelWeak<GameObject>, connection: RevelWeak<NetworkConnection>) {
+        Self::spawn_object(game_object, connection);
+    }
+
+    fn spawn_object(game_object: RevelWeak<GameObject>, connection: RevelWeak<NetworkConnection>) {
+        if let Some(real_game_object) = game_object.get() {
+            if !Self.active {
+                log::error!("SpawnObject for {}, NetworkServer is not active. Cannot spawn objects without an active server.", real_game_object.name);
+                return;
+            }
+
+            match real_game_object.try_get_component::<NetworkIdentity>() {
+                None => {
+                    log::error!(
+                        "SpawnObject {} has no NetworkIdentity. Please add a NetworkIdentity to {}",
+                        real_game_object.name,
+                        real_game_object.name
+                    );
+                    return;
+                }
+                Some(network_identity) => {
+                    if let Some(weak_network_identity) =
+                        network_identity.downcast::<NetworkIdentity>()
+                    {
+                        if let Some(identity) = weak_network_identity.get() {
+                            if Self.spawned.contains_key(&identity.net_id()) {
+                                log::warn!(
+                                    "{} [netId={}] was already spawned.",
+                                    identity.name(),
+                                    identity.net_id()
+                                );
+                                return;
+                            }
+
+                            identity.set_connection(connection);
+
+                            if let Some(game_object) = identity.game_object.get() {
+                                game_object.set_active(true);
+                            }
+
+                            if !identity.is_server && identity.net_id() == 0 {
+                                identity.is_server = true;
+                                identity.set_net_id(NetworkIdentity::get_next_network_id());
+
+                                Self.spawned
+                                    .insert(identity.net_id(), weak_network_identity.clone());
+
+                                identity.on_start_server()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn valid_parent(identity: &mut NetworkIdentity) -> bool {
+        if let Some(game_object) = identity.game_object.get() {
+            return !game_object.parent.upgradable()
+                || (game_object.parent.upgradable()
+                    && game_object.parent.get().unwrap().is_active());
+        }
+        false
     }
 
     pub fn broadcast() {}
@@ -770,8 +905,7 @@ impl NetworkServer {
 
             if NetworkTime.local_time() >= Self.actual_tick_rate_start {
                 let elapsed = NetworkTime.local_time() - Self.actual_tick_rate_start;
-                Self.actual_tick_rate =
-                    (Self.actual_tick_rate_counter as f64 / elapsed) as i32;
+                Self.actual_tick_rate = (Self.actual_tick_rate_counter as f64 / elapsed) as i32;
                 Self.actual_tick_rate_start = NetworkTime.local_time();
                 Self.actual_tick_rate_counter = 0;
             }

@@ -43,7 +43,7 @@ pub struct GameObject {
     pub tag: String,
     pub layer: i32,
     pub is_static: bool,
-    pub is_active: bool,
+    is_active: bool,
     pub transform: RevelArc<Transform>,
     pub parent: RevelWeak<GameObject>,
     pub children: HashMap<u64, RevelArc<GameObject>>,
@@ -217,6 +217,31 @@ impl GameObject {
         )
     }
 
+    pub fn get_components<T: MonoBehaviour + 'static>(
+        &self,
+    ) -> Vec<RevelWeak<Box<dyn MonoBehaviour>>> {
+        let type_id = TypeId::of::<T>();
+
+        let vec_index = self
+            .component_mapping
+            .get(&type_id)
+            .cloned()
+            .unwrap_or(vec![]);
+        if vec_index.len() == 0 {
+            return vec![];
+        }
+
+        let mut result = vec![];
+        for index in vec_index {
+            if let Some(component) = self.components.get(index) {
+                if let Some(component) = component.last() {
+                    result.push(component.downgrade());
+                }
+            }
+        }
+        result
+    }
+
     // pub fn find_component<T: MonoBehaviour>(
     //     &self,
     //     t: impl Any,
@@ -244,6 +269,13 @@ impl GameObject {
             }
         }
         None
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.is_active
+    }
+    pub fn set_active(&mut self, active: bool) {
+        self.is_active = active
     }
 }
 
