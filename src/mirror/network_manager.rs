@@ -14,8 +14,8 @@ use crate::mirror::network_manager_factory::NetworkManagerFactory;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::transport::{Transport, TransportChannel, TransportError, TransportManager};
 use crate::mirror::{
-    network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection, NetworkServer,
-    TNetworkManager,
+    network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection,
+    NetworkRoomManager, NetworkServer, TNetworkManager,
 };
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
 use crate::unity_engine::{
@@ -24,28 +24,34 @@ use crate::unity_engine::{
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
-use std::any::Any;
+use std::any::{Any, TypeId};
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::ops::Deref;
 use unity_mirror_macro::{namespace, network_manager, virtual_trait, NetworkManagerFactory};
 
-static mut NETWORK_MANAGER: Lazy<RevelWeak<Box<dyn network_manager_trait::TNetworkManager>>> =
-    Lazy::new(|| RevelWeak::default());
+static mut NETWORK_MANAGER: Lazy<Vec<RevelWeak<Box<dyn TNetworkManager>>>> =
+    Lazy::new(|| Vec::default());
+static mut NETWORK_MANAGER_MAPPING: Lazy<HashMap<TypeId, usize>> = Lazy::new(|| HashMap::default());
 
 impl NetworkManager {
     pub fn is_instance() -> bool {
         #[allow(static_mut_refs)]
         unsafe {
-            NETWORK_MANAGER.upgradable()
+            !NETWORK_MANAGER.is_empty()
         }
     }
-    pub fn singleton<T: network_manager_trait::TNetworkManager + 'static>(f: fn(&mut T)) {
+    pub fn singleton<T: TNetworkManager + 'static>(f: fn(&mut T)) {
         #[allow(static_mut_refs)]
         unsafe {
-            if let Some(weak) = NETWORK_MANAGER.downcast::<T>() {
-                if let Some(real) = weak.get() {
-                    f(real)
+            let type_id = TypeId::of::<T>();
+            if let Some(index) = NETWORK_MANAGER_MAPPING.get(&type_id) {
+                if let Some(network_manager) = NETWORK_MANAGER.get(*index) {
+                    if let Some(weak) = network_manager.downcast::<T>() {
+                        if let Some(real) = weak.get() {
+                            f(real)
+                        }
+                    }
                 }
             }
         }
@@ -288,15 +294,34 @@ impl NetworkManager {
         }
 
         if let Some(game_object) = self.game_object.get() {
-            if let Some(component) = game_object.components.get(0).unwrap().last() {
-                if let Some(t_network_manager) =
-                    component.downgrade().parallel::<Box<dyn TNetworkManager>>()
-                {
-                    unsafe {
-                        *NETWORK_MANAGER = t_network_manager.clone();
+            if let Some(network_manager_vec) = game_object.components.get(0) {
+                for (index, network_manager) in network_manager_vec.iter().enumerate() {
+                    if let Some(t_network_manager) = network_manager
+                        .downgrade()
+                        .parallel::<Box<dyn TNetworkManager>>()
+                    {
+                        #[allow(static_mut_refs)]
+                        unsafe {
+                            NETWORK_MANAGER.push(t_network_manager.clone());
+                            NETWORK_MANAGER_MAPPING
+                                .insert(t_network_manager.get().unwrap().self_type_id(), index);
+                        }
                     }
                 }
+            } else {
+                log::error!("No NetworkManager component on NetworkManager prefab.");
+                return false;
             }
+
+            // if let Some(component) = game_object.components.get(0).unwrap().last() {
+            //     if let Some(t_network_manager) =
+            //         component.downgrade().parallel::<Box<dyn TNetworkManager>>()
+            //     {
+            //         unsafe {
+            //             *NETWORK_MANAGER = t_network_manager.clone();
+            //         }
+            //     }
+            // }
         }
 
         if self.transport.is_none() {
