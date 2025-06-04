@@ -114,7 +114,7 @@ pub struct NetworkManager {
     start_position_index: usize,
     pub start_positions: HashMap<String, Vec<Transform>>,
 
-    pub authenticator: Option<Box<dyn Authenticator>>,
+    pub authenticator: Option<RevelArc<Box<dyn Authenticator>>>,
     transport: Option<RevelArc<Box<dyn Transport>>>,
 
     pub on_client_scene_changed: SelfMutAction<(), ()>,

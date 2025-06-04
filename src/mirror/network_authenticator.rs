@@ -7,7 +7,7 @@ use crate::mirror::network_connection::NetworkConnection;
 use crate::unity_engine::MonoBehaviour;
 
 pub trait Authenticator: MonoBehaviour {
-    fn new() -> Box<dyn Authenticator>
+    fn new() -> RevelArc<Box<dyn Authenticator>>
     where
         Self: Sized;
     fn on_start_server(&self) {}

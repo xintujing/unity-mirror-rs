@@ -1,10 +1,12 @@
+use crate::commons::revel_arc::RevelArc;
 use crate::mirror::Authenticator;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-static mut AUTHENTICATOR_FACTORY: Lazy<RefCell<HashMap<String, fn() -> Box<dyn Authenticator>>>> =
-    Lazy::new(|| RefCell::new(HashMap::new()));
+static mut AUTHENTICATOR_FACTORY: Lazy<
+    RefCell<HashMap<String, fn() -> RevelArc<Box<dyn Authenticator>>>>,
+> = Lazy::new(|| RefCell::new(HashMap::new()));
 
 pub struct AuthenticatorFactory;
 
@@ -21,12 +23,17 @@ impl AuthenticatorFactory {
                 .insert(full_name.to_string(), T::new);
         }
     }
-    pub fn create(full_name: &str) -> Box<dyn Authenticator> {
+    pub fn create(full_name: &str) -> RevelArc<Box<dyn Authenticator>> {
         #[allow(static_mut_refs)]
         unsafe {
             match AUTHENTICATOR_FACTORY.borrow().get(full_name) {
                 None => panic!("Authenticator {} is not registered", full_name),
-                Some(factory) => factory(),
+                Some(factory) => {
+                    let mut authenticator = factory();
+                    let clone_authenticator = authenticator.clone();
+                    authenticator.set_weak_self(clone_authenticator.downgrade());
+                    authenticator
+                }
             }
         }
     }

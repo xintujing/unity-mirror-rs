@@ -16,9 +16,10 @@ use unity_mirror_macro::{namespace, AuthenticatorFactory, Message};
 #[namespace(prefix = "Mirror.Authenticators")]
 #[derive(AuthenticatorFactory, Default)]
 pub struct BasicAuthenticator {
-    weak_self: RevelWeak<Box<Self>>,
+    weak: RevelWeak<Box<Self>>,
     on_server_authenticated: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
 }
+
 impl BasicAuthenticator {
     pub fn on_auth_request_message(
         &mut self,
@@ -26,22 +27,24 @@ impl BasicAuthenticator {
         message: BasicAuthenticatorRequestMessage,
         channel: TransportChannel,
     ) {
+        self.server_accept(connection);
     }
 }
 
 impl MonoBehaviour for BasicAuthenticator {}
 
 impl Authenticator for BasicAuthenticator {
-    fn new() -> Box<dyn Authenticator> {
-        Box::new(BasicAuthenticator {
-            weak_self: Default::default(),
+    fn new() -> RevelArc<Box<dyn Authenticator>> {
+        let x = Box::new(BasicAuthenticator {
+            weak: Default::default(),
             on_server_authenticated: Default::default(),
-        })
+        });
+        RevelArc::new(x)
     }
 
     fn on_start_server(&self) {
         NetworkServer.register_handler::<BasicAuthenticatorRequestMessage>(
-            SelfMutAction::new(self.weak_self.clone(), Self::on_auth_request_message),
+            SelfMutAction::new(self.weak.clone(), Self::on_auth_request_message),
             false,
         );
     }
@@ -67,11 +70,12 @@ impl Authenticator for BasicAuthenticator {
 
     fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>) {
         if let Some(weak_self) = weak_self.downcast::<Self>() {
-            self.weak_self = weak_self.clone();
+            self.weak = weak_self.clone();
         }
     }
 }
 
+// BasicAuthenticator AuthRequestMessage
 #[namespace(
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
     rename = "AuthRequestMessage"
@@ -105,6 +109,7 @@ impl MessageDeserializer for BasicAuthenticatorRequestMessage {
     }
 }
 
+// BasicAuthenticator AuthResponseMessage
 #[namespace(
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
     rename = "AuthResponseMessage"
