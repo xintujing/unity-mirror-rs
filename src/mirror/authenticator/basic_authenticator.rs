@@ -57,7 +57,7 @@ impl Authenticator for BasicAuthenticator {
         self.on_server_authenticated = event;
     }
 
-    fn get_on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()> {
+    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()> {
         &self.on_server_authenticated
     }
 

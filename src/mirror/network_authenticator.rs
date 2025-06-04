@@ -16,14 +16,13 @@ pub trait Authenticator: MonoBehaviour {
         &mut self,
         event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
     );
-    fn get_on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()>;
+    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()>;
     fn server_accept(&self, connection: RevelArc<NetworkConnection>) {
-        self.get_on_server_authenticated().call((connection,));
+        self.on_server_authenticated().call((connection,));
     }
     fn on_server_authenticate(&self, connection: RevelArc<NetworkConnection>) {}
     fn server_reject(&self, conn: &mut NetworkConnection) {
         conn.disconnect()
     }
-
     fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>);
 }
