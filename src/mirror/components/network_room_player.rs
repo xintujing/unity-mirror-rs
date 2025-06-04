@@ -28,7 +28,7 @@ impl NetworkRoomPlayer {
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         self.set_ready_to_begin(ready_state);
         NetworkManager::singleton::<NetworkRoomManager>(|room| {
-            // TODO: Implement the logic to handle the change in ready state
+            room.ready_status_changed();
         });
     }
 }
