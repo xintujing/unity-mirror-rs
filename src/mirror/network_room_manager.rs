@@ -114,7 +114,7 @@ impl NetworkRoomManager {
 
         for item in &self.room_slots {
             current_players += 1;
-            if item.is_ready() {
+            if *item.get_ready_to_begin() {
                 ready_players += 1;
             }
         }

@@ -57,11 +57,8 @@ impl Authenticator for BasicAuthenticator {
         self.on_server_authenticated = event;
     }
 
-    fn get_on_server_authenticated(
-        &self,
-        f: Box<dyn Fn(&SelfMutAction<(RevelArc<NetworkConnection>,), ()>)>,
-    ) {
-        f(&self.on_server_authenticated);
+    fn get_on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()> {
+        &self.on_server_authenticated
     }
 
     fn on_server_authenticate(&self, connection: RevelArc<NetworkConnection>) {
