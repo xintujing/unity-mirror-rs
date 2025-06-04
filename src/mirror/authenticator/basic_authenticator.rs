@@ -8,17 +8,16 @@ use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::{Authenticator, NetworkServer};
+use crate::mirror::{Authenticator, AuthenticatorBase, NetworkServer};
 use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::any::Any;
-use unity_mirror_macro::{namespace, AuthenticatorFactory, NetworkMessage};
+use unity_mirror_macro::{authenticator_factory, namespace, Message};
 
 #[namespace(prefix = "Mirror.Authenticators")]
-#[derive(AuthenticatorFactory, Default)]
-pub struct BasicAuthenticator {
-    weak_self: RevelWeak<Box<Self>>,
-    on_server_authenticated: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-}
+#[authenticator_factory]
+#[derive(Default)]
+pub struct BasicAuthenticator {}
+
 impl BasicAuthenticator {
     pub fn on_auth_request_message(
         &mut self,
@@ -26,22 +25,21 @@ impl BasicAuthenticator {
         message: BasicAuthenticatorRequestMessage,
         channel: TransportChannel,
     ) {
+        self.server_accept(connection);
     }
 }
 
 impl MonoBehaviour for BasicAuthenticator {}
 
 impl Authenticator for BasicAuthenticator {
-    fn new() -> Box<dyn Authenticator> {
-        Box::new(BasicAuthenticator {
-            weak_self: Default::default(),
-            on_server_authenticated: Default::default(),
-        })
+    fn new() -> Self {
+        let mut authenticator = Self::default();
+        authenticator
     }
 
     fn on_start_server(&self) {
         NetworkServer.register_handler::<BasicAuthenticatorRequestMessage>(
-            SelfMutAction::new(self.weak_self.clone(), Self::on_auth_request_message),
+            SelfMutAction::new(self.weak.clone(), Self::on_auth_request_message),
             false,
         );
     }
@@ -50,36 +48,17 @@ impl Authenticator for BasicAuthenticator {
         NetworkServer.unregister_handler::<BasicAuthenticatorRequestMessage>();
     }
 
-    fn set_on_server_authenticated(
-        &mut self,
-        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    ) {
-        self.on_server_authenticated = event;
-    }
-
-    fn get_on_server_authenticated(
-        &self,
-        f: Box<dyn Fn(&SelfMutAction<(RevelArc<NetworkConnection>,), ()>)>,
-    ) {
-        f(&self.on_server_authenticated);
-    }
-
     fn on_server_authenticate(&self, connection: RevelArc<NetworkConnection>) {
         // do nothing...wait for BasicAuthenticatorRequestMessage from client
     }
-
-    fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>) {
-        if let Some(weak_self) = weak_self.downcast::<Self>() {
-            self.weak_self = weak_self.clone();
-        }
-    }
 }
 
+// BasicAuthenticator AuthRequestMessage
 #[namespace(
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
     rename = "AuthRequestMessage"
 )]
-#[derive(Default, Clone, NetworkMessage)]
+#[derive(Default, Clone, Message)]
 pub struct BasicAuthenticatorRequestMessage {
     auth_username: String,
     auth_password: String,
@@ -108,11 +87,12 @@ impl MessageDeserializer for BasicAuthenticatorRequestMessage {
     }
 }
 
+// BasicAuthenticator AuthResponseMessage
 #[namespace(
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
     rename = "AuthResponseMessage"
 )]
-#[derive(Default, Clone, NetworkMessage)]
+#[derive(Default, Clone, Message)]
 pub struct BasicAuthenticatorResponseMessage {
     code: u8,
     message: String,

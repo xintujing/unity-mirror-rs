@@ -4,8 +4,8 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::NetworkBehaviour;
 use crate::mirror::TNetworkBehaviour;
+use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
@@ -27,7 +27,9 @@ impl NetworkRoomPlayer {
     #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         self.set_ready_to_begin(ready_state);
-        // TODO: Implement the logic to handle the change in ready state
+        NetworkManager::singleton::<NetworkRoomManager>(|room| {
+            room.ready_status_changed();
+        });
     }
 }
 

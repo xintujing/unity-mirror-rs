@@ -2,22 +2,25 @@ use crate::utils::random_string::random_string;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::format_ident;
-use syn::Data;
+use syn::Field;
 
 pub(crate) fn handler(item: TokenStream) -> TokenStream {
-    let input = syn::parse_macro_input!(item as syn::DeriveInput);
+    let mut input = syn::parse_macro_input!(item as syn::ItemStruct);
     let struct_ident = &input.ident;
 
-    match input.data {
-        Data::Struct(_) => {}
-        _ => {
-            return syn::Error::new(
-                input.ident.span(),
-                "NetworkManagerFactory can only be derived for structs",
-            )
-            .to_compile_error()
-            .into();
-        }
+    // 扩展字段
+    let mut ext_fields: Vec<Field> = Vec::new();
+    ext_fields.push(syn::parse_quote! {
+        weak: crate::commons::revel_weak::RevelWeak<Box<Self>>
+    });
+    ext_fields.push(syn::parse_quote! {
+        on_server_authenticated: crate::commons::action::SelfMutAction<(crate::commons::revel_arc::RevelArc<crate::mirror::network_connection::NetworkConnection,>,),()>
+    });
+
+    // 检查结构体的字段是否为命名字段（即标准的 struct，而不是 tuple struct 或 unit struct）
+    if let syn::Fields::Named(ref mut fields_named) = input.fields {
+        // 将新字段插入到字段集合中
+        fields_named.named.extend(ext_fields);
     }
 
     let register_cotr_fn_ident = format_ident!(
@@ -27,6 +30,48 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
     );
 
     let out = quote::quote! {
+
+        // 修改后的 struct定义
+        #input
+
+        // impl of the Authenticator trait
+        impl crate::mirror::AuthenticatorBase for #struct_ident {
+            fn set_weak_self(
+                &mut self,
+                weak_self: crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::Authenticator>>,
+            ) {
+                if let Some(weak_self) = weak_self.downcast::<Self>() {
+                    self.weak = weak_self.clone();
+                }
+            }
+            fn set_on_server_authenticated(
+                &mut self,
+                event: crate::commons::action::SelfMutAction<
+                    (
+                        crate::commons::revel_arc::RevelArc<
+                            crate::mirror::network_connection::NetworkConnection,
+                        >,
+                    ),
+                    (),
+                >,
+            ) {
+                self.on_server_authenticated = event;
+            }
+
+            fn on_server_authenticated(
+                &self,
+            ) -> &crate::commons::action::SelfMutAction<
+                (
+                    crate::commons::revel_arc::RevelArc<
+                        crate::mirror::network_connection::NetworkConnection,
+                    >,
+                ),
+                (),
+            > {
+                &self.on_server_authenticated
+            }
+        }
+
         #[ctor::ctor]
         #[inline]
         fn #register_cotr_fn_ident() {

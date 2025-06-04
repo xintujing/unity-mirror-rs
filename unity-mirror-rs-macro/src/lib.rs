@@ -135,8 +135,8 @@ pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     virtual_trait::handler(attr, item)
 }
 
-#[proc_macro_derive(AuthenticatorFactory)]
-pub fn derive_authenticator_factory(item: TokenStream) -> TokenStream {
+#[proc_macro_attribute]
+pub fn authenticator_factory(_: TokenStream, item: TokenStream) -> TokenStream {
     mirror::authenticator_factory::handler(item)
 }
 

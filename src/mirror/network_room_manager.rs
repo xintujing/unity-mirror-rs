@@ -107,4 +107,26 @@ impl NetworkRoomManager {
         // println!("NetworkManager: Client scene changed 111");
         // 这里可以添加更多的逻辑处理
     }
+
+    pub fn ready_status_changed(&mut self) {
+        let mut current_players = 0;
+        let mut ready_players = 0;
+
+        for item in &self.room_slots {
+            current_players += 1;
+            if *item.get_ready_to_begin() {
+                ready_players += 1;
+            }
+        }
+
+        if current_players == self.min_players {
+            self.check_ready_to_begin();
+        } else {
+            self.all_players_ready = false;
+        }
+    }
+
+    fn check_ready_to_begin(&mut self) {
+        // TODO
+    }
 }
