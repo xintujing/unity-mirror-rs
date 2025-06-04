@@ -5,9 +5,6 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::unity_engine::MonoBehaviour;
-use once_cell::sync::Lazy;
-
-static mut ON_SERVER_AUTHENTICATED: Lazy<Option<fn(&mut NetworkConnection)>> = Lazy::new(|| None);
 
 pub trait Authenticator: MonoBehaviour {
     fn new() -> Box<dyn Authenticator>
