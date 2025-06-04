@@ -223,7 +223,6 @@ impl TNetworkBehaviour for NetworkAnimator {
     where
         Self: Sized,
     {
-        println!("Network animator initialized");
         Self::default()
     }
 }

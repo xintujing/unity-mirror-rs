@@ -123,6 +123,7 @@ impl WriteCompress for nalgebra::Quaternion<f32> {
     }
 }
 
+#[derive(Default)]
 pub struct NetworkWriter {
     buffer: Vec<u8>,
     pub position: usize,
