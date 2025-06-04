@@ -11,14 +11,12 @@ use crate::mirror::transport::TransportChannel;
 use crate::mirror::{Authenticator, AuthenticatorBase, NetworkServer};
 use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::any::Any;
-use unity_mirror_macro::{namespace, AuthenticatorFactory, Message};
+use unity_mirror_macro::{authenticator_factory, namespace, Message};
 
 #[namespace(prefix = "Mirror.Authenticators")]
-#[derive(AuthenticatorFactory, Default)]
-pub struct BasicAuthenticator {
-    weak: RevelWeak<Box<Self>>,
-    on_server_authenticated: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-}
+#[authenticator_factory]
+#[derive(Default)]
+pub struct BasicAuthenticator {}
 
 impl BasicAuthenticator {
     pub fn on_auth_request_message(
@@ -31,32 +29,12 @@ impl BasicAuthenticator {
     }
 }
 
-impl AuthenticatorBase for BasicAuthenticator {
-    fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>) {
-        if let Some(weak_self) = weak_self.downcast::<Self>() {
-            self.weak = weak_self.clone();
-        }
-    }
-    fn set_on_server_authenticated(
-        &mut self,
-        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    ) {
-        self.on_server_authenticated = event;
-    }
-
-    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()> {
-        &self.on_server_authenticated
-    }
-}
-
 impl MonoBehaviour for BasicAuthenticator {}
 
 impl Authenticator for BasicAuthenticator {
     fn new() -> Self {
-        BasicAuthenticator {
-            weak: Default::default(),
-            on_server_authenticated: Default::default(),
-        }
+        let mut authenticator = Self::default();
+        authenticator
     }
 
     fn on_start_server(&self) {
