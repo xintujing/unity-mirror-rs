@@ -182,7 +182,7 @@ impl NetworkBehaviour {
                         let is_owner = observer.id == connection.id;
 
                         if (!is_owner || include_owner) && observer.is_ready {
-                            observer.send_message(&mut message.clone(), channel_id.into());
+                            observer.send_message(&mut message, channel_id.into());
                         }
                     }
                 }
@@ -317,6 +317,9 @@ pub trait TNetworkBehaviour:
         Self: Sized;
     fn on_start_server(&mut self) {}
     fn on_stop_server(&mut self) {}
+
+    fn on_start_authority(&mut self) {}
+    fn on_stop_authority(&mut self) {}
 }
 pub trait NetworkBehaviourBase {
     fn is_dirty(&self) -> bool;

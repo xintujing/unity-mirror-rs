@@ -1,6 +1,7 @@
 use crate::commons::revel_arc::RevelArc;
 use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
+use std::hash::{Hash, Hasher};
 
 pub struct RevelWeak<T: ?Sized>(pub(super) std::sync::Weak<UnsafeCell<T>>)
 where
@@ -16,6 +17,27 @@ impl<T> RevelWeak<T> {
 impl<T> Debug for RevelWeak<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl<T: PartialEq> PartialEq<Self> for RevelWeak<T> {
+    fn eq(&self, other: &Self) -> bool {
+        if let (Some(one), Some(two)) = (self.0.upgrade(), other.0.upgrade()) {
+            return unsafe { (&*one.get()).eq(&*two.get()) };
+        }
+        false
+    }
+}
+
+impl<T: Eq> Eq for RevelWeak<T> {}
+
+impl<T: Hash + 'static> Hash for RevelWeak<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        if let Some(one) = self.upgrade() {
+            one.0.get().hash(state);
+        } else {
+            state.write_u64(unsafe { *(self.as_ptr() as *const u64) });
+        }
     }
 }
 

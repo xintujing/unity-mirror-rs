@@ -5,7 +5,7 @@ use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use nalgebra::{Quaternion, Vector3};
-use unity_mirror_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, NetworkMessage};
 
 #[derive(Clone, Debug, Default, PartialEq, Copy)]
 #[repr(u8)]
@@ -17,7 +17,7 @@ pub enum AuthorityFlags {
 }
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default, Message)]
+#[derive(Debug, PartialEq, Clone, Default, NetworkMessage)]
 pub struct SpawnMessage {
     pub net_id: u32,
     authority_flags: u8,

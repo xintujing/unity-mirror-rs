@@ -11,7 +11,7 @@ use crate::mirror::transport::TransportChannel;
 use crate::mirror::{Authenticator, NetworkServer};
 use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::any::Any;
-use unity_mirror_macro::{namespace, AuthenticatorFactory, Message};
+use unity_mirror_macro::{namespace, AuthenticatorFactory, NetworkMessage};
 
 #[namespace(prefix = "Mirror.Authenticators")]
 #[derive(AuthenticatorFactory, Default)]
@@ -79,7 +79,7 @@ impl Authenticator for BasicAuthenticator {
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
     rename = "AuthRequestMessage"
 )]
-#[derive(Default, Clone, Message)]
+#[derive(Default, Clone, NetworkMessage)]
 pub struct BasicAuthenticatorRequestMessage {
     auth_username: String,
     auth_password: String,
@@ -112,7 +112,7 @@ impl MessageDeserializer for BasicAuthenticatorRequestMessage {
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
     rename = "AuthResponseMessage"
 )]
-#[derive(Default, Clone, Message)]
+#[derive(Default, Clone, NetworkMessage)]
 pub struct BasicAuthenticatorResponseMessage {
     code: u8,
     message: String,

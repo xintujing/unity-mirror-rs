@@ -11,13 +11,14 @@ use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::mirror::{
     RemoteCallType, RemoteProcedureCalls, SyncDirection, SyncMode, TNetworkBehaviour,
 };
-use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
+use crate::unity_engine::{GameObject, WorldManager};
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering::SeqCst;
 use unity_mirror_macro::namespace;
@@ -97,6 +98,7 @@ impl NetworkIdentitySerialization {
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkIdentity {
+    pub self_weak: RevelWeak<Box<NetworkIdentity>>,
     pub game_object: RevelWeak<GameObject>,
 
     net_id: u32,
@@ -111,7 +113,7 @@ pub struct NetworkIdentity {
 
     pub scene_id: u64,
     _asset_id: u32,
-    destroy_called: bool,
+    pub destroy_called: bool,
     pub visibility: Visibility,
 
     owner_payload: Vec<u8>,
@@ -119,11 +121,37 @@ pub struct NetworkIdentity {
 
     pub(crate) observers: Vec<RevelWeak<NetworkConnection>>,
     last_serialization: RevelArc<NetworkIdentitySerialization>,
+
+    spawned_from_instantiate: bool,
+    has_spawned: bool,
+    had_authority: bool,
 }
+
+impl PartialEq<Self> for NetworkIdentity {
+    fn eq(&self, other: &Self) -> bool {
+        self.net_id == other.net_id
+    }
+}
+
+impl Hash for NetworkIdentity {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.net_id.hash(state);
+    }
+}
+
+impl Eq for NetworkIdentity {}
 
 impl MonoBehaviour for NetworkIdentity {
     fn awake(&mut self) {
-        // println!("Mirror: NetworkIdentity Awake");
+        if self.has_spawned {
+            log::error!(
+                "{} has already spawned. Don't call Instantiate for NetworkIdentities that were in the scene since the beginning (aka scene objects).  Otherwise the client won't know which object to use for a SpawnSceneObject message.",
+                self.name()
+            );
+            self.spawned_from_instantiate = true;
+            WorldManager::destroy(&self.game_object.get().unwrap().id);
+        }
+        self.has_spawned = true;
     }
     fn update(&mut self) {
         // println!("Mirror: NetworkIdentity Update");
@@ -288,6 +316,62 @@ impl NetworkIdentity {
 
     pub(crate) fn deserialize_server(&self, reader: &mut NetworkReader) -> bool {
         true
+    }
+
+    pub fn clear_observers(&mut self) {
+        for observer in self.observers.iter_mut() {
+            if let Some(real_observer) = observer.get() {
+                if let Some(self_arc) = self.self_weak.upgrade() {
+                    real_observer.remove_from_observing(self_arc, true)
+                }
+            }
+        }
+        self.observers.clear();
+    }
+
+    pub fn reset_state(&mut self) {
+        self.has_spawned = false;
+        self.is_client = false;
+        self.is_server = false;
+
+        self.is_owned = false;
+
+        self.notify_authority();
+
+        self.net_id = 0;
+
+        self.connection = RevelWeak::default();
+
+        self.clear_observers();
+    }
+
+    fn notify_authority(&mut self) {
+        if !self.had_authority && self.is_owned {
+            self.on_start_authority();
+        }
+        if self.had_authority && !self.is_owned {
+            self.on_stop_authority();
+        }
+        self.had_authority = self.is_owned;
+    }
+
+    fn on_start_authority(&self) {
+        for network_behaviour in self.network_behaviours.iter() {
+            if let Some(network_behaviour) = network_behaviour.last() {
+                if let Some(mut network_behaviour) = network_behaviour.upgrade() {
+                    network_behaviour.on_start_authority();
+                }
+            }
+        }
+    }
+    fn on_stop_authority(&self) {
+        for network_behaviour in self.network_behaviours.iter() {
+            if let Some(network_behaviour) = network_behaviour.last() {
+                if let Some(mut network_behaviour) = network_behaviour.upgrade() {
+                    network_behaviour.on_stop_authority();
+                }
+            }
+        }
     }
 }
 

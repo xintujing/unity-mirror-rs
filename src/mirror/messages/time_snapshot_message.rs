@@ -3,10 +3,10 @@ use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use unity_mirror_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, NetworkMessage};
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Copy, Default, Message)]
+#[derive(Debug, PartialEq, Clone, Copy, Default, NetworkMessage)]
 pub struct TimeSnapshotMessage;
 
 impl TimeSnapshotMessage {

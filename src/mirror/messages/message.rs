@@ -17,7 +17,7 @@ pub trait MessageDeserializer {
         Self: Sized;
 }
 
-pub trait Message: Object + MessageSerializer + MessageDeserializer {}
+pub trait NetworkMessage: Object + MessageSerializer + MessageDeserializer {}
 
 // pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
 
@@ -32,7 +32,7 @@ pub struct MessageHandler {
 }
 
 impl MessageHandler {
-    pub fn new<M: Message + 'static>(
+    pub fn new<M: NetworkMessage + 'static>(
         func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) -> Self {

@@ -1,0 +1,420 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1713pt" height="528pt" viewBox="0.00 0.00 1712.55 528.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 524)">
+<title>FunctionCallGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-524 1708.55,-524 1708.55,4 -4,4"/>
+<!-- Transport_active_ServerStop -->
+<g id="node1" class="node">
+<title>Transport_active_ServerStop</title>
+<polygon fill="none" stroke="black" points="182.39,-241 0,-241 0,-205 182.39,-205 182.39,-241"/>
+<text text-anchor="middle" x="91.19" y="-218.8" font-family="Times,serif" font-size="14.00">Transport.active.ServerStop()</text>
+</g>
+<!-- RemoveTransportHandlers -->
+<g id="node2" class="node">
+<title>RemoveTransportHandlers</title>
+<polygon fill="none" stroke="black" points="395.33,-241 218.39,-241 218.39,-205 395.33,-205 395.33,-241"/>
+<text text-anchor="middle" x="306.86" y="-218.8" font-family="Times,serif" font-size="14.00">RemoveTransportHandlers()</text>
+</g>
+<!-- Transport_active_ServerStop&#45;&gt;RemoveTransportHandlers -->
+<g id="edge1" class="edge">
+<title>Transport_active_ServerStop-&gt;RemoveTransportHandlers</title>
+<path fill="none" stroke="black" d="M182.81,-223C190.77,-223 198.86,-223 206.88,-223"/>
+<polygon fill="black" stroke="black" points="206.66,-226.5 216.66,-223 206.66,-219.5 206.66,-226.5"/>
+</g>
+<!-- OnTransportConnected -->
+<g id="node5" class="node">
+<title>OnTransportConnected</title>
+<polygon fill="none" stroke="black" points="871.2,-360 714.47,-360 714.47,-324 871.2,-324 871.2,-360"/>
+<text text-anchor="middle" x="792.83" y="-337.8" font-family="Times,serif" font-size="14.00">OnTransportConnected()</text>
+</g>
+<!-- RemoveTransportHandlers&#45;&gt;OnTransportConnected -->
+<g id="edge2" class="edge">
+<title>RemoveTransportHandlers-&gt;OnTransportConnected</title>
+<path fill="none" stroke="black" d="M322.67,-241.46C343.77,-266.19 385.1,-309.02 431.33,-327 518.94,-361.06 627.69,-360.35 702.71,-353.92"/>
+<polygon fill="black" stroke="black" points="702.84,-357.42 712.48,-353.03 702.21,-350.45 702.84,-357.42"/>
+</g>
+<!-- OnTransportConnectedWithAddress -->
+<g id="node6" class="node">
+<title>OnTransportConnectedWithAddress</title>
+<polygon fill="none" stroke="black" points="661.94,-318 431.33,-318 431.33,-282 661.94,-282 661.94,-318"/>
+<text text-anchor="middle" x="546.64" y="-295.8" font-family="Times,serif" font-size="14.00">OnTransportConnectedWithAddress()</text>
+</g>
+<!-- RemoveTransportHandlers&#45;&gt;OnTransportConnectedWithAddress -->
+<g id="edge3" class="edge">
+<title>RemoveTransportHandlers-&gt;OnTransportConnectedWithAddress</title>
+<path fill="none" stroke="black" d="M348.72,-241.38C372.5,-251.61 403.24,-264.05 431.33,-273 437.43,-274.94 443.75,-276.81 450.15,-278.6"/>
+<polygon fill="black" stroke="black" points="448.94,-281.9 459.5,-281.14 450.77,-275.15 448.94,-281.9"/>
+</g>
+<!-- OnTransportData -->
+<g id="node7" class="node">
+<title>OnTransportData</title>
+<polygon fill="none" stroke="black" points="608.28,-264 484.99,-264 484.99,-228 608.28,-228 608.28,-264"/>
+<text text-anchor="middle" x="546.64" y="-241.8" font-family="Times,serif" font-size="14.00">OnTransportData()</text>
+</g>
+<!-- RemoveTransportHandlers&#45;&gt;OnTransportData -->
+<g id="edge4" class="edge">
+<title>RemoveTransportHandlers-&gt;OnTransportData</title>
+<path fill="none" stroke="black" d="M395.72,-231.5C421.3,-233.97 448.95,-236.65 473.45,-239.02"/>
+<polygon fill="black" stroke="black" points="473.03,-242.49 483.32,-239.97 473.7,-235.53 473.03,-242.49"/>
+</g>
+<!-- OnTransportDisconnected -->
+<g id="node8" class="node">
+<title>OnTransportDisconnected</title>
+<polygon fill="none" stroke="black" points="879.36,-144 706.31,-144 706.31,-108 879.36,-108 879.36,-144"/>
+<text text-anchor="middle" x="792.83" y="-121.8" font-family="Times,serif" font-size="14.00">OnTransportDisconnected()</text>
+</g>
+<!-- RemoveTransportHandlers&#45;&gt;OnTransportDisconnected -->
+<g id="edge5" class="edge">
+<title>RemoveTransportHandlers-&gt;OnTransportDisconnected</title>
+<path fill="none" stroke="black" d="M395.62,-217.98C484.48,-211.95 615.27,-200.16 661.94,-181 680.69,-173.3 679.87,-162.19 697.94,-153 700.85,-151.52 703.84,-150.11 706.9,-148.77"/>
+<polygon fill="black" stroke="black" points="708.16,-152.04 716.11,-145.04 705.52,-145.56 708.16,-152.04"/>
+</g>
+<!-- OnTransportError -->
+<g id="node9" class="node">
+<title>OnTransportError</title>
+<polygon fill="none" stroke="black" points="609.84,-172 483.44,-172 483.44,-136 609.84,-136 609.84,-172"/>
+<text text-anchor="middle" x="546.64" y="-149.8" font-family="Times,serif" font-size="14.00">OnTransportError()</text>
+</g>
+<!-- RemoveTransportHandlers&#45;&gt;OnTransportError -->
+<g id="edge6" class="edge">
+<title>RemoveTransportHandlers-&gt;OnTransportError</title>
+<path fill="none" stroke="black" d="M368.71,-204.53C388.65,-198.54 410.91,-191.92 431.33,-186 444.53,-182.18 458.61,-178.17 472.21,-174.34"/>
+<polygon fill="black" stroke="black" points="472.85,-177.8 481.53,-171.73 470.96,-171.06 472.85,-177.8"/>
+</g>
+<!-- OnTransportException -->
+<g id="node10" class="node">
+<title>OnTransportException</title>
+<polygon fill="none" stroke="black" points="623.45,-118 469.83,-118 469.83,-82 623.45,-82 623.45,-118"/>
+<text text-anchor="middle" x="546.64" y="-95.8" font-family="Times,serif" font-size="14.00">OnTransportException()</text>
+</g>
+<!-- RemoveTransportHandlers&#45;&gt;OnTransportException -->
+<g id="edge7" class="edge">
+<title>RemoveTransportHandlers-&gt;OnTransportException</title>
+<path fill="none" stroke="black" d="M326.2,-204.52C348.91,-182.72 389.7,-146.93 431.33,-127 439.86,-122.92 449.05,-119.43 458.37,-116.45"/>
+<polygon fill="black" stroke="black" points="459.32,-119.82 467.91,-113.62 457.32,-113.11 459.32,-119.82"/>
+</g>
+<!-- CleanupSpawned -->
+<g id="node3" class="node">
+<title>CleanupSpawned</title>
+<polygon fill="none" stroke="black" points="608.29,-466 484.98,-466 484.98,-430 608.29,-430 608.29,-466"/>
+<text text-anchor="middle" x="546.64" y="-443.8" font-family="Times,serif" font-size="14.00">CleanupSpawned()</text>
+</g>
+<!-- Destroy -->
+<g id="node29" class="node">
+<title>Destroy</title>
+<polygon fill="none" stroke="black" points="827.66,-440 758.01,-440 758.01,-404 827.66,-404 827.66,-440"/>
+<text text-anchor="middle" x="792.83" y="-417.8" font-family="Times,serif" font-size="14.00">Destroy()</text>
+</g>
+<!-- CleanupSpawned&#45;&gt;Destroy -->
+<g id="edge8" class="edge">
+<title>CleanupSpawned-&gt;Destroy</title>
+<path fill="none" stroke="black" d="M608.63,-441.51C651.44,-436.95 707.77,-430.95 746.6,-426.82"/>
+<polygon fill="black" stroke="black" points="746.48,-430.35 756.06,-425.81 745.74,-423.39 746.48,-430.35"/>
+</g>
+<!-- NetworkIdentity_ResetStatics -->
+<g id="node4" class="node">
+<title>NetworkIdentity_ResetStatics</title>
+<polygon fill="none" stroke="black" points="887.73,-36 697.94,-36 697.94,0 887.73,0 887.73,-36"/>
+<text text-anchor="middle" x="792.83" y="-13.8" font-family="Times,serif" font-size="14.00">NetworkIdentity.ResetStatics()</text>
+</g>
+<!-- DestroyPlayerForConnection -->
+<g id="node24" class="node">
+<title>DestroyPlayerForConnection</title>
+<polygon fill="none" stroke="black" points="1113.14,-36 923.73,-36 923.73,0 1113.14,0 1113.14,-36"/>
+<text text-anchor="middle" x="1018.43" y="-13.8" font-family="Times,serif" font-size="14.00">DestroyPlayerForConnection()</text>
+</g>
+<!-- NetworkIdentity_ResetStatics&#45;&gt;DestroyPlayerForConnection -->
+<g id="edge9" class="edge">
+<title>NetworkIdentity_ResetStatics-&gt;DestroyPlayerForConnection</title>
+<path fill="none" stroke="black" d="M888.01,-18C895.96,-18 904.03,-18 912.06,-18"/>
+<polygon fill="black" stroke="black" points="911.85,-21.5 921.85,-18 911.85,-14.5 911.85,-21.5"/>
+</g>
+<!-- AddConnection -->
+<g id="node11" class="node">
+<title>AddConnection</title>
+<polygon fill="none" stroke="black" points="1075.42,-252 961.44,-252 961.44,-216 1075.42,-216 1075.42,-252"/>
+<text text-anchor="middle" x="1018.43" y="-229.8" font-family="Times,serif" font-size="14.00">AddConnection()</text>
+</g>
+<!-- OnTransportConnected&#45;&gt;AddConnection -->
+<g id="edge10" class="edge">
+<title>OnTransportConnected-&gt;AddConnection</title>
+<path fill="none" stroke="black" d="M865.84,-323.54C873.34,-320.95 880.76,-318.11 887.73,-315 922.13,-299.67 958.24,-276.46 983.6,-258.8"/>
+<polygon fill="black" stroke="black" points="985.37,-261.83 991.53,-253.21 981.34,-256.11 985.37,-261.83"/>
+</g>
+<!-- OnTransportConnectedWithAddress&#45;&gt;OnTransportConnected -->
+<g id="edge11" class="edge">
+<title>OnTransportConnectedWithAddress-&gt;OnTransportConnected</title>
+<path fill="none" stroke="black" d="M655.1,-318.48C671.06,-321.23 687.36,-324.03 702.88,-326.7"/>
+<polygon fill="black" stroke="black" points="702.1,-330.12 712.54,-328.36 703.28,-323.22 702.1,-330.12"/>
+</g>
+<!-- UnpackAndInvoke -->
+<g id="node34" class="node">
+<title>UnpackAndInvoke</title>
+<polygon fill="none" stroke="black" points="854.1,-306 731.57,-306 731.57,-270 854.1,-270 854.1,-306"/>
+<text text-anchor="middle" x="792.83" y="-283.8" font-family="Times,serif" font-size="14.00">UnpackAndInvoke</text>
+</g>
+<!-- OnTransportData&#45;&gt;UnpackAndInvoke -->
+<g id="edge12" class="edge">
+<title>OnTransportData-&gt;UnpackAndInvoke</title>
+<path fill="none" stroke="black" d="M608.63,-256.49C642.41,-262.3 684.6,-269.56 719.97,-275.64"/>
+<polygon fill="black" stroke="black" points="719.26,-279.07 729.71,-277.31 720.44,-272.17 719.26,-279.07"/>
+</g>
+<!-- RemoveConnection -->
+<g id="node12" class="node">
+<title>RemoveConnection</title>
+<polygon fill="none" stroke="black" points="1086.7,-90 950.17,-90 950.17,-54 1086.7,-54 1086.7,-90"/>
+<text text-anchor="middle" x="1018.43" y="-67.8" font-family="Times,serif" font-size="14.00">RemoveConnection()</text>
+</g>
+<!-- OnTransportDisconnected&#45;&gt;RemoveConnection -->
+<g id="edge13" class="edge">
+<title>OnTransportDisconnected-&gt;RemoveConnection</title>
+<path fill="none" stroke="black" d="M870.16,-107.57C892.24,-102.24 916.38,-96.41 938.6,-91.04"/>
+<polygon fill="black" stroke="black" points="939.32,-94.47 948.22,-88.72 937.67,-87.66 939.32,-94.47"/>
+</g>
+<!-- OnTransportError&#45;&gt;OnTransportDisconnected -->
+<g id="edge14" class="edge">
+<title>OnTransportError-&gt;OnTransportDisconnected</title>
+<path fill="none" stroke="black" d="M610.21,-146.83C635.91,-143.88 666.26,-140.4 694.73,-137.13"/>
+<polygon fill="black" stroke="black" points="694.91,-140.64 704.44,-136.02 694.11,-133.68 694.91,-140.64"/>
+</g>
+<!-- OnTransportException&#45;&gt;OnTransportDisconnected -->
+<g id="edge15" class="edge">
+<title>OnTransportException-&gt;OnTransportDisconnected</title>
+<path fill="none" stroke="black" d="M623.9,-108.12C646.27,-110.5 671.04,-113.14 694.53,-115.64"/>
+<polygon fill="black" stroke="black" points="694.12,-119.12 704.44,-116.69 694.86,-112.16 694.12,-119.12"/>
+</g>
+<!-- RegisterMessageHandlers -->
+<g id="node19" class="node">
+<title>RegisterMessageHandlers</title>
+<polygon fill="none" stroke="black" points="1320.64,-252 1149.14,-252 1149.14,-216 1320.64,-216 1320.64,-252"/>
+<text text-anchor="middle" x="1234.89" y="-229.8" font-family="Times,serif" font-size="14.00">RegisterMessageHandlers()</text>
+</g>
+<!-- AddConnection&#45;&gt;RegisterMessageHandlers -->
+<g id="edge16" class="edge">
+<title>AddConnection-&gt;RegisterMessageHandlers</title>
+<path fill="none" stroke="black" d="M1075.78,-234C1094.71,-234 1116.4,-234 1137.53,-234"/>
+<polygon fill="black" stroke="black" points="1137.33,-237.5 1147.33,-234 1137.33,-230.5 1137.33,-237.5"/>
+</g>
+<!-- DisconnectAll -->
+<g id="node25" class="node">
+<title>DisconnectAll</title>
+<polygon fill="none" stroke="black" points="1287.99,-90 1181.79,-90 1181.79,-54 1287.99,-54 1287.99,-90"/>
+<text text-anchor="middle" x="1234.89" y="-67.8" font-family="Times,serif" font-size="14.00">DisconnectAll()</text>
+</g>
+<!-- RemoveConnection&#45;&gt;DisconnectAll -->
+<g id="edge17" class="edge">
+<title>RemoveConnection-&gt;DisconnectAll</title>
+<path fill="none" stroke="black" d="M1086.99,-65.68C1113.62,-65.08 1144.05,-65.11 1170.29,-65.77"/>
+<polygon fill="black" stroke="black" points="1170.02,-69.27 1180.12,-66.06 1170.22,-62.27 1170.02,-69.27"/>
+</g>
+<!-- SetLocalConnection -->
+<g id="node13" class="node">
+<title>SetLocalConnection</title>
+<polygon fill="none" stroke="black" points="862.65,-252 723.02,-252 723.02,-216 862.65,-216 862.65,-252"/>
+<text text-anchor="middle" x="792.83" y="-229.8" font-family="Times,serif" font-size="14.00">SetLocalConnection()</text>
+</g>
+<!-- SetLocalConnection&#45;&gt;AddConnection -->
+<g id="edge18" class="edge">
+<title>SetLocalConnection-&gt;AddConnection</title>
+<path fill="none" stroke="black" d="M863.05,-234C890.66,-234 922.34,-234 949.79,-234"/>
+<polygon fill="black" stroke="black" points="949.76,-237.5 959.76,-234 949.76,-230.5 949.76,-237.5"/>
+</g>
+<!-- RemoveLocalConnection -->
+<g id="node14" class="node">
+<title>RemoveLocalConnection</title>
+<polygon fill="none" stroke="black" points="877.03,-90 708.64,-90 708.64,-54 877.03,-54 877.03,-90"/>
+<text text-anchor="middle" x="792.83" y="-67.8" font-family="Times,serif" font-size="14.00">RemoveLocalConnection()</text>
+</g>
+<!-- RemoveLocalConnection&#45;&gt;RemoveConnection -->
+<g id="edge19" class="edge">
+<title>RemoveLocalConnection-&gt;RemoveConnection</title>
+<path fill="none" stroke="black" d="M877.41,-72C897.42,-72 918.73,-72 938.52,-72"/>
+<polygon fill="black" stroke="black" points="938.47,-75.5 948.47,-72 938.47,-68.5 938.47,-75.5"/>
+</g>
+<!-- HasExternalConnections -->
+<g id="node15" class="node">
+<title>HasExternalConnections</title>
+<polygon fill="none" stroke="black" points="875.09,-198 710.58,-198 710.58,-162 875.09,-162 875.09,-198"/>
+<text text-anchor="middle" x="792.83" y="-175.8" font-family="Times,serif" font-size="14.00">HasExternalConnections()</text>
+</g>
+<!-- HasExternalConnections&#45;&gt;AddConnection -->
+<g id="edge20" class="edge">
+<title>HasExternalConnections-&gt;AddConnection</title>
+<path fill="none" stroke="black" d="M870.16,-198.43C896.17,-204.71 925.03,-211.69 950.27,-217.78"/>
+<polygon fill="black" stroke="black" points="949.2,-221.12 959.74,-220.07 950.84,-214.32 949.2,-221.12"/>
+</g>
+<!-- SendToAll -->
+<g id="node16" class="node">
+<title>SendToAll</title>
+<polygon fill="none" stroke="black" points="134.58,-520 47.81,-520 47.81,-484 134.58,-484 134.58,-520"/>
+<text text-anchor="middle" x="91.19" y="-497.8" font-family="Times,serif" font-size="14.00">SendToAll()</text>
+</g>
+<!-- SendToReady -->
+<g id="node17" class="node">
+<title>SendToReady</title>
+<polygon fill="none" stroke="black" points="359.18,-520 254.54,-520 254.54,-484 359.18,-484 359.18,-520"/>
+<text text-anchor="middle" x="306.86" y="-497.8" font-family="Times,serif" font-size="14.00">SendToReady()</text>
+</g>
+<!-- SendToAll&#45;&gt;SendToReady -->
+<g id="edge21" class="edge">
+<title>SendToAll-&gt;SendToReady</title>
+<path fill="none" stroke="black" d="M134.92,-502C165.77,-502 207.95,-502 242.69,-502"/>
+<polygon fill="black" stroke="black" points="242.64,-505.5 252.64,-502 242.64,-498.5 242.64,-505.5"/>
+</g>
+<!-- SendToObservers -->
+<g id="node18" class="node">
+<title>SendToObservers</title>
+<polygon fill="none" stroke="black" points="609.45,-520 483.82,-520 483.82,-484 609.45,-484 609.45,-520"/>
+<text text-anchor="middle" x="546.64" y="-497.8" font-family="Times,serif" font-size="14.00">SendToObservers()</text>
+</g>
+<!-- SendToReady&#45;&gt;SendToObservers -->
+<g id="edge22" class="edge">
+<title>SendToReady-&gt;SendToObservers</title>
+<path fill="none" stroke="black" d="M359.45,-502C392.5,-502 435.9,-502 472.48,-502"/>
+<polygon fill="black" stroke="black" points="472.08,-505.5 482.08,-502 472.08,-498.5 472.08,-505.5"/>
+</g>
+<!-- OnClientReadyMessage -->
+<g id="node20" class="node">
+<title>OnClientReadyMessage</title>
+<polygon fill="none" stroke="black" points="1523.5,-360 1362.09,-360 1362.09,-324 1523.5,-324 1523.5,-360"/>
+<text text-anchor="middle" x="1442.79" y="-337.8" font-family="Times,serif" font-size="14.00">OnClientReadyMessage()</text>
+</g>
+<!-- RegisterMessageHandlers&#45;&gt;OnClientReadyMessage -->
+<g id="edge23" class="edge">
+<title>RegisterMessageHandlers-&gt;OnClientReadyMessage</title>
+<path fill="none" stroke="black" d="M1258.74,-252.23C1282.18,-270.21 1320.25,-297.47 1356.64,-315 1359.75,-316.5 1362.97,-317.94 1366.25,-319.33"/>
+<polygon fill="black" stroke="black" points="1364.88,-322.55 1375.47,-322.99 1367.47,-316.05 1364.88,-322.55"/>
+</g>
+<!-- OnCommandMessage -->
+<g id="node21" class="node">
+<title>OnCommandMessage</title>
+<polygon fill="none" stroke="black" points="1517.67,-306 1367.92,-306 1367.92,-270 1517.67,-270 1517.67,-306"/>
+<text text-anchor="middle" x="1442.79" y="-283.8" font-family="Times,serif" font-size="14.00">OnCommandMessage()</text>
+</g>
+<!-- RegisterMessageHandlers&#45;&gt;OnCommandMessage -->
+<g id="edge24" class="edge">
+<title>RegisterMessageHandlers-&gt;OnCommandMessage</title>
+<path fill="none" stroke="black" d="M1306.17,-252.43C1323.64,-257.01 1342.5,-261.96 1360.44,-266.67"/>
+<polygon fill="black" stroke="black" points="1359.45,-270.02 1370.01,-269.17 1361.23,-263.25 1359.45,-270.02"/>
+</g>
+<!-- OnEntityStateMessage -->
+<g id="node22" class="node">
+<title>OnEntityStateMessage</title>
+<polygon fill="none" stroke="black" points="1519.61,-252 1365.98,-252 1365.98,-216 1519.61,-216 1519.61,-252"/>
+<text text-anchor="middle" x="1442.79" y="-229.8" font-family="Times,serif" font-size="14.00">OnEntityStateMessage()</text>
+</g>
+<!-- RegisterMessageHandlers&#45;&gt;OnEntityStateMessage -->
+<g id="edge25" class="edge">
+<title>RegisterMessageHandlers-&gt;OnEntityStateMessage</title>
+<path fill="none" stroke="black" d="M1321.12,-234C1332.04,-234 1343.24,-234 1354.2,-234"/>
+<polygon fill="black" stroke="black" points="1354,-237.5 1364,-234 1354,-230.5 1354,-237.5"/>
+</g>
+<!-- OnTimeSnapshotMessage -->
+<g id="node23" class="node">
+<title>OnTimeSnapshotMessage</title>
+<polygon fill="none" stroke="black" points="1528.94,-198 1356.64,-198 1356.64,-162 1528.94,-162 1528.94,-198"/>
+<text text-anchor="middle" x="1442.79" y="-175.8" font-family="Times,serif" font-size="14.00">OnTimeSnapshotMessage()</text>
+</g>
+<!-- RegisterMessageHandlers&#45;&gt;OnTimeSnapshotMessage -->
+<g id="edge26" class="edge">
+<title>RegisterMessageHandlers-&gt;OnTimeSnapshotMessage</title>
+<path fill="none" stroke="black" d="M1306.17,-215.57C1323.64,-210.99 1342.5,-206.04 1360.44,-201.33"/>
+<polygon fill="black" stroke="black" points="1361.23,-204.75 1370.01,-198.83 1359.45,-197.98 1361.23,-204.75"/>
+</g>
+<!-- DestroyPlayerForConnection&#45;&gt;DisconnectAll -->
+<g id="edge27" class="edge">
+<title>DestroyPlayerForConnection-&gt;DisconnectAll</title>
+<path fill="none" stroke="black" d="M1092.64,-36.43C1117.89,-42.79 1145.95,-49.86 1170.37,-56.01"/>
+<polygon fill="black" stroke="black" points="1169.29,-59.34 1179.84,-58.39 1171,-52.55 1169.29,-59.34"/>
+</g>
+<!-- DisconnectAll&#45;&gt;RemoveConnection -->
+<g id="edge28" class="edge">
+<title>DisconnectAll-&gt;RemoveConnection</title>
+<path fill="none" stroke="black" d="M1181.63,-77.89C1156.59,-78.75 1126.08,-78.96 1098.3,-78.54"/>
+<polygon fill="black" stroke="black" points="1098.57,-75.04 1088.51,-78.35 1098.44,-82.04 1098.57,-75.04"/>
+</g>
+<!-- SpawnObjects -->
+<g id="node26" class="node">
+<title>SpawnObjects</title>
+<polygon fill="none" stroke="black" points="144.29,-412 38.09,-412 38.09,-376 144.29,-376 144.29,-412"/>
+<text text-anchor="middle" x="91.19" y="-389.8" font-family="Times,serif" font-size="14.00">SpawnObjects()</text>
+</g>
+<!-- Spawn -->
+<g id="node27" class="node">
+<title>Spawn</title>
+<polygon fill="none" stroke="black" points="338.58,-412 275.14,-412 275.14,-376 338.58,-376 338.58,-412"/>
+<text text-anchor="middle" x="306.86" y="-389.8" font-family="Times,serif" font-size="14.00">Spawn()</text>
+</g>
+<!-- SpawnObjects&#45;&gt;Spawn -->
+<g id="edge29" class="edge">
+<title>SpawnObjects-&gt;Spawn</title>
+<path fill="none" stroke="black" d="M144.74,-394C181.21,-394 229.19,-394 263.28,-394"/>
+<polygon fill="black" stroke="black" points="263.2,-397.5 273.2,-394 263.2,-390.5 263.2,-397.5"/>
+</g>
+<!-- UnSpawn -->
+<g id="node28" class="node">
+<title>UnSpawn</title>
+<polygon fill="none" stroke="black" points="586.91,-412 506.36,-412 506.36,-376 586.91,-376 586.91,-412"/>
+<text text-anchor="middle" x="546.64" y="-389.8" font-family="Times,serif" font-size="14.00">UnSpawn()</text>
+</g>
+<!-- Spawn&#45;&gt;UnSpawn -->
+<g id="edge30" class="edge">
+<title>Spawn-&gt;UnSpawn</title>
+<path fill="none" stroke="black" d="M338.94,-394C378.6,-394 447.71,-394 495.01,-394"/>
+<polygon fill="black" stroke="black" points="494.72,-397.5 504.72,-394 494.72,-390.5 494.72,-397.5"/>
+</g>
+<!-- UnSpawn&#45;&gt;Destroy -->
+<g id="edge31" class="edge">
+<title>UnSpawn-&gt;Destroy</title>
+<path fill="none" stroke="black" d="M587.14,-398.53C630.6,-403.51 700.35,-411.51 746.14,-416.76"/>
+<polygon fill="black" stroke="black" points="745.68,-420.23 756.01,-417.89 746.47,-413.28 745.68,-420.23"/>
+</g>
+<!-- RebuildObservers -->
+<g id="node30" class="node">
+<title>RebuildObservers</title>
+<polygon fill="none" stroke="black" points="1081.64,-440 955.23,-440 955.23,-404 1081.64,-404 1081.64,-440"/>
+<text text-anchor="middle" x="1018.43" y="-417.8" font-family="Times,serif" font-size="14.00">RebuildObservers()</text>
+</g>
+<!-- Destroy&#45;&gt;RebuildObservers -->
+<g id="edge32" class="edge">
+<title>Destroy-&gt;RebuildObservers</title>
+<path fill="none" stroke="black" d="M827.79,-422C858.37,-422 904.37,-422 943.41,-422"/>
+<polygon fill="black" stroke="black" points="943.23,-425.5 953.23,-422 943.23,-418.5 943.23,-425.5"/>
+</g>
+<!-- Broadcast -->
+<g id="node31" class="node">
+<title>Broadcast</title>
+<polygon fill="none" stroke="black" points="1275.54,-440 1194.24,-440 1194.24,-404 1275.54,-404 1275.54,-440"/>
+<text text-anchor="middle" x="1234.89" y="-417.8" font-family="Times,serif" font-size="14.00">Broadcast()</text>
+</g>
+<!-- RebuildObservers&#45;&gt;Broadcast -->
+<g id="edge33" class="edge">
+<title>RebuildObservers-&gt;Broadcast</title>
+<path fill="none" stroke="black" d="M1082.04,-422C1114.05,-422 1152.52,-422 1182.73,-422"/>
+<polygon fill="black" stroke="black" points="1182.36,-425.5 1192.36,-422 1182.36,-418.5 1182.36,-425.5"/>
+</g>
+<!-- NetworkEarlyUpdate -->
+<g id="node32" class="node">
+<title>NetworkEarlyUpdate</title>
+<polygon fill="none" stroke="black" points="1515.32,-440 1370.26,-440 1370.26,-404 1515.32,-404 1515.32,-440"/>
+<text text-anchor="middle" x="1442.79" y="-417.8" font-family="Times,serif" font-size="14.00">NetworkEarlyUpdate()</text>
+</g>
+<!-- Broadcast&#45;&gt;NetworkEarlyUpdate -->
+<g id="edge34" class="edge">
+<title>Broadcast-&gt;NetworkEarlyUpdate</title>
+<path fill="none" stroke="black" d="M1275.59,-422C1299.21,-422 1330.09,-422 1358.82,-422"/>
+<polygon fill="black" stroke="black" points="1358.61,-425.5 1368.61,-422 1358.61,-418.5 1358.61,-425.5"/>
+</g>
+<!-- NetworkLateUpdate -->
+<g id="node33" class="node">
+<title>NetworkLateUpdate</title>
+<polygon fill="none" stroke="black" points="1704.55,-440 1564.94,-440 1564.94,-404 1704.55,-404 1704.55,-440"/>
+<text text-anchor="middle" x="1634.75" y="-417.8" font-family="Times,serif" font-size="14.00">NetworkLateUpdate()</text>
+</g>
+<!-- NetworkEarlyUpdate&#45;&gt;NetworkLateUpdate -->
+<g id="edge35" class="edge">
+<title>NetworkEarlyUpdate-&gt;NetworkLateUpdate</title>
+<path fill="none" stroke="black" d="M1515.61,-422C1527.91,-422 1540.77,-422 1553.29,-422"/>
+<polygon fill="black" stroke="black" points="1553.15,-425.5 1563.15,-422 1553.15,-418.5 1553.15,-425.5"/>
+</g>
+</g>
+</svg>

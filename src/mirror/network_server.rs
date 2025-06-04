@@ -3,11 +3,14 @@ use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::accurate_interval::AccurateInterval;
 use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
+use crate::mirror::messages::change_owner_message::ChangeOwnerMessage;
 use crate::mirror::messages::command_message::CommandMessage;
 use crate::mirror::messages::entity_state_message::EntityStateMessage;
-use crate::mirror::messages::message::{Message, MessageHandler, ID_SIZE};
+use crate::mirror::messages::message::{max_message_size, MessageHandler, NetworkMessage, ID_SIZE};
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
+use crate::mirror::messages::object_destroy_message::ObjectDestroyMessage;
+use crate::mirror::messages::object_hide_message::ObjectHideMessage;
 use crate::mirror::messages::object_spawn_finished_message::ObjectSpawnFinishedMessage;
 use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
@@ -18,6 +21,7 @@ use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::network_time::NetworkTime;
 use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
@@ -230,8 +234,8 @@ impl NetworkServer {
 
     fn on_transport_connected_with_address(conn_id: u64, address: &str) {
         if Self::is_connection_allowed(conn_id, address) {
-            let connection = NetworkConnection::new(conn_id, address.to_string());
-            Self::on_connected(RevelArc::new(connection));
+            let arc_connection = NetworkConnection::new(conn_id, address.to_string());
+            Self::on_connected(arc_connection);
             return;
         }
         if let Some(active) = TransportManager.active.get() {
@@ -402,9 +406,17 @@ impl NetworkServer {
             if Self.on_disconnected_event.is_registered() {
                 Self.on_disconnected_event.call((conn.clone(),));
             } else {
-                // TODO DestroyPlayerForConnection(conn)
+                Self::destroy_player_for_connection(conn)
             }
         }
+    }
+
+    pub fn destroy_player_for_connection(mut conn: RevelArc<NetworkConnection>) {
+        conn.destroy_owned_objects();
+
+        conn.remove_from_observings_observers();
+
+        conn.identity = RevelWeak::default();
     }
 
     fn register_message_handlers(&mut self) {
@@ -667,7 +679,7 @@ impl NetworkServer {
         func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) where
-        M: Message + 'static,
+        M: NetworkMessage + 'static,
     {
         let message_id = M::get_full_name().hash16();
         if self.message_handlers.contains_key(&message_id) {
@@ -688,7 +700,7 @@ impl NetworkServer {
         func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) where
-        M: Message + 'static,
+        M: NetworkMessage + 'static,
     {
         let message_id = M::get_full_name().hash16();
         self.message_handlers.insert(
@@ -699,7 +711,7 @@ impl NetworkServer {
 
     pub fn unregister_handler<M>(&mut self)
     where
-        M: Message + 'static,
+        M: NetworkMessage + 'static,
     {
         let message_id = M::get_full_name().hash16();
         self.message_handlers.remove(&message_id);
@@ -750,8 +762,43 @@ impl NetworkServer {
     ) {
     }
 
-    pub fn send_to_all(message: SceneMessage) {}
+    pub fn send_to_all<T: NetworkMessage>(
+        mut message: T,
+        channel: TransportChannel,
+        send_to_ready_only: bool,
+    ) {
+        if !Self.active {
+            log::warn!("Can not send using NetworkServer.SendToAll<T>(T msg) because NetworkServer is not active");
+            return;
+        }
 
+        NetworkWriterPool::get_return(|writer| {
+            message.serialize(writer);
+            let segment = writer.to_vec();
+
+            let max = max_message_size(channel);
+            if writer.position > max {
+                log::error!(
+                    "NetworkServer.SendToAll: message of type {} with a size of {} bytes is larger than the max allowed message size in one batch: {}.\nThe message was dropped, please make it smaller.",
+                    T::get_full_name(),
+                    writer.position,
+                    max
+                );
+                return;
+            }
+
+            let mut count = 0;
+
+            for (_, connection) in Self.connections.iter_mut() {
+                if send_to_ready_only && !connection.is_ready {
+                    continue;
+                }
+
+                count += 1;
+                connection.send(&segment, channel);
+            }
+        })
+    }
     pub fn set_all_clients_not_ready() {}
 
     pub fn spawn_objects() -> bool {
@@ -947,6 +994,156 @@ impl NetworkServer {
             }
         }
         None
+    }
+
+    pub fn remove_player_for_connection(
+        connection: RevelWeak<NetworkConnection>,
+        remove_options: RemovePlayerOptions,
+    ) {
+        if let Some(conn) = connection.get() {
+            if !conn.identity.upgradable() {
+                return;
+            }
+
+            match remove_options {
+                RemovePlayerOptions::KeepActive => {
+                    if let Some(identity) = conn.identity.get() {
+                        identity.set_connection(RevelWeak::default());
+                        conn.owned.retain(|owned| !owned.ptr_eq(&conn.identity));
+                        Self::send_change_owner_message(conn.identity.clone(), connection.clone());
+                    }
+                }
+                RemovePlayerOptions::UnSpawn => {
+                    if let Some(identity) = conn.identity.get() {
+                        Self::un_spawn(identity.game_object.clone());
+                    }
+                }
+                RemovePlayerOptions::Destroy => {
+                    if let Some(identity) = conn.identity.get() {
+                        Self::destroy(identity.game_object.clone());
+                    }
+                }
+            }
+            conn.identity = RevelWeak::default();
+        }
+    }
+    pub fn destroy(game_object: RevelWeak<GameObject>) {
+        if !Self.active {
+            log::warn!("NetworkServer.Destroy() called without an active server. Servers can only destroy while active, clients can only ask the server to destroy (for example, with a [Command]), after which the server may decide to destroy the object and broadcast the change to all clients.");
+            return;
+        }
+
+        if !game_object.upgradable() {
+            log::info!("NetworkServer.Destroy(): object is null");
+            return;
+        }
+
+        if let Some(mut identity) = Self::get_network_identity(game_object.clone()) {
+            if identity.scene_id != 0 {
+                Self::un_spawn_internal(game_object.clone(), true);
+            } else {
+                Self::un_spawn_internal(game_object.clone(), false);
+                identity.destroy_called = true;
+
+                WorldManager::destroy(&game_object.get().unwrap().id);
+            }
+        } else {
+            log::warn!("NetworkServer.Destroy() called on {} which doesn't have a NetworkIdentity component.",game_object.get().unwrap().name);
+            return;
+        }
+    }
+
+    fn get_network_identity(
+        game_object: RevelWeak<GameObject>,
+    ) -> Option<RevelArc<Box<NetworkIdentity>>> {
+        if let Some(identity) = game_object.get() {
+            if let Some(identity) = identity.try_get_component::<NetworkIdentity>() {
+                if let Some(identity) = identity.downcast::<NetworkIdentity>() {
+                    return identity.upgrade();
+                }
+            }
+        }
+        None
+    }
+
+    fn send_change_owner_message(
+        identity: RevelWeak<Box<NetworkIdentity>>,
+        connection: RevelWeak<NetworkConnection>,
+    ) {
+        if let Some(real_identity) = identity.get() {
+            if real_identity.net_id() == 0 || real_identity.server_only {
+                return;
+            }
+
+            if let Some(real_connection) = connection.get() {
+                if real_connection
+                    .observing
+                    .iter()
+                    .filter(|observing| observing.ptr_eq(&identity))
+                    .count()
+                    > 0
+                {
+                    return;
+                }
+
+                let mut message = ChangeOwnerMessage::new(
+                    real_identity.net_id(),
+                    real_identity.connection().ptr_eq(&connection),
+                    (real_connection.identity.ptr_eq(&identity)
+                        && real_identity.connection().ptr_eq(&connection)),
+                );
+
+                real_connection.send_message(&mut message, TransportChannel::Reliable)
+            }
+        }
+    }
+    pub fn un_spawn(game_object: RevelWeak<GameObject>) {
+        Self::un_spawn_internal(game_object, true)
+    }
+
+    pub fn un_spawn_internal(game_object: RevelWeak<GameObject>, reset_state: bool) {
+        if !Self.active {
+            log::warn!("NetworkServer.Unspawn() called without an active server. Servers can only destroy while active, clients can only ask the server to destroy (for example, with a [Command]), after which the server may decide to destroy the object and broadcast the change to all clients.");
+            return;
+        }
+
+        if !game_object.upgradable() {
+            log::info!("NetworkServer.Unspawn(): object is null");
+            return;
+        }
+
+        if let Some(mut identity) = Self::get_network_identity(game_object) {
+            Self.spawned.remove(&identity.net_id());
+            if let Some(conn) = identity.connection().get() {
+                conn.remove_owned_object(identity.clone())
+            }
+
+            Self::send_to_observers(
+                identity.clone(),
+                ObjectDestroyMessage::new(identity.net_id()),
+            );
+
+            identity.clear_observers();
+
+            identity.on_stop_server();
+
+            if reset_state {
+                identity.reset_state();
+                if let Some(game_object) = identity.game_object.get() {
+                    game_object.set_active(false);
+                }
+            }
+        }
+    }
+
+    fn send_to_observers<T: NetworkMessage>(identity: RevelArc<Box<NetworkIdentity>>, message: T) {}
+
+    pub fn hide_for_connection(
+        identity: RevelArc<Box<NetworkIdentity>>,
+        mut connection: RevelArc<NetworkConnection>,
+    ) {
+        let mut message = ObjectHideMessage::new(identity.net_id());
+        connection.send_message(&mut message, TransportChannel::Reliable)
     }
 }
 

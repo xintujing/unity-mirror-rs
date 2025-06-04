@@ -1,3 +1,4 @@
+use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::batching::batcher::Batcher;
 use crate::mirror::messages::message;
@@ -8,13 +9,15 @@ use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInter
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::transport::{TransportChannel, TransportManager};
-use crate::mirror::{Authenticator, NetworkIdentity, NetworkServer};
+use crate::mirror::{Authenticator, NetworkIdentity, NetworkServer, RemovePlayerOptions};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 #[allow(unused)]
 pub struct NetworkConnection {
+    self_weak: RevelWeak<NetworkConnection>,
+
     // NetworkConnection
     pub id: u64,
     pub is_authenticated: bool,
@@ -22,7 +25,7 @@ pub struct NetworkConnection {
     pub is_ready: bool,
     pub last_message_time: f64,
     pub identity: RevelWeak<Box<NetworkIdentity>>,
-    owned: Vec<RevelWeak<Box<NetworkIdentity>>>,
+    pub(crate) owned: Vec<RevelWeak<Box<NetworkIdentity>>>,
     pub remote_time_stamp: f64,
     batches: HashMap<TransportChannel, Batcher>,
     // NetworkConnectionToClient
@@ -41,8 +44,9 @@ pub struct NetworkConnection {
 }
 
 impl NetworkConnection {
-    pub fn new(id: u64, address: String) -> Self {
-        let mut connection = Self {
+    pub fn new(id: u64, address: String) -> RevelArc<Self> {
+        let mut arc_connection = RevelArc::new(Self {
+            self_weak: Default::default(),
             id,
             is_authenticated: false,
             authentication_data: None,
@@ -72,11 +76,13 @@ impl NetworkConnection {
             snapshot_buffer_size_limit: 64,
             last_ping_time: 0.0,
             _rtt: ExponentialMovingAverage::new(Time::get_ping_window_size()),
-        };
+        });
 
-        connection.buffer_time = NetworkServer.send_interval() * connection.buffer_time_multiplier;
+        arc_connection.buffer_time =
+            NetworkServer.send_interval() * arc_connection.buffer_time_multiplier;
+        arc_connection.self_weak = arc_connection.downgrade();
 
-        connection
+        arc_connection
     }
     pub fn update(&mut self) {
         self.update_ping();
@@ -134,8 +140,8 @@ impl NetworkConnection {
     where
         T: MessageSerializer,
     {
-        NetworkWriterPool::get_return(|mut writer| {
-            message.serialize(&mut writer);
+        NetworkWriterPool::get_return(|writer| {
+            message.serialize(writer);
 
             let max_size = message::max_message_size(channel);
 
@@ -188,5 +194,46 @@ impl NetworkConnection {
 
     pub fn is_active(&self, timeout: f32) -> bool {
         Time::unscaled_time_f64() - self.last_message_time < timeout as f64
+    }
+
+    pub fn destroy_owned_objects(&mut self) {
+        let mut temp = HashSet::new();
+        for owned in self.owned.iter() {
+            temp.insert(owned.clone());
+        }
+
+        for identity in temp.iter() {
+            if let Some(identity) = identity.get() {
+                if identity.scene_id != 0 {
+                    NetworkServer::remove_player_for_connection(
+                        self.self_weak.clone(),
+                        RemovePlayerOptions::KeepActive,
+                    );
+                } else {
+                    NetworkServer::destroy(identity.game_object.clone())
+                }
+            }
+        }
+    }
+    pub fn remove_from_observings_observers(&mut self) {}
+
+    pub fn remove_owned_object(&mut self, identity: RevelArc<Box<NetworkIdentity>>) {
+        self.owned
+            .retain(|owned| !owned.ptr_eq(&identity.downgrade()))
+    }
+
+    pub fn remove_from_observing(
+        &mut self,
+        identity: RevelArc<Box<NetworkIdentity>>,
+        is_destroyed: bool,
+    ) {
+        self.observing
+            .retain(|observing| !observing.ptr_eq(&identity.downgrade()));
+
+        if !is_destroyed {
+            if let Some(self_arc) = self.self_weak.upgrade() {
+                NetworkServer::hide_for_connection(identity.clone(), self_arc)
+            }
+        }
     }
 }

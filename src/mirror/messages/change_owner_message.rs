@@ -3,10 +3,10 @@ use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use unity_mirror_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, NetworkMessage};
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default, Message)]
+#[derive(Debug, PartialEq, Clone, Default, NetworkMessage)]
 pub struct ChangeOwnerMessage {
     pub net_id: u32,
     pub is_owner: bool,
@@ -15,7 +15,7 @@ pub struct ChangeOwnerMessage {
 
 impl ChangeOwnerMessage {
     #[allow(unused)]
-    fn new(net_id: u32, is_owner: bool, is_local_player: bool) -> Self {
+    pub(crate) fn new(net_id: u32, is_owner: bool, is_local_player: bool) -> Self {
         Self {
             net_id,
             is_owner,

@@ -369,7 +369,7 @@ impl NetworkManager {
 
         if NetworkServer.active {
             let message = SceneMessage::new(scene_name.to_string(), SceneOperation::Normal, false);
-            NetworkServer::send_to_all(message)
+            NetworkServer::send_to_all(message, TransportChannel::Reliable, false);
         }
 
         self.start_position_index = 0;
@@ -547,3 +547,188 @@ impl NetworkManager {
         }
     }
 }
+
+// impl NetworkManager {
+//     /// 验证网络管理器的状态。
+//     /// 确保网络管理器处于有效状态。
+//     fn on_validate(&self) -> bool {
+//         todo!()
+//     }
+//
+//     /// 重置网络管理器。
+//     /// 仅在组件被添加或用户重置组件时调用。
+//     /// 这就是为什么我们验证这些仅在添加 NetworkManager 时需要验证的内容。
+//     /// 如果我们在 OnValidate() 中执行它，那么每次值更改时都会运行。
+//     fn reset(&mut self) {
+//         todo!()
+//     }
+//
+//     /// 唤醒网络管理器。
+//     /// 不允许碰撞销毁的第二个实例继续。
+//     /// 如果无法初始化单例，则返回。
+//     /// 在 Awake 中应用配置。
+//     /// 设置 networkSceneName 以防止客户端连接到服务器失败时重新加载场景。
+//     /// 设置 OnSceneLoaded 回调。
+//     fn awake(&self) {
+//         todo!()
+//     }
+//
+//     /// 启动网络管理器。
+//     /// 自动启动无头服务器或客户端。
+//     /// 我们不能在 Awake 中执行此操作，因为 Awake 是用于初始化的，
+//     /// 并且某些传输可能在 Start 之前尚未准备好。
+//     /// 在编辑器中自动启动对于调试很有用，因此可以通过 editorAutoStart 启用。
+//     fn start(&mut self) -> Result<(), String> {
+//         todo!()
+//     }
+//
+//     /// 更新网络管理器状态。
+//     /// 在每次 Update() 中应用一些 NetworkServer/Client 配置。
+//     /// 以避免两个数据源的冲突。
+//     /// 修复了 NetworkServer.sendRate 从未设置的问题，因为从未调用 NetworkManager.StartServer。
+//     /// 如果 NM 存在，则所有公开的设置应始终应用。
+//     fn update(&mut self, delta_time: f32) {
+//         todo!()
+//     }
+//
+//     /// 延迟更新网络管理器状态。
+//     /// 在主更新之后执行额外的更新逻辑。
+//     /// 如果 loadingSceneAsync 不为 null 且已完成，则调用 FinishLoadScene。
+//     fn late_update(&mut self, delta_time: f32) {
+//         todo!()
+//     }
+//
+//     /// 检查是否需要服务器在线场景切换。
+//     /// 如果需要切换到在线场景，则返回 true。
+//     /// 仅在请求的在线场景不为空且尚未加载时更改场景。
+//     fn is_server_online_scene_change_needed(&self) -> bool {
+//         todo!()
+//     }
+//
+//     /// 应用网络配置。
+//     /// 根据提供的配置字符串更新网络设置。
+//     /// NetworkServer.tickRate = sendRate;
+//     /// NetworkClient.snapshotSettings = snapshotSettings;
+//     /// NetworkClient.connectionQualityInterval = evaluationInterval;
+//     /// NetworkClient.connectionQualityMethod = evaluationMethod;
+//     fn apply_configuration(&mut self, config: &str) -> Result<(), String> {
+//         todo!()
+//     }
+//
+//     /// 设置服务器。
+//     /// 配置服务器地址和端口。
+//     /// 在初始化任何内容之前应用设置。
+//     /// NetworkServer.disconnectInactiveConnections = disconnectInactiveConnections;
+//     /// NetworkServer.disconnectInactiveTimeout = disconnectInactiveTimeout;
+//     /// NetworkServer.exceptionsDisconnect = exceptionsDisconnect;
+//     fn setup_server(&mut self, address: &str, port: u16) -> Result<(), String> {
+//         todo!()
+//     }
+//
+//     /// 启动服务器。
+//     /// 开始监听并接受连接。
+//     /// StartServer 本质上是异步的（不会立即完成）。
+//     /// 这里是它的作用：
+//     /// - 监听
+//     /// - 如果 onlineScene:
+//     ///   - LoadSceneAsync
+//     ///   - ...
+//     ///   - FinishLoadSceneServerOnly
+//     ///     - SpawnObjects
+//     /// - 否则:
+//     ///   - SpawnObjects
+//     fn start_server(&mut self) -> Result<(), String> {
+//         todo!()
+//     }
+//
+//     /// 停止服务器。
+//     /// 停止服务器的运行并清理资源。
+//     /// 在更改场景之前设置离线模式，以便 FinishStartScene 不认为我们需要初始化任何内容。
+//     fn stop_server(&mut self) {
+//         todo!()
+//     }
+//
+//     /// 应用程序退出时的处理。
+//     /// 在应用程序关闭时执行清理操作。
+//     /// 首先停止客户端（我们希望将退出数据包发送到服务器，而不是等待超时）。
+//     /// 然后停止服务器（用于正确的主机模式停止）。
+//     fn on_application_quit(&self) {
+//         todo!()
+//     }
+//
+//     /// 配置无头模式的帧率。
+//     /// 如果是无头模式，则设置服务器或客户端的目标帧率。
+//     fn configure_headless_frame_rate(&mut self, frame_rate: u32) {
+//         todo!()
+//     }
+//
+//     /// 初始化单例。
+//     /// 确保网络管理器的唯一实例。
+//     /// 如果 singleton 不为 null 且等于当前实例，则返回 true。
+//     /// 如果 dontDestroyOnLoad 为 true，则将对象设置为场景根。
+//     /// 如果传输未分配，则尝试从当前对象获取传输。
+//     fn initialize_singleton(&mut self) -> Result<(), String> {
+//         todo!()
+//     }
+//
+//     /// 注册服务器消息。
+//     /// 注册服务器需要处理的消息类型。
+//     /// NetworkServer.OnConnectedEvent = OnServerConnectInternal;
+//     /// NetworkServer.OnDisconnectedEvent = OnServerDisconnect;
+//     /// NetworkServer.OnErrorEvent = OnServerError;
+//     /// NetworkServer.OnTransportExceptionEvent = OnServerTransportException;
+//     fn register_server_messages(&mut self, messages: Vec<String>) {
+//         todo!()
+//     }
+//
+//     /// 注册起始位置。
+//     /// 将一个位置注册为玩家的出生点。
+//     /// 通过 NetworkStartPosition 组件自动完成，但也可以通过用户脚本代码手动完成。
+//     /// 按层次顺序重新排序列表，以便轮询生成使用起始位置。
+//     fn register_start_position(&mut self, position: (f32, f32, f32)) {
+//         todo!()
+//     }
+//
+//     /// 注销起始位置。
+//     /// 从玩家出生点列表中移除一个位置。
+//     /// 通过 NetworkStartPosition::OnDestroy 自动完成。
+//     fn unregister_start_position(&mut self, position: (f32, f32, f32)) {
+//         todo!()
+//     }
+//
+//     /// 获取起始位置。
+//     /// 返回一个可用的玩家出生点。
+//     /// 首先移除所有无效的变换。
+//     /// 如果没有起始位置，则返回 null。
+//     /// 如果玩家生成方法是随机的，则返回随机位置。
+//     /// 否则返回轮询位置。
+//     fn get_start_position(&self) -> Option<(f32, f32, f32)> {
+//         todo!()
+//     }
+//
+//     /// 更新场景。
+//     /// 如果 loadingSceneAsync 不为 null 且已完成，则调用 FinishLoadScene。
+//     fn update_scene(&mut self, delta_time: f32) {
+//         todo!()
+//     }
+//
+//     /// 销毁网络管理器。
+//     /// 清理网络管理器的资源。
+//     fn on_destroy(&mut self) {
+//         todo!()
+//     }
+//
+//     /// 重置静态变量。<br>
+//     /// 清理或重新初始化静态数据。<br>
+//     /// 调用 StopHost() 如果我们有一个 singleton。<br>
+//     /// 重置所有静态变量。<br>
+//     /// 清除 startPositions。<br>
+//     /// 将 startPositionIndex 设置为 0。<br>
+//     /// 将 clientReadyConnection 设置为 null。<br>
+//     /// 将 loadingSceneAsync 设置为 null。<br>
+//     /// 将 networkSceneName 设置为空字符串。<br>
+//     /// 最后将 singleton 设置为 null。
+//     fn reset_statics(&mut self) {
+//         todo!()
+//     }
+// }

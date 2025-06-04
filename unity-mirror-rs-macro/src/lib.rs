@@ -6,7 +6,7 @@ mod network_behaviour;
 use proc_macro::TokenStream;
 
 mod callback_processor;
-mod message;
+mod network_message;
 mod metadata_settings;
 
 mod network_manager;
@@ -110,9 +110,9 @@ pub fn parent_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStrea
     network_behaviour::parent_on_deserialize(attr, item)
 }
 
-#[proc_macro_derive(Message)]
+#[proc_macro_derive(NetworkMessage)]
 pub fn message(input: TokenStream) -> TokenStream {
-    message::message_handler(input)
+    network_message::handler(input)
 }
 
 #[proc_macro_derive(CallbackProcessor)]

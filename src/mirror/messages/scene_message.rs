@@ -3,7 +3,7 @@ use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
-use unity_mirror_macro::{namespace, Message};
+use unity_mirror_macro::{namespace, NetworkMessage};
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 #[repr(u8)]
@@ -28,7 +28,7 @@ impl SceneOperation {
 }
 
 #[namespace(prefix = "Mirror")]
-#[derive(Debug, PartialEq, Clone, Default, Message)]
+#[derive(Debug, PartialEq, Clone, Default, NetworkMessage)]
 pub struct SceneMessage {
     pub scene_name: String,
     pub operation: SceneOperation,
