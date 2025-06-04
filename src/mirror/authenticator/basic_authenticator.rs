@@ -8,7 +8,7 @@ use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::{Authenticator, NetworkServer};
+use crate::mirror::{Authenticator, AuthenticatorBase, NetworkServer};
 use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::any::Any;
 use unity_mirror_macro::{namespace, AuthenticatorFactory, Message};
@@ -31,15 +31,32 @@ impl BasicAuthenticator {
     }
 }
 
+impl AuthenticatorBase for BasicAuthenticator {
+    fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>) {
+        if let Some(weak_self) = weak_self.downcast::<Self>() {
+            self.weak = weak_self.clone();
+        }
+    }
+    fn set_on_server_authenticated(
+        &mut self,
+        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
+    ) {
+        self.on_server_authenticated = event;
+    }
+
+    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()> {
+        &self.on_server_authenticated
+    }
+}
+
 impl MonoBehaviour for BasicAuthenticator {}
 
 impl Authenticator for BasicAuthenticator {
-    fn new() -> RevelArc<Box<dyn Authenticator>> {
-        let x = Box::new(BasicAuthenticator {
+    fn new() -> Self {
+        BasicAuthenticator {
             weak: Default::default(),
             on_server_authenticated: Default::default(),
-        });
-        RevelArc::new(x)
+        }
     }
 
     fn on_start_server(&self) {
@@ -53,25 +70,8 @@ impl Authenticator for BasicAuthenticator {
         NetworkServer.unregister_handler::<BasicAuthenticatorRequestMessage>();
     }
 
-    fn set_on_server_authenticated(
-        &mut self,
-        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    ) {
-        self.on_server_authenticated = event;
-    }
-
-    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()> {
-        &self.on_server_authenticated
-    }
-
     fn on_server_authenticate(&self, connection: RevelArc<NetworkConnection>) {
         // do nothing...wait for BasicAuthenticatorRequestMessage from client
-    }
-
-    fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>) {
-        if let Some(weak_self) = weak_self.downcast::<Self>() {
-            self.weak = weak_self.clone();
-        }
     }
 }
 

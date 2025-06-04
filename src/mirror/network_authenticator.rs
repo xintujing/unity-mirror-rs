@@ -6,17 +6,12 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::network_connection::NetworkConnection;
 use crate::unity_engine::MonoBehaviour;
 
-pub trait Authenticator: MonoBehaviour {
-    fn new() -> RevelArc<Box<dyn Authenticator>>
+pub trait Authenticator: AuthenticatorBase + MonoBehaviour {
+    fn new() -> Self
     where
         Self: Sized;
     fn on_start_server(&self) {}
     fn on_stop_server(&self) {}
-    fn set_on_server_authenticated(
-        &mut self,
-        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    );
-    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()>;
     fn server_accept(&self, connection: RevelArc<NetworkConnection>) {
         self.on_server_authenticated().call((connection,));
     }
@@ -24,5 +19,13 @@ pub trait Authenticator: MonoBehaviour {
     fn server_reject(&self, conn: &mut NetworkConnection) {
         conn.disconnect()
     }
+}
+
+pub trait AuthenticatorBase {
     fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>);
+    fn set_on_server_authenticated(
+        &mut self,
+        event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
+    );
+    fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<NetworkConnection>,), ()>;
 }
