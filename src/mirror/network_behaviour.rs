@@ -251,7 +251,7 @@ impl NetworkBehaviourBase for NetworkBehaviour {
         &self.sync_direction
     }
 
-    fn get_sync_mod(&self) -> &SyncMode {
+    fn get_sync_mode(&self) -> &SyncMode {
         &self.sync_mode
     }
     fn clear_all_dirty_bits(&mut self) {
@@ -321,7 +321,7 @@ pub trait TNetworkBehaviour:
 pub trait NetworkBehaviourBase {
     fn is_dirty(&self) -> bool;
     fn get_sync_direction(&self) -> &SyncDirection;
-    fn get_sync_mod(&self) -> &SyncMode;
+    fn get_sync_mode(&self) -> &SyncMode;
     fn clear_all_dirty_bits(&mut self);
 }
 pub trait NetworkBehaviourOnSerializer {

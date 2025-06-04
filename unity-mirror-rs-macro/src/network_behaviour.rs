@@ -424,9 +424,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     &crate::mirror::SyncDirection::ServerToClient
                 }
 
-                fn get_sync_mod(&self) -> &crate::mirror::SyncMode {
+                fn get_sync_mode(&self) -> &crate::mirror::SyncMode {
                     if let Some(ancestor) = self.ancestor.get() {
-                        return ancestor.get_sync_mod();
+                        return ancestor.get_sync_mode();
                     }
                     &crate::mirror::SyncMode::Observers
                 }

@@ -27,7 +27,7 @@ pub struct NetworkConnection {
     batches: HashMap<TransportChannel, Batcher>,
     // NetworkConnectionToClient
     pub address: String,
-    observing: Vec<RevelWeak<Box<NetworkIdentity>>>,
+    pub(crate) observing: Vec<RevelWeak<Box<NetworkIdentity>>>,
     drift_ema: ExponentialMovingAverage,
     delivery_time_ema: ExponentialMovingAverage,
     pub remote_timeline: f64,
@@ -176,13 +176,17 @@ impl NetworkConnection {
         }
     }
 
-    pub fn add_to_observing(&mut self, weak_identity: RevelWeak<Box<NetworkIdentity>>) {
-        if let Some(identity) = weak_identity.get() {
-            //TODO
-        }
-        self.observing.push(weak_identity);
-    }
+    // pub fn add_to_observing(&mut self, weak_identity: RevelWeak<Box<NetworkIdentity>>) {
+    //     if let Some(identity) = weak_identity.get() {
+    //         //TODO
+    //     }
+    //     self.observing.push(weak_identity);
+    // }
     pub fn cleanup(&mut self) {
         // TODO
+    }
+
+    pub fn is_active(&self, timeout: f32) -> bool {
+        Time::unscaled_time_f64() - self.last_message_time < timeout as f64
     }
 }

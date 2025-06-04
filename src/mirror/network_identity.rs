@@ -80,6 +80,20 @@ impl Into<Visibility>
     }
 }
 
+#[derive(Default)]
+pub struct NetworkIdentitySerialization {
+    pub tick: u64,
+    pub owner_writer: RevelArc<NetworkWriter>,
+    pub observers_writer: RevelArc<NetworkWriter>,
+}
+
+impl NetworkIdentitySerialization {
+    pub fn reset_writers(&mut self) {
+        self.owner_writer.reset();
+        self.observers_writer.reset();
+    }
+}
+
 #[namespace(prefix = "Mirror")]
 #[derive(Default)]
 pub struct NetworkIdentity {
@@ -104,6 +118,7 @@ pub struct NetworkIdentity {
     observers_payload: Vec<u8>,
 
     pub(crate) observers: Vec<RevelWeak<NetworkConnection>>,
+    last_serialization: RevelArc<NetworkIdentitySerialization>,
 }
 
 impl MonoBehaviour for NetworkIdentity {
@@ -164,6 +179,26 @@ impl NetworkIdentity {
             );
         }
     }
+
+    pub fn get_server_serialization_at_tick(
+        &mut self,
+        tick: u64,
+    ) -> RevelArc<NetworkIdentitySerialization> {
+        if self.last_serialization.tick != tick {
+            self.last_serialization.reset_writers();
+
+            self.serialize_server(
+                false,
+                self.last_serialization.owner_writer.clone(),
+                self.last_serialization.observers_writer.clone(),
+            );
+            self.last_serialization.tick = tick;
+        }
+
+        self.last_serialization.clone()
+    }
+
+    fn validate_components(&self) {}
 }
 
 // 序列化相关
@@ -187,7 +222,7 @@ impl NetworkIdentity {
                     owner_mask |= nth_bit;
                 }
 
-                if (network_behaviour.get_sync_mod().eq(&SyncMode::Observers))
+                if (network_behaviour.get_sync_mode().eq(&SyncMode::Observers))
                     && (initial_state || dirty)
                 {
                     observer_mask |= nth_bit;
@@ -204,8 +239,8 @@ impl NetworkIdentity {
     pub(crate) fn serialize_server(
         &self,
         initial_state: bool,
-        owner_writer: &mut NetworkWriter,
-        observers_writer: &mut NetworkWriter,
+        mut owner_writer: RevelArc<NetworkWriter>,
+        mut observers_writer: RevelArc<NetworkWriter>,
     ) {
         let (owner_mask, observer_mask) = self.server_dirty_masks(initial_state);
 

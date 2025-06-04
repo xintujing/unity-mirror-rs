@@ -17,12 +17,12 @@ use crate::mirror::network_connection::NetworkConnection;
 use crate::mirror::network_reader::NetworkReader;
 use crate::mirror::network_reader_pool::NetworkReaderPool;
 use crate::mirror::network_time::NetworkTime;
+use crate::mirror::network_writer::NetworkWriter;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::stable_hash::StableHash;
-use crate::mirror::transport::TransportChannel::Reliable;
 use crate::mirror::transport::{
     CallbackProcessor, TransportChannel, TransportError, TransportManager,
 };
@@ -464,11 +464,17 @@ impl NetworkServer {
             return;
         }
 
-        connection.send_message(&mut ObjectSpawnStartedMessage::default(), Reliable);
+        connection.send_message(
+            &mut ObjectSpawnStartedMessage::default(),
+            TransportChannel::Reliable,
+        );
 
         // TODO: Spawn observers logic
 
-        connection.send_message(&mut ObjectSpawnFinishedMessage::default(), Reliable);
+        connection.send_message(
+            &mut ObjectSpawnFinishedMessage::default(),
+            TransportChannel::Reliable,
+        );
     }
 
     fn on_client_command_message(
@@ -478,7 +484,7 @@ impl NetworkServer {
         channel: TransportChannel,
     ) {
         if !connection.is_ready {
-            if channel == Reliable {
+            if channel == TransportChannel::Reliable {
                 if let Some(weak_net_identity) = Self.spawned.get(&message.net_id) {
                     if let Some(net_identity) = weak_net_identity.get() {
                         if message.component_index < net_identity.network_behaviours().len() as u8 {
@@ -508,7 +514,7 @@ impl NetworkServer {
 
         match Self.spawned.get(&message.net_id) {
             None => {
-                if channel == Reliable {
+                if channel == TransportChannel::Reliable {
                     log::warn!(
                         "Spawned object not found when handling Command message netId={}",
                         message.net_id
@@ -859,9 +865,92 @@ impl NetworkServer {
         false
     }
 
-    pub fn broadcast() {}
+    pub fn broadcast() {
+        for (_, connection) in Self.connections.iter_mut() {
+            if Self::disconnect_if_inactive(connection.clone()) {
+                continue;
+            }
+
+            if connection.is_ready {
+                connection.send_message(
+                    &mut TimeSnapshotMessage::new(),
+                    TransportChannel::Unreliable,
+                );
+
+                Self::broadcast_to_connection(connection.clone());
+            }
+
+            connection.update();
+        }
+    }
+
+    fn disconnect_if_inactive(mut connection: RevelArc<NetworkConnection>) -> bool {
+        if Self.disconnect_inactive_connections
+            && !connection.is_active(Self.disconnect_inactive_timeout)
+        {
+            log::warn!("Disconnecting {} for inactivity!", connection.id);
+            connection.disconnect();
+            return true;
+        }
+        false
+    }
+
+    pub fn broadcast_to_connection(mut connection: RevelArc<NetworkConnection>) {
+        let mut connection_clone = connection.clone();
+        let mut has_null = false;
+        for identity in connection.observing.iter() {
+            if identity.upgradable() {
+                let serialization =
+                    Self::serialize_for_connection(identity.clone(), connection.downgrade());
+
+                match serialization {
+                    Some(serialization) => {
+                        let mut message = EntityStateMessage::new(
+                            identity.get().unwrap().net_id(),
+                            serialization.to_vec(),
+                        );
+                        connection_clone.send_message(&mut message, TransportChannel::Reliable)
+                    }
+                    None => {
+                        has_null = true;
+                        log::warn!(
+                            "Found 'null' entry in observing list for connectionId={}. Please call NetworkServer.Destroy to destroy networked objects. Don't use GameObject.Destroy.",
+                            connection.id
+                        );
+                    }
+                }
+            }
+        }
+
+        if has_null {
+            connection.observing.retain(|x| x.upgradable());
+        }
+    }
+
+    fn serialize_for_connection(
+        identity: RevelWeak<Box<NetworkIdentity>>,
+        connection: RevelWeak<NetworkConnection>,
+    ) -> Option<RevelArc<NetworkWriter>> {
+        if let Some(identity) = identity.get() {
+            let serialization = identity.get_server_serialization_at_tick(Time::get_frame_count());
+
+            let owned = identity.connection().ptr_eq(&connection);
+
+            if owned {
+                if serialization.owner_writer.position > 0 {
+                    return Some(serialization.owner_writer.clone());
+                }
+            } else {
+                if serialization.observers_writer.position > 0 {
+                    return Some(serialization.observers_writer.clone());
+                }
+            }
+        }
+        None
+    }
 }
 
+// 生命周期
 impl NetworkServer {
     pub(crate) fn network_early_update() {
         if Self.active {
