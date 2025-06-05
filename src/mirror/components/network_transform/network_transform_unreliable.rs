@@ -123,27 +123,34 @@ impl TNetworkBehaviour for NetworkTransformUnreliable {
 
 impl NetworkBehaviourOnSerializer for NetworkTransformUnreliable {
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
-        // TODO
         if initial_state {
             if self.sync_position {
-                writer.write_blittable(Vector3::default())
+                writer.write_blittable(self.get_position())
             }
             if self.sync_rotation {
-                writer.write_blittable(Quaternion::default())
+                writer.write_blittable(self.get_rotation())
             }
             if self.sync_scale {
-                writer.write_blittable(Vector3::default())
+                writer.write_blittable(self.get_scale())
             }
         }
     }
 }
 impl NetworkBehaviourOnDeserializer for NetworkTransformUnreliable {
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
-        // TODO
         if initial_state {
-            if self.sync_position {}
-            if self.sync_rotation {}
-            if self.sync_scale {}
+            if self.sync_position {
+                let position: Vector3<f32> = reader.read_blittable();
+                self.set_position(position);
+            }
+            if self.sync_rotation {
+                let rotation: Quaternion<f32> = reader.read_blittable();
+                self.set_rotation(rotation);
+            }
+            if self.sync_scale {
+                let scale: Vector3<f32> = reader.read_blittable();
+                self.set_scale(scale);
+            }
         }
     }
 }
