@@ -5,8 +5,8 @@ use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkM
 use crate::metadata_settings::mirror::metadata_network_root_manager::MetadataNetworkRootManager;
 use crate::mirror::components::network_room_player::NetworkRoomPlayer;
 use crate::mirror::transport::TransportError;
-use crate::mirror::NetworkManagerVirtualTrait;
 use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkManager};
+use crate::mirror::{NetworkManagerVirtualTrait, NetworkServer};
 use crate::unity_engine::MonoBehaviour;
 use std::any::Any;
 use std::collections::HashSet;
@@ -127,6 +127,27 @@ impl NetworkRoomManager {
     }
 
     fn check_ready_to_begin(&mut self) {
-        // TODO
+        // TODO Utils.IsSceneActive(RoomScene)
+
+        if !true {
+            return;
+        }
+
+        let mut number_of_ready_players = 0;
+        for conn in NetworkServer.connections.values_mut() {
+            if let Some(identity) = conn.identity.get() {
+                // TODO conn.Value.identity.TryGetComponent(out NetworkRoomPlayer nrp)
+            }
+        }
+
+        let enough_ready_players =
+            self.min_players <= 0 || number_of_ready_players >= self.min_players;
+
+        if enough_ready_players {
+            self.pending_players.clear();
+            self.all_players_ready = true;
+        } else {
+            self.all_players_ready = false;
+        }
     }
 }
