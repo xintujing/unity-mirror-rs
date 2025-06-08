@@ -2,7 +2,7 @@
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use unity_mirror_macro::{namespace, settings_wrapper_register};
+use unity_mirror_macro_rs::{namespace, settings_wrapper_register};
 
 #[namespace(prefix = "Mirror", rename = "NetworkAnimator")]
 #[derive(Deserialize, Clone)]

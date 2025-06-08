@@ -1,3 +1,4 @@
+use crate::commons::action::SelfMutAction;
 use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
@@ -9,16 +10,17 @@ use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
-use unity_mirror_macro::{command, namespace, network_behaviour, target_rpc};
+use unity_mirror_macro_rs::{command, namespace, network_behaviour, target_rpc};
 
-#[allow(unused)]
-#[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 #[namespace(prefix = "Mirror")]
+#[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 pub struct NetworkRoomPlayer {
     #[sync_variable]
     ready_to_begin: bool,
     #[sync_variable]
     index: i32,
+
+    pub on_client_enter_room: SelfMutAction<(), ()>,
 }
 
 impl NetworkRoomPlayerOnChangeCallback for NetworkRoomPlayer {}
@@ -26,6 +28,7 @@ impl NetworkRoomPlayerOnChangeCallback for NetworkRoomPlayer {}
 impl NetworkRoomPlayer {
     #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
+        println!("pub fn cmd_change_ready_state(&mut self, ready_state: bool)");
         self.set_ready_to_begin(ready_state);
         NetworkManager::singleton::<NetworkRoomManager>(|room| {
             room.ready_status_changed();

@@ -1,7 +1,7 @@
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::metadata_settings::unity::metadata_asset::MetadataAsset;
 use serde::Deserialize;
-use unity_mirror_macro::{namespace, settings_wrapper_register};
+use unity_mirror_macro_rs::{namespace, settings_wrapper_register};
 
 #[namespace(prefix = "Mirror", rename = "NetworkRoomManager")]
 #[derive(Deserialize, Clone)]

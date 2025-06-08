@@ -1,4 +1,4 @@
-use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::NetworkWriter;
 use crate::mirror::pool::Pool;
 use lazy_static::lazy_static;
 use std::sync::{Arc, Mutex};
@@ -32,7 +32,7 @@ impl NetworkWriterPool {
         }
     }
 
-    pub fn get_return<T>(func: T)
+    pub fn get_by_closure<T>(func: T)
     where
         T: FnOnce(&mut NetworkWriter),
     {

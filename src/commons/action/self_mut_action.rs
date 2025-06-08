@@ -1,5 +1,7 @@
 use crate::commons::revel_weak::RevelWeak;
+use std::fmt::{Debug, Formatter};
 use std::mem;
+use std::ops::Deref;
 
 pub trait SelfMutHandler<This, Args>: 'static {
     type Output;
@@ -34,8 +36,16 @@ impl_self_mut_handler! { A B C D E F G H I }
 impl_self_mut_handler! { A B C D E F G H I J }
 
 pub struct SelfMutAction<Args, Return> {
-    f: Box<dyn Fn(Args) -> Return>,
+    f: Box<dyn 'static + Fn(Args) -> Return>,
     reg: bool,
+}
+
+impl<Args, Return> Debug for SelfMutAction<Args, Return> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SelfMutAction")
+            .field("reg", &self.reg)
+            .finish()
+    }
 }
 
 impl<Args, Return> Default for SelfMutAction<Args, Return> {

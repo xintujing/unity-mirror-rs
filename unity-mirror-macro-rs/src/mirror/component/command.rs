@@ -88,7 +88,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
         .map(|_| {
             quote! {
-                crate::mirror::network_reader::DataTypeDeserializer::deserialize(reader)
+                crate::mirror::DataTypeDeserializer::deserialize(reader)
             }
         })
         .collect::<Vec<_>>();
@@ -99,9 +99,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #item_fn
 
         fn #invoke_user_code(
-            mut obj_chain: Vec<crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::network_behaviour::TNetworkBehaviour>>>,
-            reader: &mut crate::mirror::network_reader::NetworkReader,
-            connection: crate::commons::revel_arc::RevelArc<crate::mirror::network_connection::NetworkConnection>,
+            mut obj_chain: Vec<crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::TNetworkBehaviour>>>,
+            reader: &mut crate::mirror::NetworkReader,
+            connection: crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>>,
         ) {
             obj_chain.reverse();
 

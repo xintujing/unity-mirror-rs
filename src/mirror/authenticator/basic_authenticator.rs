@@ -3,15 +3,15 @@ use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::NetworkConnection;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::{Authenticator, AuthenticatorBase, NetworkServer};
+use crate::mirror::{Authenticator, AuthenticatorBase, NetworkConnectionToClient, NetworkServer};
 use crate::unity_engine::{MonoBehaviour, MonoBehaviourAny};
 use std::any::Any;
-use unity_mirror_macro::{authenticator_factory, namespace, NetworkMessage};
+use unity_mirror_macro_rs::{authenticator_factory, namespace, NetworkMessage};
 
 #[namespace(prefix = "Mirror.Authenticators")]
 #[authenticator_factory]
@@ -21,7 +21,7 @@ pub struct BasicAuthenticator {}
 impl BasicAuthenticator {
     pub fn on_auth_request_message(
         &mut self,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         message: BasicAuthenticatorRequestMessage,
         channel: TransportChannel,
     ) {
@@ -48,7 +48,7 @@ impl Authenticator for BasicAuthenticator {
         NetworkServer.unregister_handler::<BasicAuthenticatorRequestMessage>();
     }
 
-    fn on_server_authenticate(&self, connection: RevelArc<NetworkConnection>) {
+    fn on_server_authenticate(&self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         // do nothing...wait for BasicAuthenticatorRequestMessage from client
     }
 }

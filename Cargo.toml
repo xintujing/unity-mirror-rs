@@ -13,7 +13,7 @@ exclude = []
 
 [dependencies]
 kcp2k_rust = { git = "https://github.com/xtjsk/kcp2k-rust.git" }
-unity-mirror-macro = { path = "unity-mirror-rs-macro" }
+unity-mirror-macro-rs = { path = "unity-mirror-macro-rs" }
 lazy_static = "1.5.0"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_repr = "0.1.20"

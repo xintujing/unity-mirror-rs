@@ -1,22 +1,12 @@
+use crate::utils::write_to_file;
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
-use syn::parse::{Parse, ParseStream};
-use syn::{Path, parse_macro_input, FnArg, parse_quote};
-
-struct ActionArgs {
-    action_path: Path,
-}
-
-impl Parse for ActionArgs {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let action_path = input.parse()?;
-        Ok(Self { action_path })
-    }
-}
+use quote::{ToTokens, format_ident, quote};
+use syn::parse::Parse;
+use syn::{Block, FnArg, ReturnType, parse_macro_input, parse_quote, parse_quote_spanned};
 
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
-    // let ActionArgs { action_path } = parse_macro_input!(attr as ActionArgs);
     let mut item_fn = parse_macro_input!(item as syn::ItemFn);
+
     let fn_ident = &item_fn.sig.ident;
     let default_fn_ident = format_ident!("{}_default", fn_ident);
 
@@ -50,8 +40,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     item_fn.block = parse_quote! {
         {
-            if self.#fn_ident.is_registered() {
-                self.#fn_ident.call((#(#inputs,)*))
+            if let Some(virtual_trait) = self.virtual_trait.get() {
+                virtual_trait.#fn_ident(#(#inputs,)*)
             } else {
                 self.#default_fn_ident(#(#inputs,)*)
             }

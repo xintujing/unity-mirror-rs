@@ -1002,7 +1002,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
 
 [[package]]
-name = "unity-mirror-macro"
+name = "unity-mirror-macro-rs"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
@@ -1036,7 +1036,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_repr",
- "unity-mirror-macro",
+ "unity-mirror-macro-rs",
  "uuid",
 ]
 

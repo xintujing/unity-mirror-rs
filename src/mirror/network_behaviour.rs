@@ -6,16 +6,16 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 };
 use crate::mirror::messages::message::MessageSerializer;
 use crate::mirror::messages::rpc_message::RpcMessage;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
-use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::NetworkIdentity;
+use crate::mirror::NetworkConnection;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
+use crate::mirror::NetworkWriterPool;
+use crate::mirror::{NetworkConnectionToClient, NetworkIdentity};
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
 use std::any::{Any, TypeId};
-use unity_mirror_macro::namespace;
+use unity_mirror_macro_rs::namespace;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub enum SyncDirection {
@@ -60,7 +60,7 @@ pub struct NetworkBehaviour {
     net_id: u32,
     component_index: u8,
 
-    network_identity: RevelWeak<NetworkIdentity>,
+    pub network_identity: RevelWeak<NetworkIdentity>,
     pub game_object: RevelWeak<GameObject>,
     transform: RevelWeak<Transform>,
 
@@ -107,9 +107,7 @@ impl NetworkBehaviour {
 
 #[ctor::ctor]
 fn static_init() {
-    crate::mirror::network_behaviour_factory::NetworkBehaviourFactory::register::<NetworkBehaviour>(
-        NetworkBehaviour::factory,
-    );
+    crate::mirror::NetworkBehaviourFactory::register::<NetworkBehaviour>(NetworkBehaviour::factory);
 }
 
 impl NetworkBehaviour {
@@ -168,27 +166,28 @@ impl NetworkBehaviour {
                 writer.to_vec(),
             );
 
-            NetworkWriterPool::get_return(|writer| {
-                MessageSerializer::serialize(&mut message, writer);
+            let mut writer = NetworkWriterPool::get();
+            {
+                MessageSerializer::serialize(&mut message, &mut writer);
 
-                for observer in network_identity.observers.iter() {
-                    if let (Some(observer), Some(connection)) =
-                        (observer.get(), network_identity.connection().get())
+                for (_, observer) in network_identity.observers.iter() {
+                    if let (Some(mut observer), Some(connection)) =
+                        (observer.upgrade(), network_identity.connection().upgrade())
                     {
-                        let is_owner = observer.id == connection.id;
+                        let is_owner = observer.connection_id == connection.connection_id;
 
                         if (!is_owner || include_owner) && observer.is_ready {
-                            observer.send_message(&mut message, channel_id.into());
+                            observer.send_message(message.clone(), channel_id.into());
                         }
                     }
                 }
-            });
+            }
         }
     }
 
     pub fn send_target_rpc_internal(
         &self,
-        mut target_rpc_conn: Option<RevelArc<NetworkConnection>>,
+        mut target_rpc_conn: Option<RevelArc<Box<NetworkConnectionToClient>>>,
         function_full_name: &str,
         function_hash_code: u16,
         writer: &mut NetworkWriter,
@@ -219,16 +218,17 @@ impl NetworkBehaviour {
         let mut connection = target_rpc_conn.unwrap();
 
         if connection.is_ready {
-            NetworkWriterPool::get_return(|writer| {
-                MessageSerializer::serialize(&mut message, writer);
-                connection.send_message(&mut message, channel_id);
-            });
+            let mut writer = NetworkWriterPool::get();
+            {
+                MessageSerializer::serialize(&mut message, &mut writer);
+                connection.send_message(message, channel_id);
+            }
         }
     }
 }
 
 impl NetworkBehaviour {
-    pub fn connection_to_client(&self) -> RevelWeak<NetworkConnection> {
+    pub fn connection_to_client(&self) -> RevelWeak<Box<NetworkConnectionToClient>> {
         if let Some(network_identity) = self.network_identity.get() {
             return network_identity.connection();
         }

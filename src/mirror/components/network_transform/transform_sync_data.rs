@@ -1,9 +1,9 @@
-use crate::mirror::network_reader::{DataTypeDeserializer, NetworkReader, ReadCompress};
-use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter, WriteCompress};
+use crate::mirror::{DataTypeDeserializer, NetworkReader, ReadCompress};
+use crate::mirror::{DataTypeSerializer, NetworkWriter, WriteCompress};
 use nalgebra::{Quaternion, UnitQuaternion, Vector3};
 use std::fmt::Debug;
 use std::ops::BitOrAssign;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro_rs::namespace;
 use crate::unity_engine::Transform;
 
 #[namespace(prefix = "Mirror")]
@@ -207,8 +207,8 @@ impl BitOrAssign for Changed {
 #[cfg(test)]
 mod tests {
     use crate::mirror::components::network_transform::transform_sync_data::SyncData;
-    use crate::mirror::network_reader::{DataTypeDeserializer, NetworkReader};
-    use crate::mirror::network_writer::NetworkWriter;
+    use crate::mirror::{DataTypeDeserializer, NetworkReader};
+    use crate::mirror::NetworkWriter;
     use nalgebra::Quaternion;
     use crate::unity_engine::Transform;
 

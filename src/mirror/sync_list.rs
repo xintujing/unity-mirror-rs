@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
+use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::network_reader::{DataTypeDeserializer, NetworkReader};
-use crate::mirror::network_writer::{DataTypeSerializer, NetworkWriter};
+use crate::mirror::{DataTypeDeserializer, NetworkReader};
+use crate::mirror::{DataTypeSerializer, NetworkWriter};
 use crate::mirror::sync_object::SyncObject;
 use crate::mirror::NetworkBehaviour;
 use std::fmt::{Debug, Formatter};
@@ -59,7 +60,7 @@ pub struct SyncList<T: PartialEq + Clone + Default + DataTypeSerializer + DataTy
 }
 
 impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer> Debug
-    for SyncList<T>
+for SyncList<T>
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SyncList")
@@ -74,7 +75,7 @@ impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer>
 }
 
 impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer> Default
-    for SyncList<T>
+for SyncList<T>
 {
     fn default() -> Self {
         Self::new()
@@ -208,7 +209,7 @@ impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer>
 }
 
 impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer> SyncObject
-    for SyncList<T>
+for SyncList<T>
 {
     type Item = Vec<T>;
 

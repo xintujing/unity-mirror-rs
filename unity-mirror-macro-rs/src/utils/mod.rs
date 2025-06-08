@@ -11,3 +11,8 @@ pub fn write_to_file(prefix: &str, value: String) {
         .as_secs();
     std::fs::write(format!("tmp/{}_{}.rs", prefix, timestamp), value).expect("write file failed");
 }
+
+pub(crate) mod attribute_contain;
+
+
+

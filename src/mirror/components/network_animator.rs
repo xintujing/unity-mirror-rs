@@ -3,17 +3,17 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_anima
     MetadataAnimator, MetadataNetworkAnimator, MetadataParameterType,
 };
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::network_behaviour::TNetworkBehaviour;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_reader_pool::NetworkReaderPool;
-use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::TNetworkBehaviour;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkReaderPool;
+use crate::mirror::NetworkWriter;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::{
     NetworkBehaviour, NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer,
 };
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use std::ops::{Deref, DerefMut};
-use unity_mirror_macro::{
+use unity_mirror_macro_rs::{
     client_rpc, command, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize,
     target_rpc,
 };

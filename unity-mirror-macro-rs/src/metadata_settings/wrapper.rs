@@ -105,7 +105,7 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
             }
         }
 
-        unity_mirror_macro::settings_wrapper_register!(#struct_ident as #wrapper_struct_ident);
+        unity_mirror_macro_rs::settings_wrapper_register!(#struct_ident as #wrapper_struct_ident);
 
     }.into();
 

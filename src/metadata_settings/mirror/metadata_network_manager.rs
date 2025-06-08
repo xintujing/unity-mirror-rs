@@ -3,7 +3,7 @@ use crate::metadata_settings::unity::metadata_transform::MetadataTransform;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use std::collections::HashMap;
-use unity_mirror_macro::{namespace, MetadataSettingsWrapper};
+use unity_mirror_macro_rs::{namespace, MetadataSettingsWrapper};
 
 #[derive(Deserialize_repr, Clone)]
 #[repr(u8)]

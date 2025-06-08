@@ -1,9 +1,9 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::NetworkConnection;
+use crate::mirror::NetworkReader;
 use crate::mirror::stable_hash::StableHash;
-use crate::mirror::TNetworkBehaviour;
+use crate::mirror::{NetworkConnectionToClient, TNetworkBehaviour};
 use once_cell::sync::Lazy;
 use std::any::TypeId;
 use std::collections::HashMap;
@@ -13,7 +13,7 @@ static mut REMOTE_CALL_DELEGATES: Lazy<HashMap<u16, Invoker>> = Lazy::new(|| Has
 
 #[allow(unused)]
 pub type RemoteCallDelegate =
-    fn(Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>, &mut NetworkReader, RevelArc<NetworkConnection>);
+    fn(Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>, &mut NetworkReader, RevelArc<Box<NetworkConnectionToClient>>);
 
 #[allow(unused)]
 pub struct RemoteProcedureCalls;
@@ -105,7 +105,7 @@ impl RemoteProcedureCalls {
         remote_call_type: &RemoteCallType,
         reader: &mut NetworkReader,
         network_behaviour_chain: Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>,
-        conn: RevelArc<NetworkConnection>,
+        conn: RevelArc<Box<NetworkConnectionToClient>>,
     ) -> bool {
         if let Some(invoker) = self.get_invoker_for_hash(function_hash, remote_call_type) {
             (invoker.function)(network_behaviour_chain, reader, conn);

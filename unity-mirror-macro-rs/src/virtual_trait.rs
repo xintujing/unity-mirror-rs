@@ -12,6 +12,7 @@ struct VirtualTraitArgs {
 struct VirtualTraitArgsSignature {
     ident: Ident,
     inputs: Punctuated<FnArg, Token![,]>,
+    output: Option<syn::ReturnType>,
 }
 
 impl Parse for VirtualTraitArgs {
@@ -32,7 +33,17 @@ impl Parse for VirtualTraitArgs {
             let inputs: Punctuated<FnArg, Token![,]> =
                 paren.parse_terminated(FnArg::parse, Token![,])?;
 
-            virtual_fns.push_value(VirtualTraitArgsSignature { ident, inputs });
+            let output = if content.peek(Token![->]) {
+                Some(content.parse()?)
+            } else {
+                None
+            };
+
+            virtual_fns.push_value(VirtualTraitArgsSignature {
+                ident,
+                inputs,
+                output,
+            });
             virtual_fns.push_punct(content.parse()?); // 分号
         }
 
@@ -46,9 +57,10 @@ impl ToTokens for VirtualTraitArgs {
         for callback in &self.virtual_fns {
             let ident = &callback.ident;
             let inputs = &callback.inputs;
+            let output = &callback.output;
             tokens.extend(
                 quote! {
-                    fn #ident(#inputs);
+                    fn #ident(#inputs)#output;
                 }
                 .to_token_stream(),
             );
@@ -74,7 +86,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         #item_struct
 
-        pub trait #virtual_trait_trait_ident: crate::mirror::TNetworkManager {
+        pub trait #virtual_trait_trait_ident {
             #virtual_trait_args
         }
 

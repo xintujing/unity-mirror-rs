@@ -1,9 +1,10 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::object::Object;
 use crate::commons::revel_arc::RevelArc;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::NetworkConnection;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
+use crate::mirror::NetworkConnectionToClient;
 use crate::mirror::transport::TransportChannel;
 
 pub trait MessageSerializer {
@@ -22,7 +23,7 @@ pub trait NetworkMessage: Object + MessageSerializer + MessageDeserializer {}
 // pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
 
 type MessageHandlerWrappedFuncType =
-    Box<dyn FnMut(RevelArc<NetworkConnection>, &mut NetworkReader, TransportChannel)>;
+Box<dyn FnMut(RevelArc<Box<NetworkConnectionToClient>>, &mut NetworkReader, TransportChannel)>;
 
 pub struct MessageHandler {
     #[allow(unused)]
@@ -33,7 +34,7 @@ pub struct MessageHandler {
 
 impl MessageHandler {
     pub fn new<M: NetworkMessage + 'static>(
-        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
+        func: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, M, TransportChannel), ()>,
         require_authentication: bool,
     ) -> Self {
         // 将泛型函数包装为动态分发函数
@@ -50,13 +51,13 @@ impl MessageHandler {
     #[allow(unused)]
     pub fn invoke(
         &mut self,
-        mut conn: RevelArc<NetworkConnection>,
+        mut conn: RevelArc<Box<NetworkConnectionToClient>>,
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) {
         if self.require_authentication && !conn.is_authenticated {
-            log::warn!("Disconnecting connection: {}. Received message that required authentication, but the user has not authenticated yet",conn.id);
-            conn.disconnect();
+            log::warn!("Disconnecting connection: {}. Received message that required authentication, but the user has not authenticated yet",conn.connection_id);
+            conn.disconnect.call(());
             return;
         }
         (self.wrapped_func)(conn, reader, channel);

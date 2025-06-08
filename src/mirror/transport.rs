@@ -1,8 +1,10 @@
 #![allow(dead_code)]
+use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use once_cell::sync::Lazy;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
+use std::mem;
 use std::ops::{Deref, DerefMut};
 
 pub enum TransportError {
@@ -55,12 +57,41 @@ impl Display for TransportError {
     }
 }
 
-static mut TRANSPORT_STATIC: Lazy<TransportStatic> = Lazy::new(|| TransportStatic {
-    active: RevelWeak::default(),
-});
+static mut TRANSPORT_STATIC: Lazy<TransportStatic> = Lazy::new(|| TransportStatic { active: TransportStaticAction(None) });
+
+pub struct TransportStaticAction(Option<RevelArc<Box<dyn Transport>>>);
+
+impl From<RevelArc<Box<dyn Transport>>> for TransportStaticAction {
+    fn from(value: RevelArc<Box<dyn Transport>>) -> Self {
+        TransportStaticAction(Some(value))
+    }
+}
+
+impl Deref for TransportStaticAction {
+    type Target = RevelArc<Box<dyn Transport>>;
+    fn deref(&self) -> &Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe {
+            self.0.as_ref().unwrap_or_else(|| {
+                panic!("Transport not initialized. Call init_transport_manager first.")
+            })
+        }
+    }
+}
+
+impl DerefMut for TransportStaticAction {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        #[allow(static_mut_refs)]
+        unsafe {
+            self.0.as_mut().unwrap_or_else(|| {
+                panic!("Transport not initialized. Call init_transport_manager first.")
+            })
+        }
+    }
+}
 
 pub struct TransportStatic {
-    pub(crate) active: RevelWeak<Box<dyn Transport>>,
+    pub(crate) active: TransportStaticAction,
 }
 
 pub struct TransportManager;
@@ -71,10 +102,6 @@ impl Deref for TransportManager {
         #[allow(static_mut_refs)]
         unsafe {
             &TRANSPORT_STATIC
-
-            // TRANSPORT_STATIC.as_ref().unwrap_or_else(|| {
-            //     panic!("Transport not initialized. Call init_transport_manager first.")
-            // })
         }
     }
 }
@@ -84,9 +111,6 @@ impl DerefMut for TransportManager {
         #[allow(static_mut_refs)]
         unsafe {
             &mut TRANSPORT_STATIC
-            // TRANSPORT_STATIC.as_mut().unwrap_or_else(|| {
-            //     panic!("Transport not initialized. Call init_transport_manager first.")
-            // })
         }
     }
 }
