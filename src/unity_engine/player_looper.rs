@@ -56,6 +56,7 @@ impl PlayerLooper {
                 let diff_duration = Time::get_min_interval().abs_diff(elapsed);
                 std::thread::sleep(diff_duration);
             }
+            Time::frame_add();
         }
     }
 }

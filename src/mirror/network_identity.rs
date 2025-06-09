@@ -279,10 +279,7 @@ impl NetworkIdentity {
         }
     }
 
-    pub fn get_server_serialization_at_tick(
-        &mut self,
-        tick: u64,
-    ) -> RevelArc<NetworkIdentitySerialization> {
+    pub fn get_server_serialization_at_tick(&mut self, tick: u64) -> RevelArc<NetworkIdentitySerialization> {
         if self.last_serialization.tick != tick {
             self.last_serialization.reset_writers();
 
@@ -312,18 +309,11 @@ impl NetworkIdentity {
                 let nth_bit = 1u64 << (i as u8);
                 let dirty = network_behaviour.is_dirty();
 
-                if initial_state
-                    || (dirty
-                    && (network_behaviour
-                    .get_sync_direction()
-                    .eq(&SyncDirection::ServerToClient)))
-                {
+                if initial_state || (dirty && (network_behaviour.get_sync_direction().eq(&SyncDirection::ServerToClient))) {
                     owner_mask |= nth_bit;
                 }
 
-                if (network_behaviour.get_sync_mode().eq(&SyncMode::Observers))
-                    && (initial_state || dirty)
-                {
+                if (network_behaviour.get_sync_mode().eq(&SyncMode::Observers)) && (initial_state || dirty) {
                     observer_mask |= nth_bit;
                 }
             }
@@ -351,9 +341,7 @@ impl NetworkIdentity {
         }
 
         if (owner_mask | observer_mask) != 0 {
-            for (network_behaviour_i, network_behaviour_chain) in
-                self.network_behaviours.iter().enumerate()
-            {
+            for (network_behaviour_i, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
                 let owner_dirty = self.is_dirty(owner_mask, network_behaviour_i as u8);
                 let observers_dirty = self.is_dirty(observer_mask, network_behaviour_i as u8);
 
