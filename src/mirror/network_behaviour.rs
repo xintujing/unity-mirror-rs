@@ -132,7 +132,7 @@ impl NetworkBehaviour {
         }
 
         let arc_box_network_behaviour =
-            RevelArc::new(Box::new(network_behaviour) as Box<dyn MonoBehaviour>);
+            RevelArc::new(Box::new(network_behaviour) as Box<dyn TNetworkBehaviour> as Box<dyn MonoBehaviour>);
 
         if let Some(value) = arc_box_network_behaviour
             .downgrade()
