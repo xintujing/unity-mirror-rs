@@ -1079,9 +1079,7 @@ impl NetworkServer {
                     return;
                 }
                 Some(network_identity) => {
-                    if let Some(weak_network_identity) =
-                        network_identity.downcast::<NetworkIdentity>()
-                    {
+                    if let Some(weak_network_identity) = network_identity.downcast::<NetworkIdentity>() {
                         if let Some(identity) = weak_network_identity.get() {
                             if Self.spawned.contains_key(&identity.net_id()) {
                                 log::warn!(
@@ -1099,6 +1097,7 @@ impl NetworkServer {
                             }
 
                             if !identity.is_server && identity.net_id() == 0 {
+                                identity.is_client = false;
                                 identity.is_server = true;
                                 identity.set_net_id(NetworkIdentity::get_next_network_id());
 
@@ -1269,7 +1268,7 @@ impl NetworkServer {
     }
 
     pub fn rebuild_observers(identity: RevelArc<Box<NetworkIdentity>>, initialize: bool) {
-        if let Visibility::ForceShown = identity.visibility {
+        if identity.visibility == Visibility::ForceShown {
             Self::rebuild_observers_default(identity, initialize)
         }
     }
