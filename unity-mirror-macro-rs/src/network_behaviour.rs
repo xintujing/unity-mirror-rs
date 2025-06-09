@@ -415,17 +415,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn get_sync_direction(&self) -> &crate::mirror::SyncDirection {
-                    if let Some(ancestor) = self.ancestor.get() {
-                        return ancestor.get_sync_direction();
-                    }
-                    &crate::mirror::SyncDirection::ServerToClient
+                    &self.sync_direction
                 }
 
                 fn get_sync_mode(&self) -> &crate::mirror::SyncMode {
-                    if let Some(ancestor) = self.ancestor.get() {
-                        return ancestor.get_sync_mode();
-                    }
-                    &crate::mirror::SyncMode::Observers
+                    &self.sync_mode
                 }
 
                 fn clear_all_dirty_bits(&mut self) {
