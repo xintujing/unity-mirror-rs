@@ -1366,8 +1366,19 @@ impl NetworkServer {
         }
     }
 
-    fn send_to_observers<T: NetworkMessage>(identity: RevelArc<Box<NetworkIdentity>>, message: T) {
-        // TODO
+    fn send_to_observers<T: NetworkMessage>(identity: RevelArc<Box<NetworkIdentity>>, mut message: T) {
+        if identity.observers.len() == 0 {
+            return;
+        }
+        NetworkWriterPool::get_by_closure(|writer| {
+            message.serialize(writer);
+            let segment = writer.to_vec();
+            for observer in identity.observers.values_mut() {
+                if let Some(observer) = observer.get() {
+                    observer.send(&segment, TransportChannel::Reliable);
+                }
+            }
+        });
     }
 
     pub fn hide_for_connection(
