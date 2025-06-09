@@ -296,7 +296,7 @@ impl NetworkIdentity {
         let mut observer_mask = 0u64;
 
         for (i, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
-            if let Some(network_behaviour) = network_behaviour_chain.first().and_then(|x| x.get()) {
+            if let Some(network_behaviour) = network_behaviour_chain.last().and_then(|x| x.get()) {
                 let nth_bit = 1u64 << (i as u8);
                 let dirty = network_behaviour.is_dirty();
 
@@ -350,7 +350,18 @@ impl NetworkIdentity {
                         // serialize
                         if let Some(last) = network_behaviour_chain.last() {
                             if let Some(comp) = last.get() {
+                                let header_position = writer.position;
+                                writer.write_byte(0);
+                                let content_position = writer.position;
+
                                 comp.on_serialize(writer, initial_state);
+
+                                let end_position = writer.position;
+                                writer.position = header_position;
+                                let size = (end_position - content_position) as i32;
+                                let safety = (size & 0xFF) as u8;
+                                writer.write_byte(safety);
+                                writer.position = end_position;
                             }
                         }
                         if owner_dirty {

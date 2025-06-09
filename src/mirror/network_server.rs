@@ -977,7 +977,7 @@ impl NetworkServer {
             owner_writer.clone(),
             observers_writer.clone(),
         );
-        println!("{}", payload.to_hex_string(" ", true));
+        log::error!("{}", payload.to_hex_string(" ", true));
 
         if let Some(identity_game_object) = identity.game_object.upgrade() {
             let mut spawn_message = SpawnMessage::new(
@@ -990,6 +990,10 @@ impl NetworkServer {
                 identity_game_object.transform.local_rotation,
                 identity_game_object.transform.local_scale,
                 payload,
+            );
+
+            log::error!(
+               "{:?}",spawn_message
             );
 
             connection.send_message(spawn_message, TransportChannel::Reliable);
