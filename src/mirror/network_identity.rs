@@ -194,8 +194,8 @@ impl NetworkIdentity {
         NEXT_NETWORK_ID.store(1, SeqCst);
     }
 
-    pub fn remove_observer(&self, weak: RevelWeak<Box<NetworkConnectionToClient>>) {
-        todo!()
+    pub fn remove_observer(&mut self, conn: RevelArc<Box<NetworkConnectionToClient>>) {
+        self.observers.remove(&conn.connection_id);
     }
 
     pub fn set_client_owner(&mut self, arc: RevelArc<Box<NetworkConnectionToClient>>) {
