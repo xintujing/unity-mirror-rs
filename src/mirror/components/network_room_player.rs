@@ -7,8 +7,8 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager, NetworkWriter, WriteCompress};
 use crate::mirror::{NetworkServer, TNetworkBehaviour};
-use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
+use crate::unity_engine::{GameObject, WorldManager};
 use std::any::TypeId;
 use std::hash::{Hash, Hasher};
 use unity_mirror_macro_rs::{command, namespace, network_behaviour, target_rpc};
@@ -57,8 +57,9 @@ impl NetworkRoomPlayer {
 impl MonoBehaviour for NetworkRoomPlayer {
     fn start(&mut self) {
         NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
-
-
+            if let Some(game_object) = self.game_object.upgrade() {
+                WorldManager::dont_destroy_object(game_object);
+            }
 
             room.room_slots.insert(self.weak.clone());
 
