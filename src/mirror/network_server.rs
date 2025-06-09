@@ -511,7 +511,19 @@ impl NetworkServer {
             TransportChannel::Reliable,
         );
 
-        // TODO: Spawn observers logic
+        for weak_identity in Self.spawned.values_mut() {
+            if let Some(mut identity) = weak_identity.upgrade() {
+                match identity.visibility {
+                    Visibility::Normal => {
+                        identity.add_observer(connection.clone());
+                    }
+                    Visibility::ForceHidden => {}
+                    Visibility::ForceShown => {
+                        identity.add_observer(connection.clone());
+                    }
+                }
+            }
+        }
 
         connection.send_message(
             ObjectSpawnFinishedMessage::default(),
@@ -1475,7 +1487,7 @@ impl NetworkServer {
         identity: RevelArc<Box<NetworkIdentity>>,
         conn: RevelArc<Box<NetworkConnectionToClient>>,
     ) {
-        if conn.is_ready{
+        if conn.is_ready {
             Self::send_spawn_message(identity, conn);
         }
     }
