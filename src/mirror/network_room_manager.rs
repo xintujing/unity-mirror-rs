@@ -189,33 +189,32 @@ impl NetworkRoomManager {
         }
     }
 
-    fn on_server_change_scene(&mut self, scene_name: String) {
-        println!("~~~~~~~ on_server_change_scene {}", scene_name);
-        for room_player in self.room_slots.iter() {
-            if let Some(mut room_player) = room_player.upgrade() {
-                if let Some(identity) = room_player.network_identity.upgrade() {
-                    if NetworkServer.active {
-                        room_player.set_ready_to_begin(false);
-
-                        if let (Some(identity_connection), Some(room_player_game_object)) = (
-                            identity.connection().upgrade(),
-                            room_player.game_object.upgrade(),
-                        ) {
-                            NetworkServer::replace_player_for_connection(
-                                identity_connection,
-                                room_player_game_object,
-                                ReplacePlayerOptions::KeepActive,
-                            );
-                        }
-                    }
-                }
-            }
-        }
-
-        self.set_all_players_ready(false);
-
-        self.parent.on_server_change_scene_default(scene_name);
-    }
+    // fn on_server_change_scene(&mut self, scene_name: String) {
+    //     for room_player in self.room_slots.iter() {
+    //         if let Some(mut room_player) = room_player.upgrade() {
+    //             if let Some(identity) = room_player.network_identity.upgrade() {
+    //                 if NetworkServer.active {
+    //                     room_player.set_ready_to_begin(false);
+    //
+    //                     if let (Some(identity_connection), Some(room_player_game_object)) = (
+    //                         identity.connection().upgrade(),
+    //                         room_player.game_object.upgrade(),
+    //                     ) {
+    //                         NetworkServer::replace_player_for_connection(
+    //                             identity_connection,
+    //                             room_player_game_object,
+    //                             ReplacePlayerOptions::KeepActive,
+    //                         );
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     self.set_all_players_ready(false);
+    //
+    //     self.parent.on_server_change_scene_default(scene_name);
+    // }
 
     fn on_server_scene_changed(&mut self, scene_name: String) {
         if scene_name != self.room_scene {
@@ -382,7 +381,31 @@ impl NetworkRoomManager {
     pub fn on_room_server_players_ready(&mut self) {
         //所有玩家都准备开始，开始游戏
         let gameplay_scene = self.gameplay_scene.clone();
-        self.server_change_scene(&gameplay_scene);
+        self.server_change_scene(gameplay_scene);
+    }
+
+    fn server_change_scene(&mut self, scene_name: String) {
+        if scene_name == self.room_scene {
+            for weak_room_player in self.room_slots.iter() {
+                if let Some(mut room_player) = weak_room_player.upgrade() {
+                    if let Some(go) = room_player.game_object.upgrade() {
+                        if let Some(identity) = go.try_get_component2::<NetworkIdentity>() {
+                            if NetworkServer.active {
+                                room_player.set_ready_to_begin(false);
+                                NetworkServer::replace_player_for_connection(
+                                    identity.connection().upgrade().unwrap(),
+                                    go,
+                                    ReplacePlayerOptions::KeepActive,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            self.set_all_players_ready(false);
+        }
+
+        self.server_change_scene_default(scene_name)
     }
 }
 
@@ -433,8 +456,8 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
         self.on_start_server = SelfMutAction::new(self.weak.clone(), Self::on_start_server);
         self.on_stop_server = SelfMutAction::new(self.weak.clone(), Self::on_stop_server);
         self.on_server_connect = SelfMutAction::new(self.weak.clone(), Self::on_server_connect);
-        self.on_server_change_scene =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_change_scene);
+        // self.on_server_change_scene =
+        //     SelfMutAction::new(self.weak.clone(), Self::on_server_change_scene);
         self.on_server_scene_changed =
             SelfMutAction::new(self.weak.clone(), Self::on_server_scene_changed);
         self.on_server_disconnect =
@@ -445,6 +468,9 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
 
         self.on_server_add_player =
             SelfMutAction::new(self.weak.clone(), Self::on_server_add_player);
+
+        self.server_change_scene =
+            SelfMutAction::new(self.weak.clone(), Self::server_change_scene);
     }
 }
 

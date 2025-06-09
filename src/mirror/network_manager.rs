@@ -113,6 +113,10 @@ pub struct NetworkManager {
     pub on_client_scene_changed: SelfMutAction<(), ()>,
 
     // Actions
+
+    pub server_change_scene: SelfMutAction<(String,), ()>,
+
+
     pub on_start_server: SelfMutAction<(), ()>,
     pub on_stop_server: SelfMutAction<(), ()>,
     pub on_server_connect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
@@ -364,14 +368,15 @@ impl NetworkManager {
 
         if self.is_server_online_scene_change_needed() {
             let online_scene = self.online_scene.clone();
-            self.server_change_scene(&online_scene);
+            self.server_change_scene(online_scene);
         } else {
             NetworkServer::spawn_objects();
         }
     }
 
     // 场景管理
-    pub fn server_change_scene(&mut self, new_scene_name: &str) {
+    #[action]
+    pub fn server_change_scene(&mut self, new_scene_name: String) {
         if new_scene_name.is_empty() {
             log::error!("ServerChangeScene empty scene name");
             return;
@@ -387,14 +392,14 @@ impl NetworkManager {
         }
 
         NetworkServer::set_all_clients_not_ready();
-        self.set_network_scene_name(new_scene_name);
+        self.set_network_scene_name(&new_scene_name);
 
         self.on_server_change_scene
             .call((new_scene_name.to_string(),));
 
         NetworkServer.is_loading_scene = true;
 
-        WorldManager::load_scene(new_scene_name, LoadSceneMode::Single);
+        WorldManager::load_scene(&new_scene_name, LoadSceneMode::Single);
 
         if NetworkServer.active {
             let message =
@@ -403,6 +408,8 @@ impl NetworkManager {
         }
 
         self.start_position_index = 0;
+
+        println!("切完场景 {}",self.get_network_scene_name())
     }
 
     pub fn on_scene_loaded(&mut self, _: String, mode: LoadSceneMode) {

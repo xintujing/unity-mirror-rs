@@ -869,9 +869,7 @@ impl NetworkServer {
                 return false;
             }
             Some(mut identity) => {
-                if identity.connection().upgradable()
-                    && identity.connection().ptr_eq(&connection.downgrade())
-                {
+                if identity.connection().upgradable() && identity.connection().ptr_eq(&connection.downgrade()) {
                     log::error!("Cannot replace player for connection. New player is already owned by a different connection{}",player.name);
                     return false;
                 }
