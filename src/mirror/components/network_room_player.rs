@@ -5,7 +5,7 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager};
+use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager, NetworkWriter, WriteCompress};
 use crate::mirror::{NetworkServer, TNetworkBehaviour};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
@@ -49,7 +49,7 @@ impl NetworkRoomPlayer {
         println!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());
         NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
             // TODO: 这里需要处理一下，可能会有问题
-            // room.ready_status_changed();
+            room.ready_status_changed();
         });
     }
 }
@@ -57,6 +57,9 @@ impl NetworkRoomPlayer {
 impl MonoBehaviour for NetworkRoomPlayer {
     fn start(&mut self) {
         NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
+
+
+
             room.room_slots.insert(self.weak.clone());
 
             if NetworkServer.active {

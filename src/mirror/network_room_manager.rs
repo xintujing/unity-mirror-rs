@@ -190,6 +190,7 @@ impl NetworkRoomManager {
     }
 
     fn on_server_change_scene(&mut self, scene_name: String) {
+        println!("~~~~~~~ on_server_change_scene {}", scene_name);
         for room_player in self.room_slots.iter() {
             if let Some(mut room_player) = room_player.upgrade() {
                 if let Some(identity) = room_player.network_identity.upgrade() {
@@ -356,7 +357,6 @@ impl NetworkRoomManager {
     /// 这是从 NetworkRoomPlayer.CmdChangeReadyState 上的服务器上调用的，当客户端指示“就绪状态更改”时。
     #[action]
     pub fn ready_status_changed(&mut self) {
-        println!("pub fn ready_status_changed(&mut self)");
         let mut current_players = 0;
         let mut ready_players = 0;
 
@@ -372,6 +372,7 @@ impl NetworkRoomManager {
         if current_players == ready_players {
             self.check_ready_to_begin();
         } else {
+            println!("pub fn ready_status_changed(&mut self)");
             self.set_all_players_ready(false);
         }
     }
@@ -391,15 +392,13 @@ impl NetworkRoomManager {
         connection: RevelArc<Box<NetworkConnectionToClient>>,
         error: TransportError,
         reason: String,
-    ) {
-    }
+    ) {}
 
     fn on_server_transport_exception(
         &mut self,
         connection: RevelArc<Box<NetworkConnectionToClient>>,
         error: Box<dyn Error>,
-    ) {
-    }
+    ) {}
 }
 
 impl MonoBehaviour for NetworkRoomManager {
