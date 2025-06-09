@@ -19,6 +19,7 @@ use crate::unity_engine::{GameObject, WorldManager};
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use std::any::{Any, TypeId};
+use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::atomic::AtomicU32;
@@ -452,8 +453,15 @@ impl NetworkIdentity {
                     metadata_network_behaviour_wrapper,
                 );
 
+                let mut weak_network_behaviours = Vec::new();
+
                 let index = identity.network_behaviours.len();
-                for (_, type_id) in network_behaviours.iter() {
+                for (behaviour, type_id) in network_behaviours.iter() {
+                    let tmp_behaviour = behaviour.clone();
+                    weak_network_behaviours.push(unsafe {
+                        (&*(&tmp_behaviour as *const dyn Any as *const RevelWeak<Box<dyn TNetworkBehaviour>>)).clone()
+                    });
+
                     if !identity.component_mapping.contains_key(&type_id) {
                         identity.component_mapping.insert(*type_id, vec![index]);
                     } else {
@@ -462,6 +470,7 @@ impl NetworkIdentity {
                         };
                     }
                 }
+                identity.network_behaviours.push(weak_network_behaviours);
                 game_object.add_component(network_behaviours);
             }
         }
@@ -552,6 +561,7 @@ impl NetworkIdentity {
 
         self.observers.insert(conn.connection_id, conn.downgrade());
         if let Some(self_arc) = self.self_weak.upgrade() {
+            println!("{}", self.network_behaviours.len());
             conn.add_to_observing(self_arc)
         }
     }
