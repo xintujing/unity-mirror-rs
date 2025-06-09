@@ -1280,7 +1280,8 @@ impl NetworkServer {
     }
 
     pub fn rebuild_observers(identity: RevelArc<Box<NetworkIdentity>>, initialize: bool) {
-        if identity.visibility == Visibility::ForceShown {
+        // TODO aoi sys
+        if identity.visibility == Visibility::ForceShown || true {
             Self::rebuild_observers_default(identity, initialize)
         }
     }
