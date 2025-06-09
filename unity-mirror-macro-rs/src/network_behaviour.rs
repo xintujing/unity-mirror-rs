@@ -462,7 +462,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                             #(#serialize_sync_var_ts)*
                             return;
                         }
-                        writer.write_blittable::<u64>(dirty_bits);
+                        writer.write_blittable_compress::<u64>(dirty_bits);
                         #(#serialize_sync_var_ts)*
                     }
                 }
