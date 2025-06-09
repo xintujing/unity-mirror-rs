@@ -182,6 +182,15 @@ impl WorldManager {
         #[allow(static_mut_refs)]
         unsafe {
             let id = arc_game_object.id;
+
+            let index = ACTIVE_WORLD_INDEX.load(std::sync::atomic::Ordering::SeqCst);
+
+            if let Some(world) = WORLDS.get_mut(index as usize) {
+                if world.game_objects.contains_key(&id) {
+                    world.game_objects.remove(&id);
+                }
+            }
+
             if DONT_DESTROY_OBJECT.contains_key(&id) {
                 panic!(
                     "GameObject with ID {} already exists in the dont_destroy_object world.",
