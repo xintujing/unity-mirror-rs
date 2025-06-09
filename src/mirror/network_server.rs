@@ -1301,7 +1301,7 @@ impl NetworkServer {
     }
 
     fn add_all_ready_server_connections_to_observers(mut identity: RevelArc<Box<NetworkIdentity>>) {
-        for (_, connection) in Self.connections.iter_mut() {
+        for connection in Self.connections.values_mut() {
             if connection.is_ready {
                 identity.add_observer(connection.clone());
             }
