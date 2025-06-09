@@ -428,7 +428,6 @@ impl NetworkIdentity {
     ) -> Self {
         let mut identity = Self {
             game_object: weak_game_object.clone(),
-            net_id: 12366,
             ..Default::default()
         };
         if let Some(game_object) = weak_game_object.get() {
