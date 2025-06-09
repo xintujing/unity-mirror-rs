@@ -16,6 +16,7 @@ use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMes
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::scene_message::SceneMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
+use crate::mirror::not_ready_message::NotReadyMessage;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
@@ -486,8 +487,10 @@ impl NetworkServer {
         }
     }
 
-    pub fn set_client_not_ready() {
-        // TODO
+    pub fn set_client_not_ready(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
+        connection.is_ready = false;
+        connection.remove_from_observings_observers();
+        connection.send_message(NotReadyMessage::default(), TransportChannel::Reliable);
     }
 
     pub fn set_all_clients_not_ready() {}
