@@ -256,10 +256,10 @@ impl NetworkRoomManager {
         if self.room_slots.len() > 0 {
             let mut index = 0;
             for room_player in self.room_slots.iter() {
-                index += 1;
                 if let Some(mut room_player) = room_player.upgrade() {
                     room_player.set_index(index);
                 }
+                index += 1;
             }
         }
     }
