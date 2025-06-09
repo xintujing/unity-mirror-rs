@@ -184,9 +184,13 @@ impl NetworkIdentity {
         NEXT_NETWORK_ID.store(1, SeqCst);
     }
 
-    pub fn remove_observer(&self, weak: RevelWeak<Box<NetworkConnectionToClient>>) {}
+    pub fn remove_observer(&self, weak: RevelWeak<Box<NetworkConnectionToClient>>) {
+        todo!()
+    }
 
-    pub fn set_client_owner(&mut self, arc: RevelArc<Box<NetworkConnectionToClient>>) {}
+    pub fn set_client_owner(&mut self, arc: RevelArc<Box<NetworkConnectionToClient>>) {
+        self.connection= arc.downgrade();
+    }
 
     pub fn remove_client_authority(&mut self) {
         if !self.is_server {
