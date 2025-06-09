@@ -371,7 +371,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         let config = metadata.get::<#metadata>();
                     }
 
-                    let arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::unity_engine::MonoBehaviour>);
+                    let arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::mirror::TNetworkBehaviour> as Box<dyn crate::unity_engine::MonoBehaviour>);
 
                     network_behaviour_chain.push((arc_this, std::any::TypeId::of::<Self>()));
 
