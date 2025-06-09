@@ -1366,18 +1366,34 @@ impl NetworkServer {
         }
     }
 
-    fn send_to_observers<T: NetworkMessage>(identity: RevelArc<Box<NetworkIdentity>>, mut message: T) {
+    fn send_to_observers<T: NetworkMessage>(
+        identity: RevelArc<Box<NetworkIdentity>>,
+        mut message: T,
+    ) {
         if identity.observers.len() == 0 {
             return;
         }
+
         NetworkWriterPool::get_by_closure(|writer| {
             message.serialize(writer);
+
+            if writer.position > max_message_size(TransportChannel::Reliable) {
+                log::error!(
+                    "NetworkServer.SendToObservers: message of type {} with a size of {} bytes is larger than the max allowed message size in one batch: {}.\nThe message was dropped, please make it smaller.",
+                    T::get_full_name(),
+                    writer.position,
+                    max_message_size(TransportChannel::Reliable)
+                );
+                return;
+            }
+
             let segment = writer.to_vec();
             for observer in identity.observers.values() {
                 if let Some(observer) = observer.get() {
                     observer.send(&segment, TransportChannel::Reliable);
                 }
             }
+
         });
     }
 
