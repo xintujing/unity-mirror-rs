@@ -1,8 +1,9 @@
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
-use crate::mirror::NetworkBehaviour;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
+use crate::mirror::{NetworkBehaviour};
 use std::fmt::Debug;
+use crate::commons::revel_arc::RevelArc;
 
 #[allow(unused)]
 pub trait SyncObject: Default + Debug {

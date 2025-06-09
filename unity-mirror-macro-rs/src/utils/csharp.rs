@@ -45,9 +45,13 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
     match r#type {
         Type::Reference(TypeReference { elem, .. }) => type_to_csharp(elem),
         Type::Path(TypePath { path, .. }) => {
-            let full_type = get_full_type(path);
-
-            match full_type.as_str() {
+            let last_path = path.segments.last()?;
+            let last_path = last_path.ident.to_string();
+            // let full_type = get_full_type(path);
+            // if full_type.contains("NetworkConnectionToClient") {
+            //     panic!("{}", full_type)
+            // }
+            match last_path.as_str() {
                 "i8" => Some("System.SByte".to_string()),
                 "i16" => Some("System.Int16".to_string()),
                 "i32" => Some("System.Int32".to_string()),
@@ -63,13 +67,13 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
                 "&str" | "String" => Some("System.String".to_string()),
                 "isize" => Some("System.IntPtr".to_string()),
                 "usize" => Some("System.UIntPtr".to_string()),
-                "crate::mirror::NetworkConnection" => {
+                "NetworkConnectionToClient" => {
                     Some("Mirror.NetworkConnectionToClient".to_string())
                 }
-                "nalgebra::Vector3" | "Vector3" => Some("UnityEngine.Vector3".to_string()),
-                "nalgebra::Quaternion" | "Quaternion" => Some("UnityEngine.Quaternion".to_string()),
-                "Vec" => process_generic_type(full_type, path, "System.Collections.Generic.List`1"),
-                "RevelArc" | "RevelWeak" => {
+                "Vector3" | "Vector3" => Some("UnityEngine.Vector3".to_string()),
+                "Quaternion" | "Quaternion" => Some("UnityEngine.Quaternion".to_string()),
+                "Vec" => process_generic_type(last_path, path, "System.Collections.Generic.List`1"),
+                "RevelArc" | "RevelWeak" | "Box" => {
                     if let PathSegment {
                         arguments: PathArguments::AngleBracketed(args),
                         ..

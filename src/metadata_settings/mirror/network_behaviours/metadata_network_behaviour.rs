@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use unity_mirror_macro::{namespace, MetadataSettingsWrapper};
+use unity_mirror_macro_rs::{namespace, MetadataSettingsWrapper};
 
 #[derive(Deserialize_repr, Debug, Clone)]
 #[repr(u8)]

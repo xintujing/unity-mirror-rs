@@ -16,12 +16,6 @@ use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMes
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::scene_message::SceneMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_reader_pool::NetworkReaderPool;
-use crate::mirror::network_time::NetworkTime;
-use crate::mirror::network_writer::NetworkWriter;
-use crate::mirror::network_writer_pool::NetworkWriterPool;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
@@ -30,8 +24,15 @@ use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::{
     CallbackProcessor, TransportChannel, TransportError, TransportManager,
 };
-use crate::mirror::{NetworkIdentity, RemoteCallType};
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkReaderPool;
+use crate::mirror::NetworkTime;
+use crate::mirror::NetworkWriter;
+use crate::mirror::NetworkWriterPool;
+use crate::mirror::{NetworkConnection, Visibility};
+use crate::mirror::{NetworkConnectionToClient, NetworkIdentity, RemoteCallType};
 use crate::unity_engine::{GameObject, MonoBehaviour, Time, WorldManager};
+use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use std::any::Any;
 use std::collections::HashMap;
@@ -77,14 +78,26 @@ pub struct NetworkServerStatic {
     message_handlers: HashMap<u16, MessageHandler>,
 
     // Connections
-    pub connections: HashMap<u64, RevelArc<NetworkConnection>>,
+    pub connections: HashMap<u64, RevelArc<Box<NetworkConnectionToClient>>>,
 
     // Events
-    pub on_connected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    pub on_disconnected_event: SelfMutAction<(RevelArc<NetworkConnection>,), ()>,
-    pub on_error_event: SelfMutAction<(RevelArc<NetworkConnection>, TransportError, String), ()>,
-    pub on_transport_exception_event:
-        SelfMutAction<(RevelArc<NetworkConnection>, Box<dyn std::error::Error>), ()>,
+    pub on_connected_event: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
+    pub on_disconnected_event: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
+    pub on_error_event: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            TransportError,
+            String,
+        ),
+        (),
+    >,
+    pub on_transport_exception_event: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            Box<dyn std::error::Error>,
+        ),
+        (),
+    >,
 }
 
 static mut CONFIG: Lazy<NetworkServerStatic> = Lazy::new(|| NetworkServerStatic {
@@ -157,6 +170,11 @@ impl NetworkServer {
     }
 }
 
+static mut NETWORK_SERVER: Lazy<RevelArc<Box<NetworkServer>>> =
+    Lazy::new(|| RevelArc::new(Box::new(NetworkServer)));
+static mut NETWORK_TIME: Lazy<RevelArc<Box<NetworkTime>>> =
+    Lazy::new(|| RevelArc::new(Box::new(NetworkTime)));
+
 impl NetworkServer {
     pub fn listen(&mut self, max_connections: i32) {
         self.initialize();
@@ -164,9 +182,9 @@ impl NetworkServer {
         self.max_connections = max_connections;
 
         if self.listen {
-            if let Some(active) = TransportManager.active.get() {
-                active.server_start((self.address, self.port));
-            }
+            TransportManager
+                .active
+                .server_start((self.address, self.port));
         }
         self.active = true;
 
@@ -200,9 +218,7 @@ impl NetworkServer {
             on_server_transport_exception: Self::on_transport_exception,
             on_server_disconnected: Self::on_transport_disconnected,
         };
-        if let Some(active) = TransportManager.active.get() {
-            active.init(processor);
-        }
+        TransportManager.active.init(processor);
     }
 
     fn remove_transport_handlers(&self) {
@@ -215,32 +231,27 @@ impl NetworkServer {
             on_server_transport_exception: |_, _| {},
             on_server_disconnected: |_| {},
         };
-        if let Some(active) = TransportManager.active.get() {
-            active.init(processor);
-        }
+        TransportManager.active.init(processor);
     }
 
     fn on_transport_connected(conn_id: u64) {
-        if let Some(active) = TransportManager.active.get() {
-            Self::on_transport_connected_with_address(
-                conn_id,
-                active
-                    .server_get_client_address(conn_id)
-                    .unwrap_or_default()
-                    .as_str(),
-            );
-        }
+        Self::on_transport_connected_with_address(
+            conn_id,
+            TransportManager
+                .active
+                .server_get_client_address(conn_id)
+                .unwrap_or_default()
+                .as_str(),
+        );
     }
 
     fn on_transport_connected_with_address(conn_id: u64, address: &str) {
         if Self::is_connection_allowed(conn_id, address) {
-            let arc_connection = NetworkConnection::new(conn_id, address.to_string());
+            let arc_connection = NetworkConnectionToClient::new(conn_id, address.to_string());
             Self::on_connected(arc_connection);
             return;
         }
-        if let Some(active) = TransportManager.active.get() {
-            active.server_disconnect(conn_id);
-        }
+        TransportManager.active.server_disconnect(conn_id);
     }
 
     fn is_connection_allowed(conn_id: u64, address: &str) -> bool {
@@ -278,7 +289,7 @@ impl NetworkServer {
         true
     }
 
-    fn on_connected(conn: RevelArc<NetworkConnection>) {
+    fn on_connected(conn: RevelArc<Box<NetworkConnectionToClient>>) {
         Self.add_connection(conn.clone());
         Self.on_connected_event.call((conn,));
     }
@@ -287,29 +298,32 @@ impl NetworkServer {
         self.connections.contains_key(conn_id)
     }
 
-    fn add_connection(&mut self, conn: RevelArc<NetworkConnection>) -> bool {
-        if self.connection_contains_key(&conn.id) {
+    fn add_connection(&mut self, conn: RevelArc<Box<NetworkConnectionToClient>>) -> bool {
+        if self.connection_contains_key(&conn.connection_id) {
             return false;
         }
-        self.connections.insert(conn.id, conn);
+        self.connections.insert(conn.connection_id, conn);
         true
     }
 
-    fn remove_connection(&mut self, conn_id: u64) -> Option<RevelArc<NetworkConnection>> {
+    fn remove_connection(
+        &mut self,
+        conn_id: u64,
+    ) -> Option<RevelArc<Box<NetworkConnectionToClient>>> {
         self.connections.remove(&conn_id)
     }
 
     fn on_transport_data(conn_id: u64, data: &[u8], channel: TransportChannel) {
         if let Some(conn) = Self.connections.get(&conn_id) {
             let mut conn = conn.clone();
-            UnBatcherPool::get_return(move |un_batcher| {
+            UnBatcherPool::get_by_closure(move |un_batcher| {
                 if !un_batcher.add_batch_with_slice(data) {
                     if Self.exceptions_disconnect {
                         log::error!(
                         "NetworkServer: received message from connectionId:{} was too short (messages should start with message id). Disconnecting.",
                         conn_id
                     );
-                        conn.disconnect();
+                        conn.disconnect.call(());
                     } else {
                         log::warn!(
                         "NetworkServer: received message from connectionId:{} was too short (messages should start with message id).",
@@ -335,7 +349,7 @@ impl NetworkServer {
                                 "NetworkServer: connectionId:{} received message with invalid header, disconnecting.",
                                 conn_id
                             );
-                                conn.disconnect();
+                                conn.disconnect.call(());
                             } else {
                                 log::warn!(
                                 "NetworkServer: connectionId:{} received message with invalid header.",
@@ -353,7 +367,7 @@ impl NetworkServer {
                                 "NetworkServer: connectionId:{} received message with unknown type, disconnecting.",
                                 conn_id
                             );
-                                conn.disconnect();
+                                conn.disconnect.call(());
                             } else {
                                 log::warn!(
                                 "NetworkServer: connectionId:{} received message with unknown type.",
@@ -411,7 +425,7 @@ impl NetworkServer {
         }
     }
 
-    pub fn destroy_player_for_connection(mut conn: RevelArc<NetworkConnection>) {
+    pub fn destroy_player_for_connection(mut conn: RevelArc<Box<NetworkConnectionToClient>>) {
         conn.destroy_owned_objects();
 
         conn.remove_from_observings_observers();
@@ -420,78 +434,85 @@ impl NetworkServer {
     }
 
     fn register_message_handlers(&mut self) {
-        let network_server_arc = RevelArc::new(Box::new(Self)).downgrade();
+        #[allow(static_mut_refs)]
+        let weak_network_server = unsafe { NETWORK_SERVER.downgrade() };
         self.register_handler::<ReadyMessage>(
-            SelfMutAction::new(network_server_arc.clone(), Self::on_client_ready_message),
+            SelfMutAction::new(weak_network_server.clone(), Self::on_client_ready_message),
             true,
         );
         self.register_handler::<CommandMessage>(
-            SelfMutAction::new(network_server_arc.clone(), Self::on_client_command_message),
+            SelfMutAction::new(weak_network_server.clone(), Self::on_client_command_message),
             true,
         );
         self.register_handler::<EntityStateMessage>(
             SelfMutAction::new(
-                network_server_arc.clone(),
+                weak_network_server.clone(),
                 Self::on_client_entity_state_message,
             ),
             true,
         );
         self.register_handler::<TimeSnapshotMessage>(
             SelfMutAction::new(
-                network_server_arc.clone(),
+                weak_network_server.clone(),
                 Self::on_client_time_snapshot_message,
             ),
             false,
         );
-
-        let network_time_arc = RevelArc::new(Box::new(NetworkTime)).downgrade();
+        #[allow(static_mut_refs)]
+        let weak_network_time = unsafe { NETWORK_TIME.downgrade() };
         self.register_handler::<NetworkPingMessage>(
-            SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_ping),
+            SelfMutAction::new(weak_network_time.clone(), NetworkTime::on_server_ping),
             false,
         );
         self.register_handler::<NetworkPongMessage>(
-            SelfMutAction::new(network_time_arc.clone(), NetworkTime::on_server_pong),
+            SelfMutAction::new(weak_network_time.clone(), NetworkTime::on_server_pong),
             false,
         );
     }
 
     fn on_client_ready_message(
         &mut self,
-        connection: RevelArc<NetworkConnection>,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
         _: ReadyMessage,
         _: TransportChannel,
     ) {
         Self::set_client_ready(connection);
     }
 
-    pub fn set_client_ready(mut connection: RevelArc<NetworkConnection>) {
+    pub fn set_client_ready(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
         connection.is_ready = true;
         if connection.identity.upgradable() {
             Self::spawn_observers_for_connection(connection);
         }
     }
 
-    fn spawn_observers_for_connection(mut connection: RevelArc<NetworkConnection>) {
+    pub fn set_client_not_ready() {
+        // TODO
+    }
+
+    pub fn set_all_clients_not_ready() {}
+
+    fn spawn_observers_for_connection(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
         if !connection.is_ready {
             return;
         }
 
         connection.send_message(
-            &mut ObjectSpawnStartedMessage::default(),
+            ObjectSpawnStartedMessage::default(),
             TransportChannel::Reliable,
         );
 
         // TODO: Spawn observers logic
 
         connection.send_message(
-            &mut ObjectSpawnFinishedMessage::default(),
+            ObjectSpawnFinishedMessage::default(),
             TransportChannel::Reliable,
         );
     }
 
     fn on_client_command_message(
         &mut self,
-        connection: RevelArc<NetworkConnection>,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
         message: CommandMessage,
         channel: TransportChannel,
     ) {
@@ -515,7 +536,7 @@ impl NetworkServer {
 
                             log::warn!(
                                 "Command received from {} while client is not ready. This may be ignored if client intentionally set NotReady.",
-                                connection.id
+                                connection.connection_id
                             );
                         }
                     }
@@ -560,7 +581,7 @@ impl NetworkServer {
 
                             log::warn!(
                                 "Command received from {} while client is not ready. This may be ignored if client intentionally set NotReady.",
-                                connection.id
+                                connection.connection_id
                             );
                         }
                         return;
@@ -585,7 +606,7 @@ impl NetworkServer {
 
     fn on_client_entity_state_message(
         &mut self,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         message: EntityStateMessage,
         _: TransportChannel,
     ) {
@@ -593,7 +614,7 @@ impl NetworkServer {
             None => {
                 log::warn!(
                     "EntityStateMessage from {} for netId={} without authority.",
-                    connection.id,
+                    connection.connection_id,
                     message.net_id
                 );
             }
@@ -602,7 +623,7 @@ impl NetworkServer {
                     if !connection.ptr_eq_weak(&net_identity.connection()) {
                         log::warn!(
                             "EntityStateMessage from {} for {} without authority.",
-                            connection.id,
+                            connection.connection_id,
                             net_identity.name()
                         );
                         return;
@@ -617,7 +638,7 @@ impl NetworkServer {
                                         net_identity.name(),
                                         net_identity.net_id()
                                     );
-                                    connection.disconnect();
+                                    connection.disconnect.call(());
                                 } else {
                                     log::warn!(
                                         "Server failed to deserialize client state for {} with netId={}.",
@@ -640,48 +661,78 @@ impl NetworkServer {
 
     fn on_client_time_snapshot_message(
         &mut self,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         _: TimeSnapshotMessage,
         _: TransportChannel,
     ) {
         let remote_time_stamp = connection.remote_time_stamp;
         connection.on_time_snapshot(TimeSnapshot::new(
             remote_time_stamp,
-            Time::unscaled_time_f64(),
+            NetworkTime.local_time(),
         ))
     }
 
     fn unpack_and_invoke(
         &mut self,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         reader: &mut NetworkReader,
         channel: TransportChannel,
     ) -> bool {
         if let Some(msg_type) = MessageHandler::unpack_id(reader) {
+            let msg_name = match msg_type {
+                43708 => "Mirror.ReadyMessage",
+                39124 => "Mirror.CommandMessage",
+                12339 => "Mirror.EntityStateMessage",
+                57097 => "Mirror.TimeSnapshotMessage",
+                17487 => "Mirror.NetworkPingMessage",
+                27095 => "Mirror.NetworkPongMessage",
+                49414 => "Mirror.AddPlayerMessage",
+                _ => "Unknown",
+            };
+
+            if !vec![17487, 27095, 57097].contains(&msg_type) {
+                println!("Received message of type {}", msg_name);
+            }
+
             return match self.message_handlers.get_mut(&msg_type) {
                 None => {
                     log::warn!("No handler registered for message type: {}", msg_type);
                     false
                 }
                 Some(handler) => {
-                    connection.last_message_time = Time::unscaled_time_f64();
+                    connection.last_message_time = NetworkTime.local_time() as f32;
                     handler.invoke(connection, reader, channel);
                     true
                 }
             };
         }
-        log::warn!("Invalid message header for connection:{}", connection.id);
+        log::warn!(
+            "Invalid message header for connection:{}",
+            connection.connection_id
+        );
         false
     }
 
     pub fn register_handler<M>(
         &mut self,
-        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
+        func: SelfMutAction<
+            (
+                RevelArc<Box<NetworkConnectionToClient>>,
+                M,
+                TransportChannel,
+            ),
+            (),
+        >,
         require_authentication: bool,
     ) where
         M: NetworkMessage + 'static,
     {
         let message_id = M::get_full_name().hash16();
+        println!(
+            "register handler for message [{}] {}",
+            message_id,
+            M::get_full_name()
+        );
         if self.message_handlers.contains_key(&message_id) {
             log::warn!(
                 "Handler for message {} already registered, please use replace_handler instead.",
@@ -697,7 +748,14 @@ impl NetworkServer {
 
     pub fn replace_handler<M>(
         &mut self,
-        func: SelfMutAction<(RevelArc<NetworkConnection>, M, TransportChannel), ()>,
+        func: SelfMutAction<
+            (
+                RevelArc<Box<NetworkConnectionToClient>>,
+                M,
+                TransportChannel,
+            ),
+            (),
+        >,
         require_authentication: bool,
     ) where
         M: NetworkMessage + 'static,
@@ -720,9 +778,8 @@ impl NetworkServer {
     pub fn shutdown(&mut self) {
         if self.initialized {
             self.disconnect_all();
-            if let Some(active) = TransportManager.active.get() {
-                active.server_stop();
-            }
+
+            TransportManager.active.server_stop();
 
             self.remove_transport_handlers();
 
@@ -747,19 +804,90 @@ impl NetworkServer {
 
     fn disconnect_all(&mut self) {
         for conn in self.connections.values_mut() {
-            conn.disconnect();
+            conn.disconnect.call(());
         }
         self.connections.clear();
     }
 
     fn cleanup_spawned(&mut self) {
-        // todo: 清理已生成的对象
+        for (_, identity) in Self.spawned.iter() {
+            if let Some(identity) = identity.upgrade() {
+                Self::destroy(identity.game_object.clone())
+            }
+        }
+        Self.spawned.clear();
     }
 
     pub fn add_player_for_connection(
-        connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         player: RevelArc<GameObject>,
-    ) {
+    ) -> bool {
+        match player.try_get_component2::<NetworkIdentity>() {
+            None => {
+                log::warn!("AddPlayer: player GameObject has no NetworkIdentity. Please add a NetworkIdentity to {}", player.name);
+                false
+            }
+            Some(mut identity) => {
+                println!("{}", identity.name());
+                connection.identity = identity.downgrade();
+                identity.set_client_owner(connection.clone());
+                Self::set_client_ready(connection.clone());
+                Self::respawn(identity);
+                true
+            }
+        }
+    }
+
+    pub fn replace_player_for_connection(
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
+        player: RevelArc<GameObject>,
+        replace_player_options: ReplacePlayerOptions,
+    ) -> bool {
+        match player.try_get_component2::<NetworkIdentity>() {
+            None => {
+                log::error!("ReplacePlayer: playerGameObject has no NetworkIdentity. Please add a NetworkIdentity to {}",player.name);
+                return false;
+            }
+            Some(mut identity) => {
+                if identity.connection().upgradable()
+                    && identity.connection().ptr_eq(&connection.downgrade())
+                {
+                    log::error!("Cannot replace player for connection. New player is already owned by a different connection{}",player.name);
+                    return false;
+                }
+
+                if let Some(mut previous_player) = connection.identity.upgrade() {
+                    connection.identity = identity.downgrade();
+
+                    identity.set_client_owner(connection.clone());
+
+                    Self::spawn_observers_for_connection(connection.clone());
+
+                    Self::respawn(identity.clone());
+
+                    match replace_player_options {
+                        ReplacePlayerOptions::KeepAuthority => {
+                            Self::send_change_owner_message(
+                                previous_player.downgrade(),
+                                connection.downgrade(),
+                            );
+                        }
+                        ReplacePlayerOptions::KeepActive => {
+                            previous_player.remove_client_authority();
+                        }
+                        ReplacePlayerOptions::UnSpawn => {
+                            Self::un_spawn(previous_player.game_object.clone());
+                        }
+                        ReplacePlayerOptions::Destroy => {
+                            Self::un_spawn(previous_player.game_object.clone());
+                        }
+                    }
+
+                    return true;
+                }
+            }
+        }
+        false
     }
 
     pub fn send_to_all<T: NetworkMessage>(
@@ -772,7 +900,7 @@ impl NetworkServer {
             return;
         }
 
-        NetworkWriterPool::get_return(|writer| {
+        NetworkWriterPool::get_by_closure(|writer| {
             message.serialize(writer);
             let segment = writer.to_vec();
 
@@ -799,7 +927,59 @@ impl NetworkServer {
             }
         })
     }
-    pub fn set_all_clients_not_ready() {}
+
+    fn respawn(identity: RevelArc<Box<NetworkIdentity>>) {
+        if let Some(identity_connection) = identity.connection().upgrade() {
+            if identity.net_id() == 0 {
+                Self::spawn(identity.game_object.clone(), identity_connection.clone())
+            } else {
+                Self::send_spawn_message(identity.clone(), identity_connection.clone())
+            }
+        }
+    }
+
+    fn send_spawn_message(
+        identity: RevelArc<Box<NetworkIdentity>>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
+        if identity.server_only {
+            return;
+        }
+        let mut owner_writer = RevelArc::new(NetworkWriterPool::get());
+        let mut observers_writer = RevelArc::new(NetworkWriterPool::get());
+
+        let is_owner = identity.connection().ptr_eq(&connection.downgrade());
+
+        let payload = Self::create_spawn_message_payload(
+            is_owner,
+            identity,
+            owner_writer.clone(),
+            observers_writer.clone(),
+        );
+        connection.send(&payload, TransportChannel::Reliable);
+
+        NetworkWriterPool::return_(owner_writer.into_inner());
+        NetworkWriterPool::return_(observers_writer.into_inner());
+    }
+
+    pub fn create_spawn_message_payload(
+        is_owner: bool,
+        identity: RevelArc<Box<NetworkIdentity>>,
+        owner_writer: RevelArc<NetworkWriter>,
+        observers_writer: RevelArc<NetworkWriter>,
+    ) -> Vec<u8> {
+        if identity.network_behaviours().is_empty() {
+            return vec![];
+        }
+
+        identity.serialize_server(true, owner_writer.clone(), observers_writer.clone());
+
+        if is_owner {
+            owner_writer.to_vec()
+        } else {
+            observers_writer.to_vec()
+        }
+    }
 
     pub fn spawn_objects() -> bool {
         if !Self.active {
@@ -834,10 +1014,10 @@ impl NetworkServer {
                         && Self::valid_parent(real_identity)
                     {
                         if let Some(game_object) = real_identity.game_object.get() {
-                            Self::spawn(
-                                real_identity.game_object.clone(),
-                                real_identity.connection(),
-                            )
+                            if let Some(identity_connection) = real_identity.connection().upgrade()
+                            {
+                                Self::spawn(real_identity.game_object.clone(), identity_connection)
+                            }
                         }
                     }
                 }
@@ -847,11 +1027,17 @@ impl NetworkServer {
         true
     }
 
-    fn spawn(game_object: RevelWeak<GameObject>, connection: RevelWeak<NetworkConnection>) {
+    fn spawn(
+        game_object: RevelWeak<GameObject>,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
         Self::spawn_object(game_object, connection);
     }
 
-    fn spawn_object(game_object: RevelWeak<GameObject>, connection: RevelWeak<NetworkConnection>) {
+    fn spawn_object(
+        game_object: RevelWeak<GameObject>,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
         if let Some(real_game_object) = game_object.get() {
             if !Self.active {
                 log::error!("SpawnObject for {}, NetworkServer is not active. Cannot spawn objects without an active server.", real_game_object.name);
@@ -881,7 +1067,7 @@ impl NetworkServer {
                                 return;
                             }
 
-                            identity.set_connection(connection);
+                            identity.set_connection(connection.downgrade());
 
                             if let Some(game_object) = identity.game_object.get() {
                                 game_object.set_active(true);
@@ -895,6 +1081,10 @@ impl NetworkServer {
                                     .insert(identity.net_id(), weak_network_identity.clone());
 
                                 identity.on_start_server()
+                            }
+
+                            if let Some(identity) = weak_network_identity.upgrade() {
+                                Self::rebuild_observers(identity, true)
                             }
                         }
                     }
@@ -919,10 +1109,7 @@ impl NetworkServer {
             }
 
             if connection.is_ready {
-                connection.send_message(
-                    &mut TimeSnapshotMessage::new(),
-                    TransportChannel::Unreliable,
-                );
+                connection.send_message(TimeSnapshotMessage::new(), TransportChannel::Unreliable);
 
                 Self::broadcast_to_connection(connection.clone());
             }
@@ -931,18 +1118,20 @@ impl NetworkServer {
         }
     }
 
-    fn disconnect_if_inactive(mut connection: RevelArc<NetworkConnection>) -> bool {
+    fn disconnect_if_inactive(mut connection: RevelArc<Box<NetworkConnectionToClient>>) -> bool {
         if Self.disconnect_inactive_connections
-            && !connection.is_active(Self.disconnect_inactive_timeout)
+            && !connection
+                .is_alive
+                .call((Self.disconnect_inactive_timeout,))
         {
-            log::warn!("Disconnecting {} for inactivity!", connection.id);
-            connection.disconnect();
+            log::warn!("Disconnecting {} for inactivity!", connection.connection_id);
+            connection.disconnect.call(());
             return true;
         }
         false
     }
 
-    pub fn broadcast_to_connection(mut connection: RevelArc<NetworkConnection>) {
+    pub fn broadcast_to_connection(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
         let mut connection_clone = connection.clone();
         let mut has_null = false;
         for identity in connection.observing.iter() {
@@ -952,17 +1141,17 @@ impl NetworkServer {
 
                 match serialization {
                     Some(serialization) => {
-                        let mut message = EntityStateMessage::new(
+                        let message = EntityStateMessage::new(
                             identity.get().unwrap().net_id(),
                             serialization.to_vec(),
                         );
-                        connection_clone.send_message(&mut message, TransportChannel::Reliable)
+                        connection_clone.send_message(message, TransportChannel::Reliable)
                     }
                     None => {
                         has_null = true;
                         log::warn!(
                             "Found 'null' entry in observing list for connectionId={}. Please call NetworkServer.Destroy to destroy networked objects. Don't use GameObject.Destroy.",
-                            connection.id
+                            connection.connection_id
                         );
                     }
                 }
@@ -976,7 +1165,7 @@ impl NetworkServer {
 
     fn serialize_for_connection(
         identity: RevelWeak<Box<NetworkIdentity>>,
-        connection: RevelWeak<NetworkConnection>,
+        connection: RevelWeak<Box<NetworkConnectionToClient>>,
     ) -> Option<RevelArc<NetworkWriter>> {
         if let Some(identity) = identity.get() {
             let serialization = identity.get_server_serialization_at_tick(Time::get_frame_count());
@@ -997,7 +1186,7 @@ impl NetworkServer {
     }
 
     pub fn remove_player_for_connection(
-        connection: RevelWeak<NetworkConnection>,
+        connection: RevelWeak<Box<NetworkConnectionToClient>>,
         remove_options: RemovePlayerOptions,
     ) {
         if let Some(conn) = connection.get() {
@@ -1009,7 +1198,9 @@ impl NetworkServer {
                 RemovePlayerOptions::KeepActive => {
                     if let Some(identity) = conn.identity.get() {
                         identity.set_connection(RevelWeak::default());
-                        conn.owned.retain(|owned| !owned.ptr_eq(&conn.identity));
+                        let weak_identity = conn.identity.clone();
+                        conn.owned
+                            .retain(|owned| !owned.downgrade().ptr_eq(&weak_identity));
                         Self::send_change_owner_message(conn.identity.clone(), connection.clone());
                     }
                 }
@@ -1053,6 +1244,35 @@ impl NetworkServer {
         }
     }
 
+    pub fn rebuild_observers(identity: RevelArc<Box<NetworkIdentity>>, initialize: bool) {
+        if let Visibility::ForceShown = identity.visibility {
+            Self::rebuild_observers_default(identity, initialize)
+        }
+    }
+
+    fn rebuild_observers_default(mut identity: RevelArc<Box<NetworkIdentity>>, initialize: bool) {
+        if initialize {
+            match identity.visibility {
+                Visibility::ForceHidden => {
+                    if let Some(identity_connection) = identity.connection().upgrade() {
+                        identity.add_observer(identity_connection)
+                    }
+                }
+                Visibility::Normal | Visibility::ForceShown => {
+                    Self::add_all_ready_server_connections_to_observers(identity.clone());
+                }
+            }
+        }
+    }
+
+    fn add_all_ready_server_connections_to_observers(mut identity: RevelArc<Box<NetworkIdentity>>) {
+        for (_, connection) in Self.connections.iter_mut() {
+            if connection.is_ready {
+                identity.add_observer(connection.clone());
+            }
+        }
+    }
+
     fn get_network_identity(
         game_object: RevelWeak<GameObject>,
     ) -> Option<RevelArc<Box<NetworkIdentity>>> {
@@ -1066,9 +1286,9 @@ impl NetworkServer {
         None
     }
 
-    fn send_change_owner_message(
+    pub fn send_change_owner_message(
         identity: RevelWeak<Box<NetworkIdentity>>,
-        connection: RevelWeak<NetworkConnection>,
+        connection: RevelWeak<Box<NetworkConnectionToClient>>,
     ) {
         if let Some(real_identity) = identity.get() {
             if real_identity.net_id() == 0 || real_identity.server_only {
@@ -1086,14 +1306,14 @@ impl NetworkServer {
                     return;
                 }
 
-                let mut message = ChangeOwnerMessage::new(
+                let message = ChangeOwnerMessage::new(
                     real_identity.net_id(),
                     real_identity.connection().ptr_eq(&connection),
                     (real_connection.identity.ptr_eq(&identity)
                         && real_identity.connection().ptr_eq(&connection)),
                 );
 
-                real_connection.send_message(&mut message, TransportChannel::Reliable)
+                real_connection.send_message(message, TransportChannel::Reliable)
             }
         }
     }
@@ -1103,12 +1323,15 @@ impl NetworkServer {
 
     pub fn un_spawn_internal(game_object: RevelWeak<GameObject>, reset_state: bool) {
         if !Self.active {
-            log::warn!("NetworkServer.Unspawn() called without an active server. Servers can only destroy while active, clients can only ask the server to destroy (for example, with a [Command]), after which the server may decide to destroy the object and broadcast the change to all clients.");
+            log::warn!("NetworkServer::un_spawn() called without an active server. \
+            Servers can only destroy while active, \
+            clients can only ask the server to destroy (for example, with a [Command]), \
+            after which the server may decide to destroy the object and broadcast the change to all clients.");
             return;
         }
 
         if !game_object.upgradable() {
-            log::info!("NetworkServer.Unspawn(): object is null");
+            log::info!("NetworkServer::un_spawn(): object is null");
             return;
         }
 
@@ -1136,14 +1359,16 @@ impl NetworkServer {
         }
     }
 
-    fn send_to_observers<T: NetworkMessage>(identity: RevelArc<Box<NetworkIdentity>>, message: T) {}
+    fn send_to_observers<T: NetworkMessage>(identity: RevelArc<Box<NetworkIdentity>>, message: T) {
+        // TODO
+    }
 
     pub fn hide_for_connection(
         identity: RevelArc<Box<NetworkIdentity>>,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
     ) {
-        let mut message = ObjectHideMessage::new(identity.net_id());
-        connection.send_message(&mut message, TransportChannel::Reliable)
+        let message = ObjectHideMessage::new(identity.net_id());
+        connection.send_message(message, TransportChannel::Reliable)
     }
 }
 
@@ -1155,9 +1380,7 @@ impl NetworkServer {
             Self.full_update_duration.begin();
         }
 
-        if let Some(active) = TransportManager.active.get() {
-            active.server_early_update();
-        }
+        TransportManager.active.server_early_update();
 
         for (_, connection) in Self.connections.iter_mut() {
             connection.update_time_interpolation()
@@ -1182,9 +1405,7 @@ impl NetworkServer {
             Self::broadcast();
         }
 
-        if let Some(active) = TransportManager.active.get() {
-            active.server_late_update();
-        }
+        TransportManager.active.server_late_update();
 
         if Self.active {
             Self.actual_tick_rate_counter += 1;
@@ -1199,6 +1420,13 @@ impl NetworkServer {
             Self.late_update_duration.end();
             Self.full_update_duration.end();
         }
+    }
+
+    pub fn show_for_connection(
+        identity: RevelArc<Box<NetworkIdentity>>,
+        conn: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
+        // TODO
     }
 }
 

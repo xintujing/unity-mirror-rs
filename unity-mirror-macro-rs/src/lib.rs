@@ -6,8 +6,8 @@ mod network_behaviour;
 use proc_macro::TokenStream;
 
 mod callback_processor;
-mod network_message;
 mod metadata_settings;
+mod network_message;
 
 mod network_manager;
 
@@ -18,6 +18,10 @@ pub(crate) mod utils;
 mod virtual_trait;
 
 mod mirror;
+
+mod extends;
+mod internal;
+mod virtual_shroud;
 
 macro_rules! attribute_args {
     ($type_name:ident, $($field_name:ident),+) => {
@@ -134,6 +138,10 @@ pub fn derive_network_manager_factory(item: TokenStream) -> TokenStream {
 pub fn virtual_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
     virtual_trait::handler(attr, item)
 }
+#[proc_macro_attribute]
+pub fn virtual_shroud(attr: TokenStream, item: TokenStream) -> TokenStream {
+    virtual_shroud::handler(attr, item)
+}
 
 #[proc_macro_attribute]
 pub fn authenticator_factory(_: TokenStream, item: TokenStream) -> TokenStream {
@@ -155,4 +163,25 @@ pub fn client_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn target_rpc(attr: TokenStream, item: TokenStream) -> TokenStream {
     mirror::component::target_rpc::handler(attr, item)
+}
+
+#[proc_macro_attribute]
+pub fn internal(attr: TokenStream, item: TokenStream) -> TokenStream {
+    internal::handler(attr, item)
+}
+
+#[proc_macro_derive(Internal, attributes(set))]
+pub fn derive_internal(item: TokenStream) -> TokenStream {
+    internal::derive_handler(item)
+}
+
+#[proc_macro_attribute]
+pub fn extends(attr: TokenStream, item: TokenStream) -> TokenStream {
+    extends::handler(attr, item)
+}
+
+mod action;
+#[proc_macro_attribute]
+pub fn action(attr: TokenStream, item: TokenStream) -> TokenStream {
+    action::handler(attr, item)
 }

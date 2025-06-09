@@ -1,7 +1,7 @@
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::mirror::network_manager_trait::TNetworkManager;
+use crate::mirror::TNetworkManager;
 use crate::unity_engine::GameObject;
 use once_cell::sync::Lazy;
 use std::any::TypeId;

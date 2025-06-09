@@ -14,7 +14,8 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
         weak: crate::commons::revel_weak::RevelWeak<Box<Self>>
     });
     ext_fields.push(syn::parse_quote! {
-        on_server_authenticated: crate::commons::action::SelfMutAction<(crate::commons::revel_arc::RevelArc<crate::mirror::network_connection::NetworkConnection,>,),()>
+        on_server_authenticated: crate::commons::action::SelfMutAction<(
+            crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>>,),()>
     });
 
     // 检查结构体的字段是否为命名字段（即标准的 struct，而不是 tuple struct 或 unit struct）
@@ -46,28 +47,15 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
             }
             fn set_on_server_authenticated(
                 &mut self,
-                event: crate::commons::action::SelfMutAction<
-                    (
-                        crate::commons::revel_arc::RevelArc<
-                            crate::mirror::network_connection::NetworkConnection,
-                        >,
-                    ),
-                    (),
-                >,
+                event: crate::commons::action::SelfMutAction<(crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>>,),(),>,
             ) {
                 self.on_server_authenticated = event;
             }
 
             fn on_server_authenticated(
                 &self,
-            ) -> &crate::commons::action::SelfMutAction<
-                (
-                    crate::commons::revel_arc::RevelArc<
-                        crate::mirror::network_connection::NetworkConnection,
-                    >,
-                ),
-                (),
-            > {
+            ) -> &crate::commons::action::SelfMutAction<(
+                crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>,>,),(),> {
                 &self.on_server_authenticated
             }
         }

@@ -10,11 +10,11 @@ use kcp2k_rust::kcp2k_peer::Kcp2KPeer;
 use std::net::ToSocketAddrs;
 use std::process::exit;
 use std::str::FromStr;
-use unity_mirror_macro::CallbackProcessor;
+use unity_mirror_macro_rs::CallbackProcessor;
 
 const SCHEMA: &str = "kcp";
 
-#[derive(CallbackProcessor)]
+#[derive(Default, CallbackProcessor)]
 pub struct Kcp2kTransport {
     pub server_active: bool,
     pub config: Kcp2KConfig,
@@ -54,6 +54,7 @@ impl Kcp2kTransport {
         }
     }
 }
+
 #[allow(unused)]
 impl Transport for Kcp2kTransport {
     fn init(&mut self, callback_processor: CallbackProcessor) {

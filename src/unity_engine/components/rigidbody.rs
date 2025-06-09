@@ -2,7 +2,7 @@ use crate::metadata_settings::unity::rigid_body::{MetadataRigidBody, MetadataRig
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use std::any::Any;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro_rs::namespace;
 
 #[ctor::ctor]
 fn static_init() {

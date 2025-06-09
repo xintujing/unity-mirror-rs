@@ -1,4 +1,4 @@
-use crate::mirror::network_reader::NetworkReader;
+use crate::mirror::NetworkReader;
 use crate::mirror::pool::Pool;
 use lazy_static::lazy_static;
 use std::sync::{Arc, Mutex};

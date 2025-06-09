@@ -1,10 +1,11 @@
 #![allow(dead_code)]
 use crate::mirror::batching::batcher::Batcher;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
-use crate::mirror::network_writer_pool::NetworkWriterPool;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
+use crate::mirror::NetworkWriterPool;
 use std::collections::VecDeque;
 
+#[derive(Default)]
 pub struct UnBatcher {
     un_batches: VecDeque<NetworkWriter>,
     reader: NetworkReader,

@@ -3,34 +3,28 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Expr, FnArg, LitStr, Pat, PatType, Token, parse_macro_input, parse_quote};
+use syn::{Expr, FnArg, LitStr, Pat, PatType, Token, Type, parse_macro_input, parse_quote};
 
 mod kw {
     syn::custom_keyword!(channel);
-    syn::custom_keyword!(include_owner);
     syn::custom_keyword!(rename);
 }
 
 struct TargetRpcArgs {
     channel: Option<Expr>,
-    include_owner: bool,
     rename: Option<String>,
 }
 
 impl Parse for TargetRpcArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut channel = None;
-        let mut include_owner = false;
         let mut rename = None;
 
         while !input.is_empty() {
             if input.peek(kw::channel) {
                 input.parse::<kw::channel>()?;
                 input.parse::<Token![=]>()?;
-                channel = Some(input.parse()?);
-            } else if input.peek(kw::include_owner) {
-                input.parse::<kw::include_owner>()?;
-                include_owner = true;
+                channel = input.parse().ok();
             } else if input.peek(kw::rename) {
                 let _ = input.parse::<kw::rename>()?;
                 input.parse::<Token![=]>()?;
@@ -49,36 +43,41 @@ impl Parse for TargetRpcArgs {
             }
         }
 
-        Ok(TargetRpcArgs {
-            channel,
-            include_owner,
-            rename,
-        })
+        Ok(TargetRpcArgs { channel, rename })
     }
 }
 
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let TargetRpcArgs {
         mut channel,
-        include_owner,
         rename,
     } = parse_macro_input!(attr as TargetRpcArgs);
 
     if channel.is_none() {
-        channel = Some(parse_quote! {1})
+        channel = Some(parse_quote! { crate::mirror::transport::TransportChannel::Reliable })
     }
 
     let mut item_fn = parse_macro_input!(item as syn::ItemFn);
 
     let mut arg_block: Vec<proc_macro2::TokenStream> = vec![];
 
-    for (_, fn_arg) in item_fn.sig.inputs.iter().enumerate() {
-        if let FnArg::Typed(PatType { pat, .. }) = fn_arg {
+    let mut to = quote! {None};
+
+    for (i, fn_arg) in item_fn.sig.inputs.iter().enumerate() {
+        if let FnArg::Typed(PatType { pat, ty, .. }) = fn_arg {
             if let Pat::Ident(a) = pat.as_ref() {
                 let arg_name = &a.ident;
-                arg_block.push(quote! {
-                        crate::mirror::network_writer::DataTypeSerializer::serialize(&#arg_name, &mut writer);
+                // panic!("Argument {} is not supported", arg_name);
+                if let Type::Path(_) = &**ty {
+                    if i == 1 {
+                        to = quote! {Some(#arg_name)};
+                    }
+                }
+                if i > 1 {
+                    arg_block.push(quote! {
+                        crate::mirror::MethodParameterSerializer::serialize(#arg_name, &mut writer);
                     });
+                }
             }
         }
     }
@@ -95,11 +94,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         syn::parse_quote! {
             {
                 use crate::mirror::stable_hash::StableHash;
-                use crate::mirror::network_writer::NetworkWriter;
+                use crate::mirror::NetworkWriter;
                 use crate::mirror::NetworkBehaviour;
                 use crate::commons::object::Object;
 
-                crate::mirror::network_writer_pool::NetworkWriterPool::get_return(|mut writer|{
+                crate::mirror::NetworkWriterPool::get_by_closure(|mut writer|{
                     #(#arg_block)*
 
                     let full_path_str = format!(
@@ -109,12 +108,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         #csharp_func_inputs,
                     );
 
-                    self.send_rpc_internal(
+                    self.send_target_rpc_internal(
+                        #to,
                         &full_path_str,
                         full_path_str.fn_hash() as u16,
                         &mut writer,
                         #channel,
-                        #include_owner
                     );
                 });
             }

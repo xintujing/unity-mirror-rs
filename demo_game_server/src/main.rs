@@ -1,5 +1,12 @@
+#![allow(dead_code, unused)]
+
 use unity_mirror_rs::mirror::NetworkManager;
 use unity_mirror_rs::unity_engine::PlayerLooper;
+
+use unity_mirror_rs::*;
+
+mod backend_metadata;
+mod scripts;
 
 #[ctor::ctor]
 fn init_logger() {
@@ -8,7 +15,7 @@ fn init_logger() {
     use std::io::Write;
     env_logger::Builder::new()
         .format_level(true)
-        .filter_level(log::LevelFilter::Debug)
+        // .filter_level(log::LevelFilter::Debug)
         .format(|buf, record| {
             writeln!(
                 buf,

@@ -10,7 +10,7 @@ use std::collections::HashMap;
 pub type NetworkBehaviourFactoryType = fn(
     weak_game_object: RevelWeak<GameObject>,
     metadata: &MetadataNetworkBehaviourWrapper,
-    weak_network_behaviour: &mut RevelWeak<Box<crate::mirror::network_behaviour::NetworkBehaviour>>,
+    weak_network_behaviour: &mut RevelWeak<Box<crate::mirror::NetworkBehaviour>>,
     sync_object_offset: &mut u8,
     sync_var_offset: &mut u8,
 ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>;

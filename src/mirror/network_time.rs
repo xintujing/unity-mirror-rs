@@ -3,7 +3,7 @@ use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::transport::TransportChannel::Reliable;
-use crate::mirror::{NetworkConnection, NetworkServer};
+use crate::mirror::{NetworkConnection, NetworkConnectionToClient, NetworkServer};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use once_cell::sync::Lazy;
 use std::ops::{Deref, DerefMut};
@@ -24,7 +24,7 @@ static mut NETWORK_TIME_STATIC: Lazy<NetworkTimeStatic> = Lazy::new(|| NetworkTi
 
 #[allow(unused)]
 pub struct NetworkTimeStatic {
-    ping_interval: f32,
+    pub ping_interval: f32,
 
     last_ping_time: f64,
     rtt: ExponentialMovingAverage,
@@ -99,21 +99,21 @@ impl DerefMut for NetworkTime {
 impl NetworkTime {
     pub fn on_server_ping(
         &mut self,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         message: NetworkPingMessage,
         _: TransportChannel,
     ) {
         let unadjusted_error = self.local_time() - message.local_time;
         let adjusted_error = self.local_time() - message.predicted_time_adjusted;
 
-        let mut pong_message =
+        let pong_message =
             NetworkPongMessage::new(message.local_time, unadjusted_error, adjusted_error);
-        connection.send_message(&mut pong_message, Reliable);
+        connection.send_message(pong_message, Reliable);
     }
 
     pub fn on_server_pong(
         &mut self,
-        mut connection: RevelArc<NetworkConnection>,
+        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
         message: NetworkPongMessage,
         _: TransportChannel,
     ) {
@@ -122,7 +122,7 @@ impl NetworkTime {
         }
 
         let new_rtt = self.local_time() - message.local_time;
-        connection._rtt.add(new_rtt);
+        connection.rtt.add(new_rtt);
     }
 
     pub fn reset_statics(&mut self) {

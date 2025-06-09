@@ -1,7 +1,7 @@
 #![allow(unused)]
 use crate::commons::to_hex_string::ToHexString;
 use crate::mirror::compress::Compress;
-use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::NetworkWriter;
 use nalgebra::Vector4;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
@@ -155,7 +155,7 @@ impl ReadCompress for nalgebra::Quaternion<f32> {
 
 const ALLOCATION_LIMIT: i32 = 1024 * 1024 * 16;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct NetworkReader {
     buffer: Vec<u8>,
     pub position: usize,
@@ -249,8 +249,9 @@ impl NetworkReader {
             );
             return &[];
         }
+        let x = &self.buffer[self.position..self.position + count];
         self.position += count;
-        &self.buffer[self.position..self.position + count]
+        x
     }
     pub fn read_string(&mut self) -> String {
         let size = self.read_blittable::<u16>();

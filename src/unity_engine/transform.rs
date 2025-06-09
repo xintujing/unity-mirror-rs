@@ -4,7 +4,7 @@ use crate::metadata_settings::unity::metadata_transform::MetadataTransform;
 use crate::unity_engine::GameObject;
 use nalgebra::{Matrix3, Matrix4, Quaternion, Translation3, UnitQuaternion, Vector3};
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct Transform {
     pub instance_id: i32,
 
@@ -75,15 +75,15 @@ impl Transform {
         let t0 = 2.0 * (w * x + y * z);
         let t1 = 1.0 - 2.0 * (x * x + ysqr);
         let roll = t0.atan2(t1); // 绕 X 轴的旋转
-        // 计算 Pitch (Y-axis rotation)
+                                 // 计算 Pitch (Y-axis rotation)
         let t2 = 2.0 * (w * y - z * x);
         let t2 = t2.clamp(-1.0, 1.0); // 限制在 [-1, 1] 范围
         let pitch = t2.asin(); // 绕 Y 轴的旋转
-        // 计算 Yaw (Z-axis rotation)
+                               // 计算 Yaw (Z-axis rotation)
         let t3 = 2.0 * (w * z + x * y);
         let t4 = 1.0 - 2.0 * (ysqr + z * z);
         let yaw = t3.atan2(t4); // 绕 Z 轴的旋转
-        // 转换为角度并限制到 [0, 360)
+                                // 转换为角度并限制到 [0, 360)
         Vector3::new(
             Self::radians_to_degrees_positive(roll),
             Self::radians_to_degrees_positive(pitch),

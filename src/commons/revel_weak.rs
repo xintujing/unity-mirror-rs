@@ -20,6 +20,7 @@ impl<T> Debug for RevelWeak<T> {
     }
 }
 
+impl<T: Eq> Eq for RevelWeak<T> {}
 impl<T: PartialEq> PartialEq<Self> for RevelWeak<T> {
     fn eq(&self, other: &Self) -> bool {
         if let (Some(one), Some(two)) = (self.0.upgrade(), other.0.upgrade()) {
@@ -28,8 +29,6 @@ impl<T: PartialEq> PartialEq<Self> for RevelWeak<T> {
         false
     }
 }
-
-impl<T: Eq> Eq for RevelWeak<T> {}
 
 impl<T: Hash + 'static> Hash for RevelWeak<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {

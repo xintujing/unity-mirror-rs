@@ -33,7 +33,7 @@ impl UnBatcherPool {
         }
     }
 
-    pub fn get_return<T>(func: T)
+    pub fn get_by_closure<T>(func: T)
     where
         T: FnOnce(&mut UnBatcher),
     {

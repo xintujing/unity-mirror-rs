@@ -1,15 +1,17 @@
+use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
-use crate::mirror::network_behaviour_factory::NetworkBehaviourFactory;
-use crate::mirror::network_connection::NetworkConnection;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
-use crate::mirror::network_writer_pool::NetworkWriterPool;
+use crate::mirror::NetworkBehaviourFactory;
+use crate::mirror::NetworkConnection;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
+use crate::mirror::NetworkWriterPool;
 use crate::mirror::{
-    RemoteCallType, RemoteProcedureCalls, SyncDirection, SyncMode, TNetworkBehaviour,
+    NetworkConnectionToClient, NetworkServer, RemoteCallType, RemoteProcedureCalls, SyncDirection,
+    SyncMode, TNetworkBehaviour,
 };
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::MonoBehaviourFactory;
@@ -21,7 +23,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering::SeqCst;
-use unity_mirror_macro::namespace;
+use unity_mirror_macro_rs::namespace;
 
 #[ctor::ctor]
 fn static_init() {
@@ -104,7 +106,7 @@ pub struct NetworkIdentity {
     net_id: u32,
     component_mapping: HashMap<TypeId, Vec<usize>>,
     network_behaviours: Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>>,
-    connection: RevelWeak<NetworkConnection>,
+    connection: RevelWeak<Box<NetworkConnectionToClient>>,
 
     pub is_server: bool,
     pub server_only: bool,
@@ -119,12 +121,21 @@ pub struct NetworkIdentity {
     owner_payload: Vec<u8>,
     observers_payload: Vec<u8>,
 
-    pub(crate) observers: Vec<RevelWeak<NetworkConnection>>,
+    pub(crate) observers: HashMap<u64, RevelWeak<Box<NetworkConnectionToClient>>>,
     last_serialization: RevelArc<NetworkIdentitySerialization>,
 
     spawned_from_instantiate: bool,
     has_spawned: bool,
     had_authority: bool,
+
+    client_authority_callback: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            RevelArc<Box<NetworkIdentity>>,
+            bool,
+        ),
+        (),
+    >,
 }
 
 impl PartialEq<Self> for NetworkIdentity {
@@ -173,13 +184,47 @@ impl NetworkIdentity {
         NEXT_NETWORK_ID.store(1, SeqCst);
     }
 
+    pub fn remove_observer(&self, weak: RevelWeak<Box<NetworkConnectionToClient>>) {}
+
+    pub fn set_client_owner(&mut self, arc: RevelArc<Box<NetworkConnectionToClient>>) {}
+
+    pub fn remove_client_authority(&mut self) {
+        if !self.is_server {
+            log::error!(
+                "RemoveClientAuthority can only be called on the server for spawned objects."
+            );
+            return;
+        }
+
+        if let Some(connection) = self.connection.upgrade() {
+            if connection.identity.ptr_eq(&self.self_weak) {
+                log::error!("RemoveClientAuthority cannot remove authority for a player object");
+                return;
+            }
+        }
+
+        if let (Some(arc_connection), Some(arc_self)) =
+            (self.connection.upgrade(), self.self_weak.upgrade())
+        {
+            self.client_authority_callback
+                .call((arc_connection.clone(), arc_self.clone(), false));
+
+            self.set_connection(RevelWeak::new());
+
+            NetworkServer::send_change_owner_message(
+                arc_self.downgrade(),
+                arc_connection.downgrade(),
+            );
+        }
+    }
+
     pub fn handle_remote_call(
         &self,
         component_index: u8,
         function_hash: u16,
         remote_call_type: RemoteCallType,
         reader: &mut NetworkReader,
-        sender_connection: RevelArc<NetworkConnection>,
+        sender_connection: RevelArc<Box<NetworkConnectionToClient>>,
     ) {
         if component_index >= self.component_mapping.len() as u8 {
             log::warn!(
@@ -287,7 +332,7 @@ impl NetworkIdentity {
                 let observers_dirty = self.is_dirty(observer_mask, network_behaviour_i as u8);
 
                 if owner_dirty || observers_dirty {
-                    NetworkWriterPool::get_return(|writer| {
+                    NetworkWriterPool::get_by_closure(|writer| {
                         // serialize
                         if let Some(last) = network_behaviour_chain.last() {
                             if let Some(comp) = last.get() {
@@ -319,11 +364,11 @@ impl NetworkIdentity {
     }
 
     pub fn clear_observers(&mut self) {
-        for observer in self.observers.iter_mut() {
-            if let Some(real_observer) = observer.get() {
-                if let Some(self_arc) = self.self_weak.upgrade() {
-                    real_observer.remove_from_observing(self_arc, true)
-                }
+        for (_, observer) in self.observers.iter_mut() {
+            if let (Some(self_arc), Some(mut real_observer)) =
+                (self.self_weak.upgrade(), observer.upgrade())
+            {
+                real_observer.remove_from_observing(self_arc, true)
             }
         }
         self.observers.clear();
@@ -438,7 +483,11 @@ impl NetworkIdentity {
     }
 
     pub fn name(&self) -> String {
-        "NetworkIdentity".to_string()
+        if let Some(game_object) = self.game_object.upgrade() {
+            game_object.name.clone()
+        } else {
+            "Unknown".to_string()
+        }
     }
 
     pub fn net_id(&self) -> u32 {
@@ -449,11 +498,11 @@ impl NetworkIdentity {
         self.net_id = net_id;
     }
 
-    pub fn connection(&self) -> RevelWeak<NetworkConnection> {
+    pub fn connection(&self) -> RevelWeak<Box<NetworkConnectionToClient>> {
         self.connection.clone()
     }
 
-    pub fn set_connection(&mut self, connections: RevelWeak<NetworkConnection>) {
+    pub fn set_connection(&mut self, connections: RevelWeak<Box<NetworkConnectionToClient>>) {
         self.connection = connections;
     }
 
@@ -490,6 +539,31 @@ impl NetworkIdentity {
             if let Some(weak_network_behaviour) = network_behaviour.last() {
                 if let Some(real_network_behaviour) = weak_network_behaviour.get() {
                     real_network_behaviour.on_stop_server();
+                }
+            }
+        }
+    }
+
+    pub fn add_observer(&mut self, mut conn: RevelArc<Box<NetworkConnectionToClient>>) {
+        if self.observers.contains_key(&conn.connection_id) {
+            return;
+        }
+
+        if self.observers.is_empty() {
+            self.clear_all_components_dirty_bits()
+        }
+
+        self.observers.insert(conn.connection_id, conn.downgrade());
+        if let Some(self_arc) = self.self_weak.upgrade() {
+            conn.add_to_observing(self_arc)
+        }
+    }
+
+    fn clear_all_components_dirty_bits(&self) {
+        for component in self.network_behaviours.iter() {
+            if let Some(component) = component.last() {
+                if let Some(mut component) = component.upgrade() {
+                    component.clear_all_dirty_bits();
                 }
             }
         }

@@ -4,9 +4,9 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::mirror::components::network_transform::transform_sync_data::SyncData;
-use crate::mirror::network_behaviour::TNetworkBehaviour;
-use crate::mirror::network_reader::NetworkReader;
-use crate::mirror::network_writer::NetworkWriter;
+use crate::mirror::TNetworkBehaviour;
+use crate::mirror::NetworkReader;
+use crate::mirror::NetworkWriter;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::{
     NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, SyncDirection,
@@ -15,7 +15,7 @@ use crate::mirror::{
 use crate::unity_engine::Time;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
-use unity_mirror_macro::{client_rpc, command, namespace, network_behaviour};
+use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour};
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(

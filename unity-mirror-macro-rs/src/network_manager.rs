@@ -83,8 +83,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         );
         if let Some(weak_instance) = arc_instance.downgrade().downcast::<Self>() {
             if let Some(real_instance) = weak_instance.get() {
-                real_instance.initialize(metadata);
                 real_instance.weak = weak_instance.clone();
+                real_instance.initialize(metadata);
             }
         }
     };
@@ -113,7 +113,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         if let Fields::Named(fields_named) = &mut item_struct.fields {
             fields_named.named.push(parse_quote! {
-                parent: crate::commons::revel_weak::RevelWeak<Box<#parent_path>>
+                parent: crate::commons::revel_arc::RevelArc<Box<#parent_path>>
             })
         }
 
@@ -122,13 +122,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 type Target = Box<#parent_path>;
 
                 fn deref(&self) -> &Self::Target {
-                    self.parent.get().unwrap()
+                    &self.parent//.get().unwrap()
                 }
             }
 
             impl core::ops::DerefMut for #struct_ident {
                 fn deref_mut(&mut self) -> &mut Self::Target {
-                    self.parent.get().unwrap()
+                    &mut self.parent//.get().unwrap()
                 }
             }
         });
@@ -141,7 +141,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         instance_field_slot = Some(quote! {
             if let Some((arc_parent, _)) = parent.last() {
-                instance.parent = arc_parent.downgrade().downcast::<NetworkManager>().unwrap().clone();
+                instance.parent = arc_parent.downgrade().downcast::<NetworkManager>().unwrap().upgrade().unwrap();
             }else{
                 println!("Mirror: NetworkManager {} parent not found", stringify!(#struct_ident));
             }

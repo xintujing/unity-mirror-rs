@@ -2,6 +2,7 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::unity_engine::MonoBehaviour;
 use std::cell::UnsafeCell;
 use std::fmt::{Debug, Formatter};
+use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
@@ -10,6 +11,25 @@ pub struct RevelArc<T>(pub(super) Arc<UnsafeCell<T>>);
 impl<T> Debug for RevelArc<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl<T> RevelArc<T> {
+    pub fn into_inner(self) -> T {
+        Arc::into_inner(self.0).unwrap().into_inner()
+    }
+}
+
+impl<T: Eq> Eq for RevelArc<T> {}
+impl<T: PartialEq> PartialEq<Self> for RevelArc<T> {
+    fn eq(&self, other: &Self) -> bool {
+        unsafe { (&*self.0.get()).eq(&*other.0.get()) }
+    }
+}
+
+impl<T: Hash + 'static> Hash for RevelArc<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.get().hash(state);
     }
 }
 

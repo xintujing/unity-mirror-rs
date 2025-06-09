@@ -70,6 +70,10 @@ impl World {
         self.game_objects
             .insert(arc_game_object.id, arc_game_object);
     }
+
+    pub fn get_scene_path(&self) -> String {
+        return self.scene_path.clone();
+    }
 }
 
 pub enum LoadSceneMode {
@@ -272,6 +276,9 @@ impl WorldManager {
     pub(super) fn late_update() {
         #[allow(static_mut_refs)]
         unsafe {
+            for (_, game_object) in DONT_DESTROY_OBJECT.iter_mut() {
+                game_object.late_update();
+            }
             for world in WORLDS.iter_mut() {
                 for (_, game_object) in world.game_objects.iter_mut() {
                     game_object.late_update();

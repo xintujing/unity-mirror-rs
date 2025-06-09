@@ -4,7 +4,7 @@ use crate::mirror::components::network_transform::transform_snapshot::TransformS
 
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
-use crate::mirror::network_behaviour::TNetworkBehaviour;
+use crate::mirror::TNetworkBehaviour;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::{NetworkBehaviour, NetworkServer, SyncDirection};
 use crate::unity_engine::Transform;
@@ -12,7 +12,7 @@ use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
-use unity_mirror_macro::{client_rpc, command, namespace, network_behaviour};
+use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 #[allow(unused)]

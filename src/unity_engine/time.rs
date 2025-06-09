@@ -95,7 +95,7 @@ impl Time {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct ExponentialMovingAverage {
     alpha: f64,
     initialized: bool,
