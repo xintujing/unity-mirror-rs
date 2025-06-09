@@ -21,6 +21,7 @@ use crate::mirror::remote_calls::RemoteProcedureCalls;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_sample::TimeSample;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
+use crate::mirror::spawn_message::SpawnMessage;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::{
     CallbackProcessor, TransportChannel, TransportError, TransportManager,
@@ -956,14 +957,30 @@ impl NetworkServer {
         let mut observers_writer = RevelArc::new(NetworkWriterPool::get());
 
         let is_owner = identity.connection().ptr_eq(&connection.downgrade());
+        let is_local = connection.identity.ptr_eq(&identity.downgrade());
 
         let payload = Self::create_spawn_message_payload(
             is_owner,
-            identity,
+            identity.clone(),
             owner_writer.clone(),
             observers_writer.clone(),
         );
-        connection.send(&payload, TransportChannel::Reliable);
+
+        if let Some(identity_game_object) = identity.game_object.upgrade() {
+            let mut spawn_message = SpawnMessage::new(
+                identity.net_id(),
+                is_local,
+                is_owner,
+                identity.scene_id,
+                identity.game_object.get().unwrap().asset_id,
+                identity_game_object.transform.local_position,
+                identity_game_object.transform.local_rotation,
+                identity_game_object.transform.local_scale,
+                payload,
+            );
+
+            connection.send_message(spawn_message, TransportChannel::Reliable);
+        }
 
         NetworkWriterPool::return_(owner_writer.into_inner());
         NetworkWriterPool::return_(observers_writer.into_inner());
@@ -1393,7 +1410,6 @@ impl NetworkServer {
                     observer.send(&segment, TransportChannel::Reliable);
                 }
             }
-
         });
     }
 
