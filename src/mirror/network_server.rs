@@ -1373,7 +1373,7 @@ impl NetworkServer {
         NetworkWriterPool::get_by_closure(|writer| {
             message.serialize(writer);
             let segment = writer.to_vec();
-            for observer in identity.observers.values_mut() {
+            for observer in identity.observers.values() {
                 if let Some(observer) = observer.get() {
                     observer.send(&segment, TransportChannel::Reliable);
                 }
