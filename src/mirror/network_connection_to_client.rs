@@ -1,22 +1,18 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::batching::batcher::Batcher;
 use crate::mirror::batching::un_batcher::UnBatcher;
-use crate::mirror::messages::message;
-use crate::mirror::messages::message::NetworkMessage;
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
-use crate::mirror::NetworkTime;
-use crate::mirror::NetworkWriter;
-use crate::mirror::NetworkWriterPool;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInterpolation;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::snapshot_interpolation::time_snapshot::TimeSnapshot;
 use crate::mirror::transport::{TransportChannel, TransportManager};
+use crate::mirror::NetworkTime;
+use crate::mirror::NetworkWriter;
 use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkServer, RemovePlayerOptions};
 use crate::unity_engine::{ExponentialMovingAverage, Time};
-use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use ordered_float::OrderedFloat;
+use std::collections::{BTreeMap, HashSet};
 use unity_mirror_macro_rs::extends;
 
 #[extends(NetworkConnection)]
@@ -181,8 +177,8 @@ impl NetworkConnectionToClient {
     }
     pub fn remove_from_observings_observers(&mut self) {
         for identity in self.observing.iter() {
-            if let Some(identity) = identity.upgrade() {
-                identity.remove_observer(self.self_weak.clone())
+            if let (Some(self_arc), Some(mut identity)) = (self.self_weak.upgrade(), identity.upgrade()) {
+                identity.remove_observer(self_arc)
             }
         }
         self.observing.clear();

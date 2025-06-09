@@ -5,7 +5,7 @@ use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::{Field, Fields, Path, VisRestricted, Visibility, parse_quote};
+use syn::{parse_quote, Field, Fields, Path, VisRestricted, Visibility};
 
 struct NetworkBehaviourArgs {
     pub parent: Option<Path>,
@@ -291,6 +291,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
     }
 
+    // weak self
+    ext_fields.push(parse_quote!(
+        pub(super) weak: crate::commons::revel_weak::RevelWeak<Box<Self>>
+    ));
+
     // obj偏移
     ext_fields.push(parse_quote!(
         obj_start_offset: u8
@@ -371,7 +376,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         let config = metadata.get::<#metadata>();
                     }
 
-                    let arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::mirror::TNetworkBehaviour> as Box<dyn crate::unity_engine::MonoBehaviour>);
+                    let mut arc_this = crate::commons::revel_arc::RevelArc::new(Box::new(this) as Box<dyn crate::mirror::TNetworkBehaviour> as Box<dyn crate::unity_engine::MonoBehaviour>);
+
+                    if let Some(weak_nb) = arc_this.downgrade().downcast::<Self>() {
+                        if let Some(mut this) = weak_nb.upgrade() {
+                            this.weak = weak_nb.clone();
+                        }
+                    }
 
                     network_behaviour_chain.push((arc_this, std::any::TypeId::of::<Self>()));
 
@@ -391,6 +402,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // impl crate::mirror::NetworkBehaviourBase for #struct_ident {
             impl crate::mirror::NetworkBehaviourBase for #struct_ident {
+                fn initialize(&mut self, index: u8, weak_identity: RevelWeak<Box<crate::mirror::NetworkIdentity>>) {
+                    self.component_index = index;
+                    self.network_identity = weak_identity;
+                }
+
                 fn is_dirty(&self) -> bool {
                     if let Some(ancestor) = self.ancestor.get() {
                         return ancestor.is_dirty();
@@ -399,17 +415,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn get_sync_direction(&self) -> &crate::mirror::SyncDirection {
-                    if let Some(ancestor) = self.ancestor.get() {
-                        return ancestor.get_sync_direction();
-                    }
-                    &crate::mirror::SyncDirection::ServerToClient
+                    &self.sync_direction
                 }
 
                 fn get_sync_mode(&self) -> &crate::mirror::SyncMode {
-                    if let Some(ancestor) = self.ancestor.get() {
-                        return ancestor.get_sync_mode();
-                    }
-                    &crate::mirror::SyncMode::Observers
+                    &self.sync_mode
                 }
 
                 fn clear_all_dirty_bits(&mut self) {

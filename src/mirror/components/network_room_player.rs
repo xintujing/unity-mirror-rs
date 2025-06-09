@@ -5,11 +5,12 @@ use crate::commons::revel_weak::RevelWeak;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::TNetworkBehaviour;
 use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager};
+use crate::mirror::{NetworkServer, TNetworkBehaviour};
 use crate::unity_engine::GameObject;
 use crate::unity_engine::MonoBehaviour;
 use std::any::TypeId;
+use std::hash::{Hash, Hasher};
 use unity_mirror_macro_rs::{command, namespace, network_behaviour, target_rpc};
 
 #[namespace(prefix = "Mirror")]
@@ -23,21 +24,46 @@ pub struct NetworkRoomPlayer {
     pub on_client_enter_room: SelfMutAction<(), ()>,
 }
 
+impl Eq for NetworkRoomPlayer {}
+
+impl PartialEq for NetworkRoomPlayer {
+    fn eq(&self, other: &Self) -> bool {
+        self.weak == other.weak
+    }
+}
+
+impl Hash for NetworkRoomPlayer {
+    // TODO 完善
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u64(unsafe { *(self.weak.as_ptr() as *const u64) });
+    }
+}
+
+
 impl NetworkRoomPlayerOnChangeCallback for NetworkRoomPlayer {}
 
 impl NetworkRoomPlayer {
     #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
-        println!("pub fn cmd_change_ready_state(&mut self, ready_state: bool)");
         self.set_ready_to_begin(ready_state);
-        NetworkManager::singleton::<NetworkRoomManager>(|room| {
-            room.ready_status_changed();
+        println!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());
+        NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
+            // TODO: 这里需要处理一下，可能会有问题
+            // room.ready_status_changed();
         });
     }
 }
 
 impl MonoBehaviour for NetworkRoomPlayer {
-    fn start(&mut self) {}
+    fn start(&mut self) {
+        NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
+            room.room_slots.insert(self.weak.clone());
+
+            if NetworkServer.active {
+                room.recalculate_room_player_indices();
+            }
+        })
+    }
 
     fn on_disable(&mut self) {
         println!("NetworkRoomPlayer: on_disable");

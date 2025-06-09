@@ -164,6 +164,8 @@ impl Eq for NetworkIdentity {}
 
 impl MonoBehaviour for NetworkIdentity {
     fn awake(&mut self) {
+        self.initialize_network_behaviours();
+
         if self.has_spawned {
             log::error!(
                 "{} has already spawned. Don't call Instantiate for NetworkIdentities that were in the scene since the beginning (aka scene objects).  Otherwise the client won't know which object to use for a SpawnSceneObject message.",
@@ -194,8 +196,8 @@ impl NetworkIdentity {
         NEXT_NETWORK_ID.store(1, SeqCst);
     }
 
-    pub fn remove_observer(&self, weak: RevelWeak<Box<NetworkConnectionToClient>>) {
-        todo!()
+    pub fn remove_observer(&mut self, conn: RevelArc<Box<NetworkConnectionToClient>>) {
+        self.observers.remove(&conn.connection_id);
     }
 
     pub fn set_client_owner(&mut self, arc: RevelArc<Box<NetworkConnectionToClient>>) {
@@ -229,6 +231,16 @@ impl NetworkIdentity {
                 arc_self.downgrade(),
                 arc_connection.downgrade(),
             );
+        }
+    }
+
+    fn initialize_network_behaviours(&mut self) {
+        for (index, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
+            if let Some(network_behaviour) = network_behaviour_chain.last() {
+                if let Some(mut network_behaviour) = network_behaviour.upgrade() {
+                    network_behaviour.initialize(index as u8, self.self_weak.clone());
+                }
+            }
         }
     }
 
@@ -267,10 +279,7 @@ impl NetworkIdentity {
         }
     }
 
-    pub fn get_server_serialization_at_tick(
-        &mut self,
-        tick: u64,
-    ) -> RevelArc<NetworkIdentitySerialization> {
+    pub fn get_server_serialization_at_tick(&mut self, tick: u64) -> RevelArc<NetworkIdentitySerialization> {
         if self.last_serialization.tick != tick {
             self.last_serialization.reset_writers();
 
@@ -296,22 +305,15 @@ impl NetworkIdentity {
         let mut observer_mask = 0u64;
 
         for (i, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
-            if let Some(network_behaviour) = network_behaviour_chain.first().and_then(|x| x.get()) {
+            if let Some(network_behaviour) = network_behaviour_chain.last().and_then(|x| x.get()) {
                 let nth_bit = 1u64 << (i as u8);
                 let dirty = network_behaviour.is_dirty();
 
-                if initial_state
-                    || (dirty
-                    && (network_behaviour
-                    .get_sync_direction()
-                    .eq(&SyncDirection::ServerToClient)))
-                {
+                if initial_state || (dirty && (network_behaviour.get_sync_direction().eq(&SyncDirection::ServerToClient))) {
                     owner_mask |= nth_bit;
                 }
 
-                if (network_behaviour.get_sync_mode().eq(&SyncMode::Observers))
-                    && (initial_state || dirty)
-                {
+                if (network_behaviour.get_sync_mode().eq(&SyncMode::Observers)) && (initial_state || dirty) {
                     observer_mask |= nth_bit;
                 }
             }
@@ -339,9 +341,7 @@ impl NetworkIdentity {
         }
 
         if (owner_mask | observer_mask) != 0 {
-            for (network_behaviour_i, network_behaviour_chain) in
-                self.network_behaviours.iter().enumerate()
-            {
+            for (network_behaviour_i, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
                 let owner_dirty = self.is_dirty(owner_mask, network_behaviour_i as u8);
                 let observers_dirty = self.is_dirty(observer_mask, network_behaviour_i as u8);
 
@@ -350,7 +350,18 @@ impl NetworkIdentity {
                         // serialize
                         if let Some(last) = network_behaviour_chain.last() {
                             if let Some(comp) = last.get() {
+                                let header_position = writer.position;
+                                writer.write_byte(0);
+                                let content_position = writer.position;
+
                                 comp.on_serialize(writer, initial_state);
+
+                                let end_position = writer.position;
+                                writer.position = header_position;
+                                let size = (end_position - content_position) as i32;
+                                let safety = (size & 0xFF) as u8;
+                                writer.write_byte(safety);
+                                writer.position = end_position;
                             }
                         }
                         if owner_dirty {

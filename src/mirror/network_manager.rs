@@ -43,7 +43,10 @@ impl NetworkManager {
             !NETWORK_MANAGER.is_empty()
         }
     }
-    pub fn singleton<T: TNetworkManager + 'static>(f: fn(&mut T)) {
+    pub fn singleton<T: TNetworkManager + 'static, F>(mut f: F)
+    where
+        F: FnMut(&mut T),
+    {
         #[allow(static_mut_refs)]
         unsafe {
             let type_id = TypeId::of::<T>();

@@ -14,7 +14,7 @@ impl PlayerLooper {
             last_frame_time: Instant::now(),
             last_fixed_time: Instant::now(),
         }
-        ._run()
+            ._run()
     }
 
     pub fn fixed_update(&mut self) {
@@ -50,6 +50,7 @@ impl PlayerLooper {
             let tmp_instant = Instant::now();
             self.fixed_update();
             self.frame_update();
+            Time::frame_add();
 
             let elapsed = tmp_instant.elapsed();
             if elapsed < Time::get_min_interval() {
