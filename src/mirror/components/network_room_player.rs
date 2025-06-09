@@ -45,17 +45,18 @@ impl NetworkRoomPlayerOnChangeCallback for NetworkRoomPlayer {}
 impl NetworkRoomPlayer {
     #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
-        println!("pub fn cmd_change_ready_state(&mut self, ready_state: bool)");
         self.set_ready_to_begin(ready_state);
+        println!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());
         NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
-            room.ready_status_changed();
+            // TODO: 这里需要处理一下，可能会有问题
+            // room.ready_status_changed();
         });
     }
 }
 
 impl MonoBehaviour for NetworkRoomPlayer {
     fn start(&mut self) {
-        NetworkManager::singleton::<NetworkRoomManager,_>(|room| {
+        NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
             room.room_slots.insert(self.weak.clone());
 
             if NetworkServer.active {
