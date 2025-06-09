@@ -493,7 +493,11 @@ impl NetworkServer {
         connection.send_message(NotReadyMessage::default(), TransportChannel::Reliable);
     }
 
-    pub fn set_all_clients_not_ready() {}
+    pub fn set_all_clients_not_ready() {
+        for conn in Self.connections.values() {
+            Self::set_client_not_ready(conn.clone());
+        }
+    }
 
     fn spawn_observers_for_connection(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
         if !connection.is_ready {
