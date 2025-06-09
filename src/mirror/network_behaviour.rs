@@ -58,9 +58,9 @@ pub struct NetworkBehaviour {
     last_sync_time: f64,
 
     net_id: u32,
-    component_index: u8,
+    pub component_index: u8,
 
-    pub network_identity: RevelWeak<NetworkIdentity>,
+    pub network_identity: RevelWeak<Box<NetworkIdentity>>,
     pub game_object: RevelWeak<GameObject>,
     transform: RevelWeak<Transform>,
 
@@ -238,6 +238,11 @@ impl NetworkBehaviour {
 
 impl MonoBehaviour for NetworkBehaviour {}
 impl NetworkBehaviourBase for NetworkBehaviour {
+    fn initialize(&mut self, index: u8, weak_identity: RevelWeak<Box<NetworkIdentity>>) {
+        self.component_index = index;
+        self.network_identity = weak_identity;
+    }
+
     fn is_dirty(&self) -> bool {
         (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64
             && Time::unscaled_time_f64() - self.last_sync_time > self.sync_interval as f64
@@ -250,6 +255,7 @@ impl NetworkBehaviourBase for NetworkBehaviour {
     fn get_sync_mode(&self) -> &SyncMode {
         &self.sync_mode
     }
+
     fn clear_all_dirty_bits(&mut self) {
         self.sync_var_dirty_bits = 0;
         self.sync_object_dirty_bits = 0;
@@ -303,7 +309,7 @@ impl NetworkBehaviourDeserializer for NetworkBehaviour {
 
 pub trait TBaseNetworkBehaviour: TNetworkBehaviour {}
 pub trait TNetworkBehaviour:
-    MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
+MonoBehaviour + NetworkBehaviourBase + NetworkBehaviourSerializer + NetworkBehaviourDeserializer
 {
     fn new(
         weak_game_object: RevelWeak<GameObject>,
@@ -318,6 +324,7 @@ pub trait TNetworkBehaviour:
     fn on_stop_authority(&mut self) {}
 }
 pub trait NetworkBehaviourBase {
+    fn initialize(&mut self, index: u8, weak_identity: RevelWeak<Box<NetworkIdentity>>);
     fn is_dirty(&self) -> bool;
     fn get_sync_direction(&self) -> &SyncDirection;
     fn get_sync_mode(&self) -> &SyncMode;

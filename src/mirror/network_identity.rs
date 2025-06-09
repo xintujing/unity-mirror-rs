@@ -164,6 +164,8 @@ impl Eq for NetworkIdentity {}
 
 impl MonoBehaviour for NetworkIdentity {
     fn awake(&mut self) {
+        self.initialize_network_behaviours();
+
         if self.has_spawned {
             log::error!(
                 "{} has already spawned. Don't call Instantiate for NetworkIdentities that were in the scene since the beginning (aka scene objects).  Otherwise the client won't know which object to use for a SpawnSceneObject message.",
@@ -229,6 +231,16 @@ impl NetworkIdentity {
                 arc_self.downgrade(),
                 arc_connection.downgrade(),
             );
+        }
+    }
+
+    fn initialize_network_behaviours(&mut self) {
+        for (index, network_behaviour_chain) in self.network_behaviours.iter().enumerate() {
+            if let Some(network_behaviour) = network_behaviour_chain.last() {
+                if let Some(mut network_behaviour) = network_behaviour.upgrade() {
+                    network_behaviour.initialize(index as u8, self.self_weak.clone());
+                }
+            }
         }
     }
 

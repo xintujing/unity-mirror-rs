@@ -402,6 +402,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // impl crate::mirror::NetworkBehaviourBase for #struct_ident {
             impl crate::mirror::NetworkBehaviourBase for #struct_ident {
+                fn initialize(&mut self, index: u8, weak_identity: RevelWeak<Box<crate::mirror::NetworkIdentity>>) {
+                    self.component_index = index;
+                    self.network_identity = weak_identity;
+                }
+
                 fn is_dirty(&self) -> bool {
                     if let Some(ancestor) = self.ancestor.get() {
                         return ancestor.is_dirty();
