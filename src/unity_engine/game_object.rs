@@ -156,8 +156,8 @@ impl GameObject {
 
             let mut mono_behaviours = vec![];
             for (mono_behaviour, type_id) in mono_behaviour_chain {
-                let arc_mono_behaviour = RevelArc::new(mono_behaviour);
-                mono_behaviours.push((arc_mono_behaviour, type_id));
+                // let arc_mono_behaviour = RevelArc::new(mono_behaviour);
+                mono_behaviours.push((mono_behaviour, type_id));
             }
 
             if let Some(game_object) = weak_game_object.get() {

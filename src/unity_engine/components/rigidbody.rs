@@ -1,3 +1,4 @@
+use crate::commons::revel_arc::RevelArc;
 use crate::metadata_settings::unity::rigid_body::{MetadataRigidBody, MetadataRigidBodyWrapper};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
@@ -18,7 +19,10 @@ fn static_init() {
         // }
         let rigid_body = RigidBody::instance(wrapper.get::<MetadataRigidBody>());
         let type_id = rigid_body.type_id();
-        vec![(Box::new(rigid_body), type_id)]
+
+        let arc_rigid_body = RevelArc::new(Box::new(rigid_body) as Box<dyn MonoBehaviour>);
+
+        vec![(arc_rigid_body, type_id)]
     });
 }
 

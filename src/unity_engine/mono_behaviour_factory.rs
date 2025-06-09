@@ -7,6 +7,7 @@ use once_cell::sync::Lazy;
 use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use crate::commons::revel_arc::RevelArc;
 
 static mut MONO_BEHAVIOUR_FACTORIES: Lazy<
     RefCell<
@@ -15,7 +16,7 @@ static mut MONO_BEHAVIOUR_FACTORIES: Lazy<
             fn(
                 weak_game_object: RevelWeak<GameObject>,
                 metadata: &Box<dyn Settings>,
-            ) -> Vec<(Box<dyn MonoBehaviour>, TypeId)>,
+            ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
         >,
     >,
 > = Lazy::new(|| RefCell::new(HashMap::new()));
@@ -27,7 +28,7 @@ impl MonoBehaviourFactory {
         factory: fn(
             weak_game_object: RevelWeak<GameObject>,
             metadata: &Box<dyn Settings>,
-        ) -> Vec<(Box<dyn MonoBehaviour>, TypeId)>,
+        ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)>,
     ) {
         // log::info!(
         //     "Register MonoBehaviour: {} {}",
@@ -50,7 +51,7 @@ impl MonoBehaviourFactory {
         full_name: &str,
         weak_game_object: RevelWeak<GameObject>,
         settings: &Box<dyn Settings>,
-    ) -> Vec<(Box<dyn MonoBehaviour>, TypeId)> {
+    ) -> Vec<(RevelArc<Box<dyn MonoBehaviour>>, TypeId)> {
         #[allow(static_mut_refs)]
         unsafe {
             match MONO_BEHAVIOUR_FACTORIES.borrow().get(full_name) {

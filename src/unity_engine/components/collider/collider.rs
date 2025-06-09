@@ -3,6 +3,7 @@ use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use std::any::Any;
 use unity_mirror_macro_rs::namespace;
+use crate::commons::revel_arc::RevelArc;
 
 #[ctor::ctor]
 fn static_init() {
@@ -18,7 +19,10 @@ fn static_init() {
         // }
         let collider = Collider::instance(wrapper.get::<MetadataCollider>());
         let type_id = collider.type_id();
-        vec![(Box::new(collider), type_id)]
+
+        let arc_collider = RevelArc::new(Box::new(collider) as Box<dyn MonoBehaviour>);
+
+        vec![(arc_collider, type_id)]
     });
 }
 

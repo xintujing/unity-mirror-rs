@@ -36,7 +36,17 @@ fn static_init() {
         let identity =
             NetworkIdentity::instance(weak_game_object, wrapper.get::<MetadataNetworkIdentity>());
         let type_id = identity.type_id();
-        vec![(Box::new(identity), type_id)]
+
+        let arc_identity = RevelArc::new(Box::new(identity) as Box<dyn MonoBehaviour>);
+        // arc_identity.self_weak = arc_identity.downgrade();
+
+        if let Some(weak_identity) = arc_identity.downgrade().downcast::<NetworkIdentity>() {
+            if let Some(mut identity) = weak_identity.upgrade() {
+                identity.self_weak = weak_identity.clone();
+            }
+        }
+
+        vec![(arc_identity, type_id)]
     });
 }
 
@@ -72,7 +82,7 @@ pub enum Visibility {
 }
 
 impl Into<Visibility>
-for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
 {
     fn into(self) -> Visibility {
         match self {
@@ -128,7 +138,14 @@ pub struct NetworkIdentity {
     has_spawned: bool,
     had_authority: bool,
 
-    client_authority_callback: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<Box<NetworkIdentity>>, bool,), ()>,
+    client_authority_callback: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            RevelArc<Box<NetworkIdentity>>,
+            bool,
+        ),
+        (),
+    >,
 }
 
 impl PartialEq<Self> for NetworkIdentity {
@@ -285,9 +302,9 @@ impl NetworkIdentity {
 
                 if initial_state
                     || (dirty
-                    && (network_behaviour
-                    .get_sync_direction()
-                    .eq(&SyncDirection::ServerToClient)))
+                        && (network_behaviour
+                            .get_sync_direction()
+                            .eq(&SyncDirection::ServerToClient)))
                 {
                     owner_mask |= nth_bit;
                 }
