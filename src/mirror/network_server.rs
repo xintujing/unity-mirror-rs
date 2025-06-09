@@ -1,6 +1,7 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::commons::to_hex_string::ToHexString;
 use crate::mirror::accurate_interval::AccurateInterval;
 use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::change_owner_message::ChangeOwnerMessage;
@@ -836,7 +837,6 @@ impl NetworkServer {
                 false
             }
             Some(mut identity) => {
-                println!("{}", identity.name());
                 connection.identity = identity.downgrade();
                 identity.set_client_owner(connection.clone());
                 Self::set_client_ready(connection.clone());
@@ -965,6 +965,7 @@ impl NetworkServer {
             owner_writer.clone(),
             observers_writer.clone(),
         );
+        println!("{}", payload.to_hex_string(" ", true));
 
         if let Some(identity_game_object) = identity.game_object.upgrade() {
             let mut spawn_message = SpawnMessage::new(
@@ -1101,8 +1102,7 @@ impl NetworkServer {
                                 identity.is_server = true;
                                 identity.set_net_id(NetworkIdentity::get_next_network_id());
 
-                                Self.spawned
-                                    .insert(identity.net_id(), weak_network_identity.clone());
+                                Self.spawned.insert(identity.net_id(), weak_network_identity.clone());
 
                                 identity.on_start_server()
                             }
@@ -1121,7 +1121,7 @@ impl NetworkServer {
         if let Some(game_object) = identity.game_object.get() {
             return !game_object.parent.upgradable()
                 || (game_object.parent.upgradable()
-                    && game_object.parent.get().unwrap().is_active());
+                && game_object.parent.get().unwrap().is_active());
         }
         false
     }
@@ -1145,8 +1145,8 @@ impl NetworkServer {
     fn disconnect_if_inactive(mut connection: RevelArc<Box<NetworkConnectionToClient>>) -> bool {
         if Self.disconnect_inactive_connections
             && !connection
-                .is_alive
-                .call((Self.disconnect_inactive_timeout,))
+            .is_alive
+            .call((Self.disconnect_inactive_timeout,))
         {
             log::warn!("Disconnecting {} for inactivity!", connection.connection_id);
             connection.disconnect.call(());
