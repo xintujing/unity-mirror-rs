@@ -33,6 +33,7 @@ impl PartialEq for NetworkRoomPlayer {
 }
 
 impl Hash for NetworkRoomPlayer {
+    // TODO 完善
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write_u64(unsafe { *(self.weak.as_ptr() as *const u64) });
     }
