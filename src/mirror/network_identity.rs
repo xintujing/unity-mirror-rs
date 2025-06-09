@@ -72,7 +72,7 @@ pub enum Visibility {
 }
 
 impl Into<Visibility>
-    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
 {
     fn into(self) -> Visibility {
         match self {
@@ -189,7 +189,7 @@ impl NetworkIdentity {
     }
 
     pub fn set_client_owner(&mut self, arc: RevelArc<Box<NetworkConnectionToClient>>) {
-        self.connection= arc.downgrade();
+        self.connection = arc.downgrade();
     }
 
     pub fn remove_client_authority(&mut self) {
@@ -292,9 +292,9 @@ impl NetworkIdentity {
 
                 if initial_state
                     || (dirty
-                        && (network_behaviour
-                            .get_sync_direction()
-                            .eq(&SyncDirection::ServerToClient)))
+                    && (network_behaviour
+                    .get_sync_direction()
+                    .eq(&SyncDirection::ServerToClient)))
                 {
                     owner_mask |= nth_bit;
                 }
@@ -506,7 +506,17 @@ impl NetworkIdentity {
     }
 
     pub fn set_connection(&mut self, connections: RevelWeak<Box<NetworkConnectionToClient>>) {
+        if let Some(conn) = connections.get() {
+            if let Some(identity) = self.self_weak.upgrade() {
+                conn.remove_owned_object(identity.clone());
+            }
+        }
         self.connection = connections;
+        if let Some(conn) = self.connection.get() {
+            if let Some(identity) = self.self_weak.upgrade() {
+                conn.add_owned_object(identity.clone());
+            }
+        }
     }
 
     pub fn network_behaviours(&self) -> &Vec<Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>> {
