@@ -1475,7 +1475,9 @@ impl NetworkServer {
         identity: RevelArc<Box<NetworkIdentity>>,
         conn: RevelArc<Box<NetworkConnectionToClient>>,
     ) {
-        // TODO
+        if conn.is_ready{
+            Self::send_spawn_message(identity, conn);
+        }
     }
 }
 
