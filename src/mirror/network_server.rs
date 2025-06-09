@@ -925,7 +925,7 @@ impl NetworkServer {
 
             let mut count = 0;
 
-            for (_, connection) in Self.connections.iter_mut() {
+            for connection in Self.connections.values_mut() {
                 if send_to_ready_only && !connection.is_ready {
                     continue;
                 }
