@@ -38,7 +38,6 @@ fn static_init() {
         let type_id = identity.type_id();
 
         let arc_identity = RevelArc::new(Box::new(identity) as Box<dyn MonoBehaviour>);
-        // arc_identity.self_weak = arc_identity.downgrade();
 
         if let Some(weak_identity) = arc_identity.downgrade().downcast::<NetworkIdentity>() {
             if let Some(mut identity) = weak_identity.upgrade() {
@@ -82,7 +81,7 @@ pub enum Visibility {
 }
 
 impl Into<Visibility>
-    for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
 {
     fn into(self) -> Visibility {
         match self {
@@ -302,9 +301,9 @@ impl NetworkIdentity {
 
                 if initial_state
                     || (dirty
-                        && (network_behaviour
-                            .get_sync_direction()
-                            .eq(&SyncDirection::ServerToClient)))
+                    && (network_behaviour
+                    .get_sync_direction()
+                    .eq(&SyncDirection::ServerToClient)))
                 {
                     owner_mask |= nth_bit;
                 }
@@ -464,33 +463,8 @@ impl NetworkIdentity {
                     }
                 }
                 game_object.add_component(network_behaviours);
-
-                //
-                // // let (mono_behaviour, type_id) = NetworkBehaviourFactory::create(
-                // //     &final_full_name,
-                // //     weak_game_object.clone(),
-                // //     metadata_network_behaviour_wrapper,
-                // // );
-                // // let arc_network_behaviour = RevelArc::new(mono_behaviour);
-                //
-                // identity
-                //     .network_behaviours
-                //     .push(arc_network_behaviour.downgrade());
-                // // identity.network_behaviours.push(WeakRwLock::new(&arc_network_behaviour));
-                // let index = identity.network_behaviours.len() - 1;
-                // if !identity.component_mapping.contains_key(&type_id) {
-                //     identity.component_mapping.insert(type_id, vec![index]);
-                // } else {
-                //     if let Some(mapping) = identity.component_mapping.get_mut(&type_id) {
-                //         mapping.push(index);
-                //     };
-                // }
-                //
-                // game_object.add_component(vec![(arc_network_behaviour, type_id)]);
             }
         }
-
-        // println!("Mirror: NetworkIdentity Instance");
 
         identity
     }
