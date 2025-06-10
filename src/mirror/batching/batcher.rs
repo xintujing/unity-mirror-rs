@@ -93,6 +93,7 @@ impl Batcher {
     pub fn clear(&mut self) {
         if let Some(batcher) = self.batcher.take() {
             NetworkWriterPool::return_(batcher);
+            self.batch_timestamp = 0.0;
         }
         while let Some(queued) = self.batches.pop_front() {
             NetworkWriterPool::return_(queued);
