@@ -95,7 +95,7 @@ impl Transport for Kcp2kTransport {
                 self.server_active = true;
             }
             Err(err) => {
-                println!("Kcp2kTransport awake error: {:?}", err);
+                log::error!("Kcp2kTransport awake error: {:?}", err);
                 exit(1)
             }
         }

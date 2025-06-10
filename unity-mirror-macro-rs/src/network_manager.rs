@@ -143,7 +143,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             if let Some((arc_parent, _)) = parent.last() {
                 instance.parent = arc_parent.downgrade().downcast::<NetworkManager>().unwrap().upgrade().unwrap();
             }else{
-                println!("Mirror: NetworkManager {} parent not found", stringify!(#struct_ident));
+                log::error!("Mirror: NetworkManager {} parent not found", stringify!(#struct_ident));
             }
         });
 
