@@ -22,7 +22,7 @@ impl UnBatcherPool {
         }
     }
 
-    pub fn get() -> UnBatcher {
+    fn get() -> UnBatcher {
         if let Ok(mut pool) = UN_BATCHER_POOL.lock() {
             let mut un_batcher = pool.get();
             un_batcher.clear();
