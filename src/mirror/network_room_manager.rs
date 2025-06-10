@@ -47,22 +47,14 @@ pub struct NetworkRoomManager {
     pub on_room_server_connect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_room_server_disconnect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_room_server_scene_changed: SelfMutAction<(String,), ()>,
-    pub on_room_server_create_room_player:
-        SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), Option<RevelArc<GameObject>>>,
-    pub on_room_server_create_game_player: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            RevelArc<GameObject>,
-        ),
-        Option<RevelArc<GameObject>>,
-    >,
+    pub on_room_server_create_room_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), Option<RevelArc<GameObject>>>,
+    pub on_room_server_create_game_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<GameObject>), Option<RevelArc<GameObject>>>,
     pub on_room_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_room_server_scene_loaded_for_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<GameObject>, RevelArc<GameObject>,), bool>,
-    pub ready_status_changed: SelfMutAction<(), ()>,
     pub on_room_server_players_ready: SelfMutAction<(), ()>,
     pub on_room_server_players_not_ready: SelfMutAction<(), ()>,
-
     pub on_room_client_enter: SelfMutAction<(), ()>,
+    pub ready_status_changed: SelfMutAction<(), ()>,
 }
 impl NetworkRoomManager {
     fn set_all_players_ready(&mut self, now_ready: bool) {
