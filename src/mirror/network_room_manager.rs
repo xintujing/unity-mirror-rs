@@ -57,14 +57,7 @@ pub struct NetworkRoomManager {
         Option<RevelArc<GameObject>>,
     >,
     pub on_room_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    pub on_room_server_scene_loaded_for_player: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            RevelArc<GameObject>,
-            RevelArc<GameObject>,
-        ),
-        bool,
-    >,
+    pub on_room_server_scene_loaded_for_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<GameObject>, RevelArc<GameObject>,), bool>,
     pub ready_status_changed: SelfMutAction<(), ()>,
     pub on_room_server_players_ready: SelfMutAction<(), ()>,
     pub on_room_server_players_not_ready: SelfMutAction<(), ()>,
