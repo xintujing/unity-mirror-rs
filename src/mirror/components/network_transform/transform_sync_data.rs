@@ -1,10 +1,10 @@
 use crate::mirror::{DataTypeDeserializer, NetworkReader, ReadCompress};
 use crate::mirror::{DataTypeSerializer, NetworkWriter, WriteCompress};
+use crate::unity_engine::Transform;
 use nalgebra::{Quaternion, UnitQuaternion, Vector3};
 use std::fmt::Debug;
 use std::ops::BitOrAssign;
 use unity_mirror_macro_rs::namespace;
-use crate::unity_engine::Transform;
 
 #[namespace(prefix = "Mirror")]
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
@@ -95,7 +95,7 @@ impl DataTypeDeserializer for SyncData {
 
         if (changed & Changed::CompressRot.to_u8()) > 0 {
             if (changed & Changed::RotX.to_u8()) > 0 {
-                let compress = Quaternion::decompress(reader);
+                quaternion = Quaternion::decompress(reader);
             }
         } else {
             if changed & Changed::RotX.to_u8() > 0 {
@@ -207,10 +207,10 @@ impl BitOrAssign for Changed {
 #[cfg(test)]
 mod tests {
     use crate::mirror::components::network_transform::transform_sync_data::SyncData;
-    use crate::mirror::{DataTypeDeserializer, NetworkReader};
     use crate::mirror::NetworkWriter;
-    use nalgebra::Quaternion;
+    use crate::mirror::{DataTypeDeserializer, NetworkReader};
     use crate::unity_engine::Transform;
+    use nalgebra::Quaternion;
 
     #[test]
     fn test_sync_data() {
