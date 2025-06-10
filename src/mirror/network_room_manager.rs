@@ -13,6 +13,7 @@ use crate::mirror::{
 use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
 use std::collections::HashSet;
 use std::error::Error;
+use std::fmt::Pointer;
 use unity_mirror_macro_rs::{action, namespace, network_manager, NetworkManagerFactory};
 
 #[derive(Clone)]
@@ -184,33 +185,6 @@ impl NetworkRoomManager {
             }
         }
     }
-
-    // fn on_server_change_scene(&mut self, scene_name: String) {
-    //     for room_player in self.room_slots.iter() {
-    //         if let Some(mut room_player) = room_player.upgrade() {
-    //             if let Some(identity) = room_player.network_identity.upgrade() {
-    //                 if NetworkServer.active {
-    //                     room_player.set_ready_to_begin(false);
-    //
-    //                     if let (Some(identity_connection), Some(room_player_game_object)) = (
-    //                         identity.connection().upgrade(),
-    //                         room_player.game_object.upgrade(),
-    //                     ) {
-    //                         NetworkServer::replace_player_for_connection(
-    //                             identity_connection,
-    //                             room_player_game_object,
-    //                             ReplacePlayerOptions::KeepActive,
-    //                         );
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    //
-    //     self.set_all_players_ready(false);
-    //
-    //     self.parent.on_server_change_scene_default(scene_name);
-    // }
 
     fn on_server_scene_changed(&mut self, scene_name: String) {
         if scene_name != self.room_scene {
