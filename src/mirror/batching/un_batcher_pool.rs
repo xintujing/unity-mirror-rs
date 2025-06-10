@@ -14,11 +14,14 @@ pub struct UnBatcherPool;
 #[allow(unused)]
 impl UnBatcherPool {
     pub fn count() -> usize {
-        if let Ok(pool) = UN_BATCHER_POOL.lock() {
-            pool.count()
-        } else {
-            println!("NetworkWriterPool::count() failed to lock NETWORK_WRITER_POOL");
-            0
+        match UN_BATCHER_POOL.lock() {
+            Ok(pool) => {
+                pool.count()
+            }
+            Err(_) => {
+                println!("NetworkWriterPool::count() failed to lock NETWORK_WRITER_POOL");
+                0
+            }
         }
     }
 
