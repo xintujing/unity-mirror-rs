@@ -962,7 +962,7 @@ impl NetworkServer {
         let mut observers_writer = RevelArc::new(NetworkWriterPool::get());
 
         let is_owner = identity.connection().ptr_eq(&connection.downgrade());
-        let is_local = connection.identity.ptr_eq(&identity.downgrade());
+        let is_local_player = connection.identity.ptr_eq(&identity.downgrade());
 
         let payload = Self::create_spawn_message_payload(
             is_owner,
@@ -974,7 +974,7 @@ impl NetworkServer {
         if let Some(identity_game_object) = identity.game_object.upgrade() {
             let mut spawn_message = SpawnMessage::new(
                 identity.net_id(),
-                is_local,
+                is_local_player,
                 is_owner,
                 identity.scene_id,
                 identity.game_object.get().unwrap().asset_id,
