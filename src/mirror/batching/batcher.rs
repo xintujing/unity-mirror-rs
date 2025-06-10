@@ -90,8 +90,8 @@ impl Batcher {
         if let Some(batcher) = self.batcher.take() {
             NetworkWriterPool::return_(batcher);
         }
-        for batcher in self.batches.drain(..) {
-            NetworkWriterPool::return_(batcher);
+        while let Some(queued) = self.batches.pop_front() {
+            NetworkWriterPool::return_(queued);
         }
     }
 }
