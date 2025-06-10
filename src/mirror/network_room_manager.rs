@@ -235,10 +235,10 @@ impl NetworkRoomManager {
             self.pending_players.push(player);
         }
 
-        let mut game_player =
-            self.on_room_server_create_game_player(connection.clone(), room_player.clone());
+        let mut game_player = self.on_room_server_create_game_player(connection.clone(), room_player.clone());
+
         if game_player.is_none() {
-            if let Some(prefab) = Metadata::get_prefab(&self.room_player_prefab) {
+            if let Some(prefab) = Metadata::get_prefab(&self.player_prefab) {
                 let mut game_object = GameObject::instantiate(prefab);
                 if let Some(start_position) = self.get_start_position() {
                     game_object.transform.position = start_position.position;
