@@ -34,8 +34,8 @@ impl Batcher {
     pub fn add_message(&mut self, message: &[u8], timestamp: f64) {
         if self.batcher.is_some() && self.batch_timestamp != timestamp {
             if let Some(batcher) = self.batcher.take() {
-                self.batch_timestamp = 0.0;
                 self.batches.push_back(batcher);
+                self.batch_timestamp = 0.0;
             }
         }
 
@@ -45,8 +45,8 @@ impl Batcher {
         if let Some(ref batcher) = self.batcher {
             if batcher.position + needed_size > self.threshold {
                 if let Some(batcher) = self.batcher.take() {
-                    self.batch_timestamp = 0.0;
                     self.batches.push_back(batcher);
+                    self.batch_timestamp = 0.0;
                 }
             }
         }
