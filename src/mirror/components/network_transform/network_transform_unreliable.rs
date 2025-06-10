@@ -4,15 +4,13 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_trans
 use crate::mirror::components::network_transform::network_transform_base::NetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 use crate::mirror::components::network_transform::transform_sync_data::SyncData;
-use crate::mirror::TNetworkBehaviour;
+use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
-use crate::mirror::transport::TransportChannel;
+use crate::mirror::TNetworkBehaviour;
 use crate::mirror::{
     NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, SyncDirection,
-    TBaseNetworkBehaviour,
 };
-use crate::unity_engine::Time;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour};
@@ -56,63 +54,17 @@ impl NetworkTransformUnreliable {
 }
 
 impl MonoBehaviour for NetworkTransformUnreliable {
-    fn awake(&mut self) {
-        // if let Some(parent) = self.parent.get() {
-        //     parent.awake();
-        // }
-        // println!("Mirror: NetworkTransformUnreliable Awake");
-    }
-    fn start(&mut self) {
-        // println!("Mirror: NetworkTransformUnreliable Start");
-    }
-    fn fixed_update(&mut self) {
-        // let elapsed = Time::unscaled_time().elapsed();
-        // println!(
-        //     "Mirror: NetworkTransformUnreliable FixedUpdate {:?}",
-        //     elapsed
-        // );
-    }
-    fn update(&mut self) {
-        // if let Some(parent) = self.parent.get() {
-        //     parent.update();
-        // }
-        // let elapsed = Time::unscaled_time().elapsed();
-        // println!("Mirror: NetworkTransformUnreliable Update {:?}", elapsed);
-
-        let game_object = &self.game_object;
-
-        // let game_object = root_game_object.get().unwrap();
-        let weak_game_object = game_object
-            .get()
-            .unwrap()
-            .try_get_component::<NetworkTransformUnreliable>()
-            .unwrap();
-
-        let x = weak_game_object
-            .downcast::<NetworkTransformUnreliable>()
-            .unwrap();
-
-        let x1 = x.get().unwrap();
-
-        // let weak_network_transform_unreliable =
-        //     weak_game_object.to::<NetworkTransformUnreliable>();
-        // let x = weak_network_transform_unreliable.get().unwrap();
-        // println!("{}", x1.buffer_reset_multiplier);
-    }
-    fn late_update(&mut self) {
-        let elapsed = Time::unscaled_time().elapsed();
-
-        // println!(
-        //     "Mirror: NetworkTransformUnreliable LateUpdate {:?}",
-        //     elapsed
-        // );
-    }
+    fn awake(&mut self) {}
+    fn start(&mut self) {}
+    fn fixed_update(&mut self) {}
+    fn update(&mut self) {}
+    fn late_update(&mut self) {}
 }
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
     fn new(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
+        _weak_game_object: RevelWeak<GameObject>,
+        _metadata: &MetadataNetworkBehaviourWrapper,
     ) -> Self
     where
         Self: Sized,

@@ -7,11 +7,10 @@ use crate::metadata_settings::mirror::metadata_network_root_manager::MetadataNet
 use crate::mirror::components::network_room_player::NetworkRoomPlayer;
 use crate::mirror::transport::TransportError;
 use crate::mirror::{
-    NetworkConnection, NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer,
-    RemovePlayerOptions, ReplacePlayerOptions,
+    NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer,
+    ReplacePlayerOptions,
 };
 use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
-use std::any::Any;
 use std::collections::HashSet;
 use std::error::Error;
 use unity_mirror_macro_rs::{action, namespace, network_manager, NetworkManagerFactory};

@@ -1,23 +1,19 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::commons::to_hex_string::ToHexString;
 use crate::metadata_settings::metadata::Metadata;
 use crate::metadata_settings::mirror::metadata_network_manager::{
     MetadataNetworkManager, MetadataNetworkManagerWrapper,
 };
-use crate::mirror::authenticator::basic_authenticator::BasicAuthenticatorRequestMessage;
-use crate::mirror::message::MessageSerializer;
 use crate::mirror::messages::add_player_message::AddPlayerMessage;
-use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::scene_message::{SceneMessage, SceneOperation};
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::transport::{Transport, TransportChannel, TransportError, TransportManager};
 use crate::mirror::NetworkManagerFactory;
 use crate::mirror::{
-    network_manager_trait, Authenticator, AuthenticatorFactory, NetworkConnection,
-    NetworkConnectionToClient, NetworkRoomManager, NetworkServer, TNetworkManager,
+    Authenticator,
+    NetworkConnectionToClient, NetworkServer, TNetworkManager,
 };
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
 use crate::unity_engine::{
@@ -27,11 +23,9 @@ use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
 use std::any::{Any, TypeId};
-use std::cell::UnsafeCell;
 use std::collections::HashMap;
-use std::ops::Deref;
 use unity_mirror_macro_rs::{
-    action, namespace, network_manager, virtual_trait, NetworkManagerFactory,
+    action, namespace, network_manager, NetworkManagerFactory,
 };
 
 static mut NETWORK_MANAGER: Lazy<Vec<RevelWeak<Box<dyn TNetworkManager>>>> =
@@ -467,7 +461,7 @@ impl NetworkManager {
         conn.is_authenticated = true;
 
         if self.network_scene_name != "" && self.network_scene_name != self.offline_scene {
-            let mut message = SceneMessage::new(
+            let message = SceneMessage::new(
                 self.network_scene_name.clone(),
                 SceneOperation::Normal,
                 false,
@@ -480,7 +474,7 @@ impl NetworkManager {
 
     pub fn on_server_ready_message_internal(
         &mut self,
-        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
         _message: ReadyMessage,
         _: TransportChannel,
     ) {

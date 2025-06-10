@@ -5,7 +5,6 @@ use crate::metadata_settings::mirror::metadata_network_identity::{
     MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
 };
 use crate::mirror::NetworkBehaviourFactory;
-use crate::mirror::NetworkConnection;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::NetworkWriterPool;
@@ -19,7 +18,6 @@ use crate::unity_engine::{GameObject, WorldManager};
 use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use std::any::{Any, TypeId};
-use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::atomic::AtomicU32;
@@ -53,6 +51,7 @@ fn static_init() {
 lazy_static! {
     static ref NEXT_NETWORK_ID: AtomicU32 = AtomicU32::new(1);
 }
+#[allow(unused)]
 static mut SCENE_IDS: Lazy<HashMap<u64, RevelWeak<NetworkIdentity>>> = Lazy::new(|| HashMap::new());
 
 #[allow(unused)]
@@ -384,7 +383,7 @@ impl NetworkIdentity {
         }
     }
 
-    pub(crate) fn deserialize_server(&self, reader: &mut NetworkReader) -> bool {
+    pub(crate) fn deserialize_server(&self, _reader: &mut NetworkReader) -> bool {
         true
     }
 

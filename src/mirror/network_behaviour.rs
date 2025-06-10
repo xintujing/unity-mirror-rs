@@ -7,14 +7,13 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::mirror::messages::message::MessageSerializer;
 use crate::mirror::messages::rpc_message::RpcMessage;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::NetworkConnection;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::NetworkWriterPool;
 use crate::mirror::{NetworkConnectionToClient, NetworkIdentity};
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
-use std::any::{Any, TypeId};
+use std::any::TypeId;
 use unity_mirror_macro_rs::namespace;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -330,9 +329,12 @@ pub trait NetworkBehaviourBase {
     fn get_sync_mode(&self) -> &SyncMode;
     fn clear_all_dirty_bits(&mut self);
 }
+
+#[allow(unused)]
 pub trait NetworkBehaviourOnSerializer {
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
 }
+#[allow(unused)]
 pub trait NetworkBehaviourSerializer: NetworkBehaviourOnSerializer {
     fn serialize_sync_objects(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
     fn serialize_objects_all(&mut self, writer: &mut NetworkWriter) {}
@@ -340,10 +342,11 @@ pub trait NetworkBehaviourSerializer: NetworkBehaviourOnSerializer {
     fn serialize_sync_vars(&mut self, writer: &mut NetworkWriter, initial_state: bool) {}
 }
 
+#[allow(unused)]
 pub trait NetworkBehaviourOnDeserializer {
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
 }
-
+#[allow(unused)]
 pub trait NetworkBehaviourDeserializer: NetworkBehaviourOnDeserializer {
     fn deserialize_sync_objects(&mut self, reader: &mut NetworkReader, initial_state: bool) {}
     fn deserialize_objects_all(&mut self, reader: &mut NetworkReader) {}

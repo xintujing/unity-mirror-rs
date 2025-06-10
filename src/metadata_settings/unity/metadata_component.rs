@@ -22,8 +22,6 @@ pub struct MetadataComponentWrapper {
 impl MetadataComponentWrapper {
     pub fn register<T: Settings + 'static + for<'a> serde::Deserialize<'a>>() {
         let name = T::get_full_name();
-        let type_name = std::any::type_name::<T>();
-        // println!("Register component: {} {}", type_name, name);
         let parser = |value: serde_json::Value| -> Result<Box<dyn Settings>, serde_json::Error> {
             T::parse(value).map(|c| c as Box<dyn Settings>)
         };
@@ -44,14 +42,14 @@ impl MetadataComponentWrapper {
         panic!("Component not found: {}", std::any::type_name::<T>());
     }
 
-    pub fn group_by_full_name(&self) -> Box<dyn Iterator<Item = (&str, &Box<dyn Settings>)> + '_> {
+    pub fn group_by_full_name(&self) -> Box<dyn Iterator<Item=(&str, &Box<dyn Settings>)> + '_> {
         Box::new(self.value.iter().flat_map(move |(type_id, values)| {
             let full_name = self.type_mapping.get(type_id).unwrap().as_str();
             values.iter().map(move |value| (full_name, value))
         }))
     }
 
-    pub fn list_group(&self) -> Box<dyn Iterator<Item = (String, &MetadataComponentWrapper)> + '_> {
+    pub fn list_group(&self) -> Box<dyn Iterator<Item=(String, &MetadataComponentWrapper)> + '_> {
         // for (type_id, values) in self.value.iter() {
         //     let full_name = self.type_mapping.get(type_id).unwrap();
         //     for _ in 0..values.len() {

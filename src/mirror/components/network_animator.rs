@@ -3,19 +3,17 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_anima
     MetadataAnimator, MetadataNetworkAnimator, MetadataParameterType,
 };
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::mirror::TNetworkBehaviour;
+use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkReaderPool;
 use crate::mirror::NetworkWriter;
-use crate::mirror::transport::TransportChannel;
+use crate::mirror::TNetworkBehaviour;
 use crate::mirror::{
     NetworkBehaviour, NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer,
 };
 use crate::unity_engine::{GameObject, MonoBehaviour};
-use std::ops::{Deref, DerefMut};
 use unity_mirror_macro_rs::{
     client_rpc, command, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize,
-    target_rpc,
 };
 
 impl Into<AnimatorParameterType> for MetadataParameterType {
@@ -217,8 +215,8 @@ impl MonoBehaviour for NetworkAnimator {
 // TNetworkBehaviour
 impl TNetworkBehaviour for NetworkAnimator {
     fn new(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
+        _weak_game_object: RevelWeak<GameObject>,
+        _metadata: &MetadataNetworkBehaviourWrapper,
     ) -> Self
     where
         Self: Sized,
@@ -318,11 +316,11 @@ impl NetworkAnimator {
             }
             let par = &self.animator.parameters[i];
             if par.r#type == AnimatorParameterType::Int {
-                let int_value = reader.read_blittable::<i32>();
+                let _int_value = reader.read_blittable::<i32>();
             } else if par.r#type == AnimatorParameterType::Float {
-                let float_value = reader.read_blittable::<f32>();
+                let _float_value = reader.read_blittable::<f32>();
             } else if par.r#type == AnimatorParameterType::Bool {
-                let bool_value = reader.read_blittable::<bool>();
+                let _bool_value = reader.read_blittable::<bool>();
             }
         }
     }

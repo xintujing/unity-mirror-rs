@@ -95,7 +95,7 @@ impl NetworkTransformBase {
 impl NetworkTransformBase {
     pub fn send_interval_multiplier(&self) -> u32 {
         if self.sync_interval > 0.0 {
-            let multiplier = (self.sync_interval / NetworkServer.send_interval() as f32);
+            let multiplier = self.sync_interval / NetworkServer.send_interval() as f32;
             if multiplier > 1.0 {
                 return multiplier.round() as u32;
             }

@@ -3,7 +3,6 @@ use crate::mirror::compress::Compress;
 use crate::mirror::NetworkWriter;
 use crate::mirror::NetworkWriterPool;
 use std::collections::VecDeque;
-use crate::commons::revel_arc::RevelArc;
 
 pub struct Batcher {
     threshold: usize,

@@ -1,12 +1,8 @@
-#![allow(dead_code)]
-
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::NetworkConnection;
 use crate::mirror::NetworkConnectionToClient;
 use crate::unity_engine::MonoBehaviour;
-
 
 
 pub trait Authenticator: AuthenticatorBase + MonoBehaviour {

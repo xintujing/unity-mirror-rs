@@ -1,7 +1,6 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::commons::to_hex_string::ToHexString;
 use crate::mirror::accurate_interval::AccurateInterval;
 use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::change_owner_message::ChangeOwnerMessage;
@@ -15,7 +14,6 @@ use crate::mirror::messages::object_hide_message::ObjectHideMessage;
 use crate::mirror::messages::object_spawn_finished_message::ObjectSpawnFinishedMessage;
 use crate::mirror::messages::object_spawn_started_message::ObjectSpawnStartedMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
-use crate::mirror::messages::scene_message::SceneMessage;
 use crate::mirror::messages::time_snapshot_message::TimeSnapshotMessage;
 use crate::mirror::not_ready_message::NotReadyMessage;
 use crate::mirror::remote_calls::RemoteProcedureCalls;
@@ -32,12 +30,10 @@ use crate::mirror::NetworkReaderPool;
 use crate::mirror::NetworkTime;
 use crate::mirror::NetworkWriter;
 use crate::mirror::NetworkWriterPool;
-use crate::mirror::{NetworkConnection, Visibility};
+use crate::mirror::Visibility;
 use crate::mirror::{NetworkConnectionToClient, NetworkIdentity, RemoteCallType};
-use crate::unity_engine::{GameObject, MonoBehaviour, Time, WorldManager};
-use lazy_static::lazy_static;
+use crate::unity_engine::{GameObject, Time, WorldManager};
 use once_cell::sync::Lazy;
-use std::any::Any;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
@@ -627,7 +623,7 @@ impl NetworkServer {
 
     fn on_client_entity_state_message(
         &mut self,
-        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
         message: EntityStateMessage,
         _: TransportChannel,
     ) {
@@ -1328,8 +1324,7 @@ impl NetworkServer {
                 let message = ChangeOwnerMessage::new(
                     real_identity.net_id(),
                     real_identity.connection().ptr_eq(&connection),
-                    (real_connection.identity.ptr_eq(&identity)
-                        && real_identity.connection().ptr_eq(&connection)),
+                    real_connection.identity.ptr_eq(&identity) && real_identity.connection().ptr_eq(&connection),
                 );
 
                 real_connection.send_message(message, TransportChannel::Reliable)

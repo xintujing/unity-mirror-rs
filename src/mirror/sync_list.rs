@@ -1,11 +1,8 @@
-#![allow(dead_code)]
-
-use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
-use crate::mirror::{DataTypeDeserializer, NetworkReader};
-use crate::mirror::{DataTypeSerializer, NetworkWriter};
 use crate::mirror::sync_object::SyncObject;
 use crate::mirror::NetworkBehaviour;
+use crate::mirror::{DataTypeDeserializer, NetworkReader};
+use crate::mirror::{DataTypeSerializer, NetworkWriter};
 use std::fmt::{Debug, Formatter};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
