@@ -177,8 +177,6 @@ impl NetworkRoomManager {
                         |f| Some(f),
                     );
 
-                // println!("{}", new_room_game_object.clone().unwrap().name);
-
                 NetworkServer::add_player_for_connection(connection, new_room_game_object.unwrap());
             } else {
                 log::info!("Not in Room scene...disconnecting");
@@ -369,7 +367,6 @@ impl NetworkRoomManager {
         if current_players == ready_players {
             self.check_ready_to_begin();
         } else {
-            println!("pub fn ready_status_changed(&mut self)");
             self.set_all_players_ready(false);
         }
     }

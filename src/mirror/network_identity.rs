@@ -137,14 +137,7 @@ pub struct NetworkIdentity {
     has_spawned: bool,
     had_authority: bool,
 
-    client_authority_callback: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            RevelArc<Box<NetworkIdentity>>,
-            bool,
-        ),
-        (),
-    >,
+    client_authority_callback: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<Box<NetworkIdentity>>, bool), ()>,
 }
 
 impl PartialEq<Self> for NetworkIdentity {

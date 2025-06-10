@@ -708,7 +708,7 @@ impl NetworkServer {
             };
 
             if !vec![17487, 27095, 57097].contains(&msg_type) {
-                println!("Received message of type {}", msg_name);
+                log::debug!("Received message of type {}", msg_name);
             }
 
             return match self.message_handlers.get_mut(&msg_type) {
@@ -745,10 +745,9 @@ impl NetworkServer {
         M: NetworkMessage + 'static,
     {
         let message_id = M::get_full_name().hash16();
-        println!(
-            "register handler for message [{}] {}",
-            message_id,
-            M::get_full_name()
+        log::debug!("register handler for message [{}] {}",
+                 message_id,
+                 M::get_full_name()
         );
         if self.message_handlers.contains_key(&message_id) {
             log::warn!(

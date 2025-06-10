@@ -62,7 +62,7 @@ impl GameObject {
     }
 
     pub fn instantiate(metadata_prefab: &MetadataPrefab) -> RevelArc<GameObject> {
-        println!("Instantiate: {}", metadata_prefab.name);
+        log::debug!("Instantiate: {}", metadata_prefab.name);
         let arc_game_object = Self::instance(metadata_prefab);
         if let Some(world) = WorldManager::active_world().get() {
             world.add_game_object(arc_game_object.clone());
@@ -220,7 +220,7 @@ impl GameObject {
     }
 
     pub fn try_get_component2<T: MonoBehaviour + 'static>(&self) -> Option<RevelArc<Box<T>>> {
-        println!("{}", self.components.iter().map(|c| c.last().unwrap().type_name()).collect::<Vec<_>>().join("\n"));
+        log::debug!("{}", self.components.iter().map(|c| c.last().unwrap().type_name()).collect::<Vec<_>>().join("\n"));
         if let Some(weak_mono) = self.try_get_component::<T>() {
             if let Some(weak_t) = weak_mono.downcast::<T>() {
                 return weak_t.upgrade();

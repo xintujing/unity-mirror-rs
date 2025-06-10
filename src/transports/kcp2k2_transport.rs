@@ -136,7 +136,7 @@ impl Transport for Kcp2kTransport {
     fn server_stop(&self) {
         if let Some(serv) = &self.kcp_serv {
             if let Err(err) = serv.stop() {
-                println!("Error stopping server: {}", err)
+                log::error!("Error stopping server: {}", err)
             };
         }
     }

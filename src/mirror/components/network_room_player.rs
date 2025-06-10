@@ -42,7 +42,7 @@ impl NetworkRoomPlayer {
     #[command(NetworkRoomPlayer, authority)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         self.set_ready_to_begin(ready_state);
-        println!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());
+        log::debug!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());
         NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
             // TODO: 这里需要处理一下，可能会有问题
             room.ready_status_changed();
