@@ -19,10 +19,16 @@ fn init_logger() {
         .format(|buf, record| {
             writeln!(
                 buf,
-                "[{}:{}] {} [{}] {} ",
-                // 文件名和行号（使用 `unwrap_or` 处理空值）
-                record.file().unwrap_or("unknown"),
-                record.line().unwrap_or(0),
+                "[{}] {} [{}] {} ",
+                format!(
+                    "\x1B]8;;{}\x1B\\{}\x1B]8;;\x1B\\",
+                    format!(
+                        "{}:{}",
+                        record.file_static().unwrap_or_default(),
+                        record.line().unwrap_or(0),
+                    ),
+                    record.module_path_static().unwrap_or_default(),
+                ),
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                 // 使用自定义颜色显示日志级别
                 match record.level() {

@@ -220,7 +220,7 @@ impl GameObject {
     }
 
     pub fn try_get_component2<T: MonoBehaviour + 'static>(&self) -> Option<RevelArc<Box<T>>> {
-        log::debug!("{}", self.components.iter().map(|c| c.last().unwrap().type_name()).collect::<Vec<_>>().join("\n"));
+        // log::debug!("{}", self.components.iter().map(|c| c.last().unwrap().type_name()).collect::<Vec<_>>().join("\n"));
         if let Some(weak_mono) = self.try_get_component::<T>() {
             if let Some(weak_t) = weak_mono.downcast::<T>() {
                 return weak_t.upgrade();
