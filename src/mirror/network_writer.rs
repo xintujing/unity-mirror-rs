@@ -210,33 +210,41 @@ impl NetworkWriter {
     }
 
     pub fn write_str(&mut self, value: &str) {
-        if value.is_empty() {
-            self.write_blittable(0u16);
+        let data = value.as_bytes();
+        let size = data.len();
+        if size == 0 {
+            self.write_blittable::<u16>(0);
             return;
         }
-
-        let max_size = value.as_bytes().len();
-        self.ensure_capacity(self.position + 2 + max_size);
-
-        unsafe {
-            let written = std::ffi::CString::new(value).unwrap().to_bytes().len();
-            std::ptr::copy_nonoverlapping(
-                value.as_bytes().as_ptr(),
-                self.buffer.as_mut_ptr().add(self.position + 2),
-                written,
-            );
-            if written > NetworkWriter::max_string_length() as usize {
-                self.write_blittable(0u16);
-                log::error!(
-                    "NetworkWriter.WriteString - Value too long: {} bytes. Limit: {} bytes",
-                    written,
-                    NetworkWriter::max_string_length()
-                );
-                return;
-            }
-            self.write_blittable((written + 1) as u16);
-            self.position += 2 + written;
-        }
+        self.write_blittable::<u16>(1 + size as u16);
+        self.write_slice(data, 0, size);
+        // if value.is_empty() {
+        //     self.write_blittable(0u16);
+        //     return;
+        // }
+        //
+        // let max_size = value.as_bytes().len();
+        // self.ensure_capacity(self.position + 2 + max_size);
+        //
+        // unsafe {
+        //     let written = std::ffi::CString::new(value).unwrap().to_bytes().len();
+        //     std::ptr::copy_nonoverlapping(
+        //         value.as_bytes().as_ptr(),
+        //         self.buffer.as_mut_ptr().add(self.position + 2),
+        //         written,
+        //     );
+        //     if written > NetworkWriter::max_string_length() as usize {
+        //         self.write_blittable(0u16);
+        //         log::error!(
+        //             "NetworkWriter.WriteString - Value too long: {} bytes. Limit: {} bytes",
+        //             written,
+        //             NetworkWriter::max_string_length()
+        //         );
+        //         return;
+        //     }
+        //     self.write_blittable((written + 1) as u16);
+        //     self.position += 2 + written;
+        // }
     }
     pub fn write_slice_and_size(&mut self, value: &[u8]) {
         let count = value.len();
