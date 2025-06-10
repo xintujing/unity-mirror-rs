@@ -1157,20 +1157,18 @@ impl NetworkServer {
 
     pub fn broadcast_to_connection(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
         for weak_identity in connection.clone().observing.iter() {
-            if let Some(identity) = weak_identity.get() {
-                let serialization = Self::serialize_for_connection(weak_identity.clone(), connection.downgrade());
-                match serialization {
-                    Some(serialization) => {
+            match weak_identity.get() {
+                None => {
+                    connection.observing.retain(|x| x.upgradable());
+                    log::warn!("Found 'null' entry in observing list for connectionId={}. \
+                                Please call NetworkServer.Destroy to destroy networked objects. Don't use GameObject.Destroy.",
+                                connection.connection_id
+                    );
+                }
+                Some(identity) => {
+                    if let Some(serialization) = Self::serialize_for_connection(weak_identity.clone(), connection.downgrade()) {
                         let message = EntityStateMessage::new(identity.net_id(), serialization.to_vec());
                         connection.send_message(message, TransportChannel::Reliable)
-                    }
-                    None => {
-                        connection.observing.retain(|x| x.upgradable());
-                        log::warn!(
-                            "Found 'null' entry in observing list for connectionId={}. \
-                             Please call NetworkServer.Destroy to destroy networked objects. Don't use GameObject.Destroy.",
-                            connection.connection_id
-                        );
                     }
                 }
             }

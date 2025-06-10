@@ -15,7 +15,7 @@ fn init_logger() {
     use std::io::Write;
     env_logger::Builder::new()
         .format_level(true)
-        // .filter_level(log::LevelFilter::Debug)
+        .filter_level(log::LevelFilter::Debug)
         .format(|buf, record| {
             writeln!(
                 buf,

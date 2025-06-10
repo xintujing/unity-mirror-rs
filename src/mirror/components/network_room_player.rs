@@ -65,9 +65,7 @@ impl MonoBehaviour for NetworkRoomPlayer {
         })
     }
 
-    fn on_disable(&mut self) {
-        println!("NetworkRoomPlayer: on_disable");
-    }
+    fn on_disable(&mut self) {}
 }
 
 impl TNetworkBehaviour for NetworkRoomPlayer {

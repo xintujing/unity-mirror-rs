@@ -385,8 +385,6 @@ impl NetworkManager {
         }
 
         self.start_position_index = 0;
-
-        println!("切完场景 {}", self.get_network_scene_name())
     }
 
     pub fn on_scene_loaded(&mut self, _: String, mode: LoadSceneMode) {
@@ -445,7 +443,7 @@ impl NetworkManager {
         &mut self,
         connection: RevelArc<Box<NetworkConnectionToClient>>,
     ) {
-        log::error!(
+        log::info!(
             "on_server_connect_internal {} self.authenticator = {}",
             connection.connection_id,
             self.authenticator.is_some()

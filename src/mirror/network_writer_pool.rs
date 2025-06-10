@@ -1,5 +1,5 @@
-use crate::mirror::NetworkWriter;
 use crate::mirror::pool::Pool;
+use crate::mirror::NetworkWriter;
 use lazy_static::lazy_static;
 use std::sync::{Arc, Mutex};
 

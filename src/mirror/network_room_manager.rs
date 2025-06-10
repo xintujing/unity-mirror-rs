@@ -88,7 +88,6 @@ impl NetworkRoomManager {
 impl NetworkRoomManager {
     /// 新客户连接时在服务器上调用
     fn on_server_connect(&mut self, mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        println!("on_server_connect {}", connection.connection_id);
         if let Some(world) = WorldManager::active_world().upgrade() {
             if world.get_scene_path() != self.room_scene {
                 log::info!(
