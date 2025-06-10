@@ -37,6 +37,7 @@ impl NetworkWriterPool {
         T: FnOnce(&mut NetworkWriter),
     {
         let mut writer = Self::get();
+        writer.reset();
         func(&mut writer);
         Self::return_(writer);
     }
