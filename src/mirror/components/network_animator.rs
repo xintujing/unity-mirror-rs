@@ -216,17 +216,25 @@ impl MonoBehaviour for NetworkAnimator {
 impl TNetworkBehaviour for NetworkAnimator {
     fn new(
         _weak_game_object: RevelWeak<GameObject>,
-        _metadata: &MetadataNetworkBehaviourWrapper,
+        metadata: &MetadataNetworkBehaviourWrapper,
     ) -> Self
     where
         Self: Sized,
     {
-        Self::default()
+        let mut animator = Self::default();
+        {
+            let config = metadata.get::<MetadataNetworkAnimator>();
+            animator.initialize(config);
+        }
+        animator
     }
 }
 
 // 序列化、反序列化相关
 impl NetworkAnimator {
+    fn initialize(&mut self, metadata: &MetadataNetworkAnimator) {
+        self.animator = metadata.animator.clone().into();
+    }
     fn next_dirty_bits(&mut self) -> u64 {
         let mut dirty_bits = 0u64;
         for (i, par) in self.parameters.iter().enumerate() {
