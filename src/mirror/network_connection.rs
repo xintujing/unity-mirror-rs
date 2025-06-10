@@ -133,22 +133,9 @@ impl NetworkConnection {
     //客户。它们将被检测为消息。而是发送消息。
     // =>在调用发送<byte>之前，请确保验证消息<t>大小！
     pub(crate) fn send(&mut self, segment: &[u8], channel_id: TransportChannel) {
-        // match channel_id {
-        //     TransportChannel::Reliable => {
-        //         if let Some(reliable_batcher) = &mut self.reliable_batcher {
-        //             reliable_batcher.add_message(segment, NetworkTime.local_time())
-        //         }
-        //     }
-        //     TransportChannel::Unreliable => {
-        //         if let Some(unreliable_batcher) = &mut self.unreliable_batcher {
-        //             unreliable_batcher.add_message(segment, NetworkTime.local_time())
-        //         }
-        //     }
-        // }
-
-        self.get_batch_for_channel_id(channel_id)
-            .add_message(segment, NetworkTime.local_time())
+        self.get_batch_for_channel_id(channel_id).add_message(segment, NetworkTime.local_time())
     }
+
     /// <summary>检查我们是否在最后一个“超时”秒内收到了一条消息。</summary>
     #[action]
     pub fn is_alive(&self, timeout: f32) -> bool {
