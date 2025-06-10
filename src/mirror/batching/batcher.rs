@@ -32,6 +32,7 @@ impl Batcher {
     }
 
     pub fn add_message(&mut self, message: &[u8], timestamp: f64) {
+        // 是否放在上一批
         if self.batcher.is_some() && self.batch_timestamp != timestamp {
             if let Some(batcher) = self.batcher.take() {
                 self.batches.push_back(batcher);
@@ -42,6 +43,7 @@ impl Batcher {
         let header_size = Compress.var_uint_size(message.len() as u64);
         let needed_size = header_size + message.len();
 
+        // 上一批容量是否足够
         if let Some(ref batcher) = self.batcher {
             if batcher.position + needed_size > self.threshold {
                 if let Some(batcher) = self.batcher.take() {
@@ -51,6 +53,7 @@ impl Batcher {
             }
         }
 
+        // 是否当前有批处理器
         if self.batcher.is_none() {
             self.batch_timestamp = timestamp;
             let mut batcher = NetworkWriterPool::get();
@@ -58,6 +61,7 @@ impl Batcher {
             self.batcher = Some(batcher);
         }
 
+        // 写入批处理器
         if let Some(ref mut batcher) = self.batcher {
             batcher.write_blittable_compress(message.len() as u64);
             batcher.write_slice(message, 0, message.len());
