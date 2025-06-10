@@ -450,9 +450,6 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
         self.room_scene = config.room_scene.clone();
         self.gameplay_scene = config.gameplay_scene.clone();
         self.client_index = config.client_index;
-
-        self.on_client_scene_changed =
-            SelfMutAction::new(self.weak.clone(), Self::on_client_scene_changed);
         self.on_start_server = SelfMutAction::new(self.weak.clone(), Self::on_start_server);
         self.on_stop_server = SelfMutAction::new(self.weak.clone(), Self::on_stop_server);
         self.on_server_connect = SelfMutAction::new(self.weak.clone(), Self::on_server_connect);
@@ -475,31 +472,6 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
 }
 
 impl NetworkRoomManager {
-    fn on_client_scene_changed(&mut self) {
-        // let name = std::any::type_name::<Self>();
-        // println!("{}", name.split("::").last().unwrap_or_default());
-        // println!("NetworkManager: Client scene changed 111");
-        // 这里可以添加更多的逻辑处理
-    }
-    //
-    // pub fn ready_status_changed(&mut self) {
-    //     let mut current_players = 0;
-    //     let mut ready_players = 0;
-    //
-    //     for item in &self.room_slots {
-    //         current_players += 1;
-    //         if *item.get_ready_to_begin() {
-    //             ready_players += 1;
-    //         }
-    //     }
-    //
-    //     if current_players == self.min_players {
-    //         self.check_ready_to_begin();
-    //     } else {
-    //         self.all_players_ready = false;
-    //     }
-    // }
-
     fn check_ready_to_begin(&mut self) {
         if let Some(world) = WorldManager::active_world().upgrade() {
             if world.get_scene_path() != self.get_network_scene_name() {

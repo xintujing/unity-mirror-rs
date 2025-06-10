@@ -110,12 +110,10 @@ pub struct NetworkManager {
     pub authenticator: Option<RevelArc<Box<dyn Authenticator>>>,
     transport: Option<RevelArc<Box<dyn Transport>>>,
 
-    pub on_client_scene_changed: SelfMutAction<(), ()>,
 
     // Actions
 
     pub server_change_scene: SelfMutAction<(String,), ()>,
-
     pub on_start_server: SelfMutAction<(), ()>,
     pub on_stop_server: SelfMutAction<(), ()>,
     pub on_server_connect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
@@ -123,22 +121,8 @@ pub struct NetworkManager {
     pub on_server_scene_changed: SelfMutAction<(String,), ()>,
     pub on_server_disconnect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_server_ready: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    pub on_server_error: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            TransportError,
-            String,
-        ),
-        (),
-    >,
-    pub on_server_transport_exception: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            Box<dyn std::error::Error>,
-        ),
-        (),
-    >,
-
+    pub on_server_error: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, TransportError, String), ()>,
+    pub on_server_transport_exception: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, Box<dyn std::error::Error>), ()>,
     pub on_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
 }
 
@@ -168,7 +152,6 @@ impl MonoBehaviour for NetworkManager {
         self.start_server()
     }
     fn update(&mut self) {
-        self.on_client_scene_changed.call(());
         self.on_start_server.call(());
     }
 
