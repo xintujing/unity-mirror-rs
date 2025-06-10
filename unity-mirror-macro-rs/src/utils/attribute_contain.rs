@@ -1,9 +1,8 @@
-use proc_macro::Ident;
-use quote::ToTokens;
-use syn::Attribute;
 use syn::parse::Parse;
+use syn::Attribute;
 
 pub(crate) trait VecAttributeExpand {
+    #[allow(dead_code)]
     fn extract<T>(&self, attr_str: &str) -> Option<T>
     where
         T: Parse;

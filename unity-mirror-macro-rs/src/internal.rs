@@ -1,10 +1,8 @@
 use crate::utils::attribute_contain::VecAttributeExpand;
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
-use proc_macro2::Ident;
 use quote::{format_ident, quote};
-use syn::parse::{Parse, ParseStream};
-use syn::{Token, Type, parse_macro_input, parse_quote};
+use syn::{parse_macro_input, parse_quote, Type};
 
 // mod kw {
 //     syn::custom_keyword!(set);
@@ -34,7 +32,7 @@ use syn::{Token, Type, parse_macro_input, parse_quote};
 //     }
 // }
 
-pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub(crate) fn handler(_: TokenStream, item: TokenStream) -> TokenStream {
     let mut item_struct = parse_macro_input!(item as syn::ItemStruct);
     item_struct.attrs.push(parse_quote! {
         #[derive(unity_mirror_macro_rs::Internal)]
@@ -102,6 +100,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     })
 }
-pub(crate) fn derive_handler(item: TokenStream) -> TokenStream {
+pub(crate) fn derive_handler(_: TokenStream) -> TokenStream {
     TokenStream::from(quote! {})
 }

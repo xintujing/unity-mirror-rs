@@ -1,9 +1,10 @@
 use proc_macro::TokenStream;
-use quote::{ToTokens, format_ident, quote};
+use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{FnArg, Pat, Path, parse_macro_input, parse_quote};
+use syn::{parse_macro_input, parse_quote, FnArg, Pat, Path};
 
 struct ActionArgs {
+    #[allow(unused)]
     action_path: Path,
 }
 
@@ -14,7 +15,7 @@ impl Parse for ActionArgs {
     }
 }
 
-pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub(crate) fn handler(_: TokenStream, item: TokenStream) -> TokenStream {
     // let ActionArgs { action_path } = parse_macro_input!(attr as ActionArgs);
     let mut item_fn = parse_macro_input!(item as syn::ItemFn);
     let fn_ident = &item_fn.sig.ident;

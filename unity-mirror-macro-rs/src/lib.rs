@@ -1,5 +1,3 @@
-#![allow(dead_code, unused)]
-
 mod namespace;
 mod network_behaviour;
 
@@ -69,7 +67,7 @@ pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn metadata(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn metadata(_: TokenStream, _: TokenStream) -> TokenStream {
     TokenStream::new()
 }
 

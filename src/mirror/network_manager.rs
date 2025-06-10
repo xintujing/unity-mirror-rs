@@ -1,11 +1,13 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::revel_arc::RevelArc;
 use crate::commons::revel_weak::RevelWeak;
+use crate::commons::to_hex_string::ToHexString;
 use crate::metadata_settings::metadata::Metadata;
 use crate::metadata_settings::mirror::metadata_network_manager::{
     MetadataNetworkManager, MetadataNetworkManagerWrapper,
 };
 use crate::mirror::authenticator::basic_authenticator::BasicAuthenticatorRequestMessage;
+use crate::mirror::message::MessageSerializer;
 use crate::mirror::messages::add_player_message::AddPlayerMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
@@ -384,8 +386,7 @@ impl NetworkManager {
         WorldManager::load_scene(&new_scene_name, LoadSceneMode::Single);
 
         if NetworkServer.active {
-            let message =
-                SceneMessage::new(new_scene_name.to_string(), SceneOperation::Normal, false);
+            let message = SceneMessage::new(new_scene_name.to_string(), SceneOperation::Normal, false);
             NetworkServer::send_to_all(message, TransportChannel::Reliable, false);
         }
 

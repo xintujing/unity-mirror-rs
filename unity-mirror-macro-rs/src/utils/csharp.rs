@@ -70,8 +70,8 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
                 "NetworkConnectionToClient" => {
                     Some("Mirror.NetworkConnectionToClient".to_string())
                 }
-                "Vector3" | "Vector3" => Some("UnityEngine.Vector3".to_string()),
-                "Quaternion" | "Quaternion" => Some("UnityEngine.Quaternion".to_string()),
+                "Vector3" | "nalgebra::Vector3" => Some("UnityEngine.Vector3".to_string()),
+                "Quaternion" | "nalgebra::Quaternion" => Some("UnityEngine.Quaternion".to_string()),
                 "Vec" => process_generic_type(last_path, path, "System.Collections.Generic.List`1"),
                 "RevelArc" | "RevelWeak" | "Box" => {
                     if let PathSegment {
@@ -96,6 +96,7 @@ pub fn type_to_csharp(r#type: &Type) -> Option<String> {
     }
 }
 
+#[allow(dead_code)]
 fn get_full_type(path: &Path) -> String {
     path.segments
         .iter()

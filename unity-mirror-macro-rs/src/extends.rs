@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Fields, Path, parse_quote};
+use syn::{parse_quote, Fields, Path};
 
 struct ExtendsArgs {
     parent: Path,
@@ -9,7 +9,7 @@ struct ExtendsArgs {
 
 impl Parse for ExtendsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut parent = match input.parse() {
+        let parent = match input.parse() {
             Ok(path) => path,
             Err(_) => {
                 return Err(input.error("#[extends] expects a single path argument"));
@@ -36,8 +36,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 item_struct,
                 "#[extends] only supports structs with named fields",
             )
-            .to_compile_error()
-            .into();
+                .to_compile_error()
+                .into();
         }
     }
 

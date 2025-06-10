@@ -1,10 +1,8 @@
-use crate::utils::write_to_file;
 use proc_macro::TokenStream;
-use quote::{ToTokens, format_ident, quote};
-use syn::parse::Parse;
-use syn::{Block, FnArg, ReturnType, parse_macro_input, parse_quote, parse_quote_spanned};
+use quote::{format_ident, quote};
+use syn::{parse_macro_input, parse_quote, FnArg};
 
-pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub(crate) fn handler(_: TokenStream, item: TokenStream) -> TokenStream {
     let mut item_fn = parse_macro_input!(item as syn::ItemFn);
 
     let fn_ident = &item_fn.sig.ident;
@@ -34,7 +32,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
         .collect::<Vec<_>>();
 
-    let output =  &item_fn.sig.output;
+    let output = &item_fn.sig.output;
 
     let block = item_fn.block.clone();
 
