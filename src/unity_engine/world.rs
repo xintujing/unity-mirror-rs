@@ -89,6 +89,9 @@ impl WorldManagerStatic {
     pub(crate) fn loading(&self) -> bool {
         self.loading
     }
+    pub(crate) fn set_loading(&mut self, loading: bool) {
+        self.loading = loading;
+    }
 }
 
 static mut WORLD_MANAGER_STATIC: Lazy<WorldManagerStatic> =

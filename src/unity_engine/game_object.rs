@@ -196,9 +196,7 @@ impl GameObject {
         }
     }
 
-    pub fn try_get_component<T: MonoBehaviour + 'static>(
-        &self,
-    ) -> Option<RevelWeak<Box<dyn MonoBehaviour>>> {
+    pub fn try_get_component<T: MonoBehaviour + 'static>(&self) -> Option<RevelWeak<Box<dyn MonoBehaviour>>> {
         let type_id = TypeId::of::<T>();
 
         let vec_index = self

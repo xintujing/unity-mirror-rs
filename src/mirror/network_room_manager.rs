@@ -140,7 +140,15 @@ impl NetworkRoomManager {
 
     /// 客户准备就绪时在服务器上打电话
     pub fn on_server_ready(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        self.parent.on_server_ready_default(connection)
+        self.parent.on_server_ready_default(connection.clone());
+
+        if let Some(identity) = connection.clone().identity.upgrade() {
+            if let Some(game_object) = identity.game_object.upgrade() {
+                if game_object.try_get_component::<NetworkRoomPlayer>().is_some() {
+                    self.scene_loaded_for_player(connection, game_object);
+                }
+            }
+        }
     }
 
     /// 当客户端添加使用 NetworkClient.AddPlayer 的新播放器时，请在服务器上调用
@@ -174,10 +182,7 @@ impl NetworkRoomManager {
     fn on_server_scene_changed(&mut self, scene_name: String) {
         if scene_name != self.room_scene {
             for pending_player in self.pending_players.clone().iter() {
-                if let (Some(connection), Some(room_player)) = (
-                    pending_player.connection.upgrade(),
-                    pending_player.room_player.upgrade(),
-                ) {
+                if let (Some(connection), Some(room_player)) = (pending_player.connection.upgrade(), pending_player.room_player.upgrade()) {
                     self.scene_loaded_for_player(connection, room_player)
                 }
             }
@@ -221,11 +226,7 @@ impl NetworkRoomManager {
 }
 
 impl NetworkRoomManager {
-    fn scene_loaded_for_player(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        room_player: RevelArc<GameObject>,
-    ) {
+    fn scene_loaded_for_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, room_player: RevelArc<GameObject>) {
         if WorldManager::active_world().get().unwrap().get_scene_path() == self.room_scene {
             let player = PendingPlayer {
                 connection: connection.downgrade(),
@@ -404,24 +405,18 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
         self.room_scene = config.room_scene.clone();
         self.gameplay_scene = config.gameplay_scene.clone();
         self.client_index = config.client_index;
+        // parent Action
+        self.parent.on_server_ready = SelfMutAction::new(self.weak.clone(), Self::on_server_ready);
+        // Action
         self.on_start_server = SelfMutAction::new(self.weak.clone(), Self::on_start_server);
         self.on_stop_server = SelfMutAction::new(self.weak.clone(), Self::on_stop_server);
         self.on_server_connect = SelfMutAction::new(self.weak.clone(), Self::on_server_connect);
-        // self.on_server_change_scene =
-        //     SelfMutAction::new(self.weak.clone(), Self::on_server_change_scene);
-        self.on_server_scene_changed =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_scene_changed);
-        self.on_server_disconnect =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
+        self.on_server_scene_changed = SelfMutAction::new(self.weak.clone(), Self::on_server_scene_changed);
+        self.on_server_disconnect = SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
         self.on_server_error = SelfMutAction::new(self.weak.clone(), Self::on_server_error);
-        self.on_server_transport_exception =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
-
-        self.on_server_add_player =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_add_player);
-
-        self.server_change_scene =
-            SelfMutAction::new(self.weak.clone(), Self::server_change_scene);
+        self.on_server_transport_exception = SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
+        self.on_server_add_player = SelfMutAction::new(self.weak.clone(), Self::on_server_add_player);
+        self.server_change_scene = SelfMutAction::new(self.weak.clone(), Self::server_change_scene);
     }
 }
 

@@ -106,9 +106,7 @@ pub struct NetworkManager {
     pub authenticator: Option<RevelArc<Box<dyn Authenticator>>>,
     transport: Option<RevelArc<Box<dyn Transport>>>,
 
-
     // Actions
-
     pub server_change_scene: SelfMutAction<(String,), ()>,
     pub on_start_server: SelfMutAction<(), ()>,
     pub on_stop_server: SelfMutAction<(), ()>,
@@ -396,7 +394,7 @@ impl NetworkManager {
     }
 
     pub fn update_scene(&mut self) {
-        if !WorldManager.loading() {
+        if NetworkServer.is_loading_scene {
             self.finish_load_scene()
         }
     }
@@ -470,21 +468,11 @@ impl NetworkManager {
         self.on_server_connect.call((conn.clone(),));
     }
 
-    pub fn on_server_ready_message_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        _message: ReadyMessage,
-        _: TransportChannel,
-    ) {
+    pub fn on_server_ready_message_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _message: ReadyMessage, _: TransportChannel) {
         self.on_server_ready(connection);
     }
 
-    pub fn on_server_add_player_internal(
-        &mut self,
-        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
-        message: AddPlayerMessage,
-        _: TransportChannel,
-    ) {
+    pub fn on_server_add_player_internal(&mut self, mut connection: RevelArc<Box<NetworkConnectionToClient>>, message: AddPlayerMessage, _: TransportChannel) {
         if self.auto_create_player && self.player_prefab.is_empty() {
             log::error!("The PlayerPrefab is empty on the NetworkManager. Please setup a PlayerPrefab object.");
             return;
@@ -512,24 +500,9 @@ impl NetworkManager {
 
     #[action]
     pub fn on_server_ready(&self, mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        if !connection.identity.upgradable() {}
+        if let Some(conn) = connection.identity.upgrade() {}
         NetworkServer::set_client_ready(connection);
     }
-
-    // pub fn on_server_ready(&mut self, mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
-    //     if self.on_server_ready.is_registered() {
-    //         self.on_server_ready.call((connection,))
-    //     } else {
-    //         self.on_server_ready_default(connection)
-    //     }
-    // }
-    // pub fn on_server_ready_default(
-    //     &mut self,
-    //     mut connection: RevelArc<Box<NetworkConnectionToClient>>,
-    // ) {
-    //     if !connection.identity.upgradable() {}
-    //     NetworkServer::set_client_ready(connection);
-    // }
 
     #[action]
     pub fn on_server_add_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
