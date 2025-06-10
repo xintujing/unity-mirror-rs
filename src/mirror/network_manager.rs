@@ -116,7 +116,6 @@ pub struct NetworkManager {
 
     pub server_change_scene: SelfMutAction<(String,), ()>,
 
-
     pub on_start_server: SelfMutAction<(), ()>,
     pub on_stop_server: SelfMutAction<(), ()>,
     pub on_server_connect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
@@ -409,7 +408,7 @@ impl NetworkManager {
 
         self.start_position_index = 0;
 
-        println!("切完场景 {}",self.get_network_scene_name())
+        println!("切完场景 {}", self.get_network_scene_name())
     }
 
     pub fn on_scene_loaded(&mut self, _: String, mode: LoadSceneMode) {
@@ -468,7 +467,7 @@ impl NetworkManager {
         &mut self,
         connection: RevelArc<Box<NetworkConnectionToClient>>,
     ) {
-        println!(
+        log::error!(
             "on_server_connect_internal {} self.authenticator = {}",
             connection.connection_id,
             self.authenticator.is_some()
@@ -481,7 +480,6 @@ impl NetworkManager {
     }
 
     pub fn on_server_authenticated(&mut self, mut conn: RevelArc<Box<NetworkConnectionToClient>>) {
-        println!("on_server_authenticated");
         conn.is_authenticated = true;
 
         if self.network_scene_name != "" && self.network_scene_name != self.offline_scene {

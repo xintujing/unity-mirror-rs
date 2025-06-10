@@ -1135,7 +1135,7 @@ impl NetworkServer {
     }
 
     pub fn broadcast() {
-        for (_, connection) in Self.connections.iter_mut() {
+        for connection in Self.connections.values_mut() {
             if Self::disconnect_if_inactive(connection.clone()) {
                 continue;
             }
@@ -1151,11 +1151,7 @@ impl NetworkServer {
     }
 
     fn disconnect_if_inactive(mut connection: RevelArc<Box<NetworkConnectionToClient>>) -> bool {
-        if Self.disconnect_inactive_connections
-            && !connection
-            .is_alive
-            .call((Self.disconnect_inactive_timeout,))
-        {
+        if Self.disconnect_inactive_connections && !connection.is_alive.call((Self.disconnect_inactive_timeout,)) {
             log::warn!("Disconnecting {} for inactivity!", connection.connection_id);
             connection.disconnect.call(());
             return true;
@@ -1169,16 +1165,14 @@ impl NetworkServer {
                 let serialization = Self::serialize_for_connection(weak_identity.clone(), connection.downgrade());
                 match serialization {
                     Some(serialization) => {
-                        let message = EntityStateMessage::new(
-                            identity.net_id(),
-                            serialization.to_vec(),
-                        );
+                        let message = EntityStateMessage::new(identity.net_id(), serialization.to_vec());
                         connection.send_message(message, TransportChannel::Reliable)
                     }
                     None => {
                         connection.observing.retain(|x| x.upgradable());
                         log::warn!(
-                            "Found 'null' entry in observing list for connectionId={}. Please call NetworkServer.Destroy to destroy networked objects. Don't use GameObject.Destroy.",
+                            "Found 'null' entry in observing list for connectionId={}. \
+                             Please call NetworkServer.Destroy to destroy networked objects. Don't use GameObject.Destroy.",
                             connection.connection_id
                         );
                     }

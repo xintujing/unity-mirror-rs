@@ -62,21 +62,19 @@ impl NetworkConnection {
     // #[virtual_shroud]
     #[action]
     pub fn update(&mut self) {
-        let writer = NetworkWriter::new();
-
         NetworkWriterPool::get_by_closure(|writer| {
             if let Some(reliable_batcher) = &mut self.reliable_batcher {
-                reliable_batcher.get_batcher_writer(writer);
-                self.send_to_transport
-                    .call((writer.to_vec(), TransportChannel::Reliable));
+                while reliable_batcher.get_batcher_writer(writer) {
+                    self.send_to_transport.call((writer.to_vec(), TransportChannel::Reliable));
+                    writer.reset();
+                };
             }
-        });
 
-        NetworkWriterPool::get_by_closure(|writer| {
             if let Some(unreliable_batcher) = &mut self.unreliable_batcher {
-                unreliable_batcher.get_batcher_writer(writer);
-                self.send_to_transport
-                    .call((writer.to_vec(), TransportChannel::Unreliable));
+                while unreliable_batcher.get_batcher_writer(writer) {
+                    self.send_to_transport.call((writer.to_vec(), TransportChannel::Unreliable));
+                    writer.reset();
+                };
             }
         });
     }
@@ -116,10 +114,12 @@ impl NetworkConnection {
             let max_size = message::max_message_size(channel_id);
             if writer.position > max_size {
                 log::error!(
-                    "NetworkServer.SendToAll: message of type {} with a size of {} bytes is larger than the max allowed message size in one batch: {}.\nThe message was dropped, please make it smaller.",
-                    T::get_full_name(),
-                    writer.position,
-                    max_size
+                    "NetworkServer.SendToAll: message of type {} with a size of {} bytes \
+                     is larger than the max allowed message size in one batch: {}.\
+                     The message was dropped, please make it smaller.",
+                     T::get_full_name(),
+                     writer.position,
+                     max_size
                 );
                 return;
             }
