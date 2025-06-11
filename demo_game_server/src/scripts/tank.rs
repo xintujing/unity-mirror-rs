@@ -1,18 +1,20 @@
 use crate::backend_metadata::tank::MetadataTank;
 use std::any::{Any, TypeId};
+use nalgebra::{Quaternion, Vector3};
 use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour, target_rpc};
 use unity_mirror_rs::commons::revel_arc::RevelArc;
 use unity_mirror_rs::commons::revel_weak::RevelWeak;
+use unity_mirror_rs::metadata_settings::metadata::Metadata;
 use unity_mirror_rs::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use unity_mirror_rs::mirror::sync_list::SyncList;
-use unity_mirror_rs::mirror::{NetworkConnectionToClient, TNetworkBehaviour};
+use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::Transform;
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
 
 #[namespace]
 #[network_behaviour(
     parent(unity_mirror_rs::mirror::NetworkBehaviour),
-    metadata(crate::backend_metadata::tank::MetadataTank)
+    metadata(MetadataTank)
 )]
 pub struct Tank {
     turret: Transform,
@@ -40,6 +42,7 @@ impl TNetworkBehaviour for Tank {
         {
             let config = metadata.get::<MetadataTank>();
             tank.set_health(config.health);
+            tank.projectile_prefab = config.projectile_prefab.asset_path.clone();
         }
         tank
     }
@@ -48,6 +51,13 @@ impl TNetworkBehaviour for Tank {
 impl Tank {
     #[command(Tank)]
     fn cmd_fire(&self, _pos: Vec<f32>, _rot: Vec<f32>) {
+        if let Some(prefab) = Metadata::get_prefab(&self.projectile_prefab) {
+            let mut obj= GameObject::instantiate(&prefab);
+            obj.transform.position=Vector3::new(_pos[0], _pos[1], _pos[2]);
+            obj.transform.rotation = Quaternion::new(_rot[3], _rot[0], _rot[1], _rot[2]);
+            NetworkServer::spawn(obj.downgrade());
+        }
+
         self.rpc_on_fire();
     }
 

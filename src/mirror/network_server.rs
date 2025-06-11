@@ -944,7 +944,7 @@ impl NetworkServer {
     fn respawn(identity: RevelArc<Box<NetworkIdentity>>) {
         if let Some(identity_connection) = identity.connection().upgrade() {
             if identity.net_id() == 0 {
-                Self::spawn(identity.game_object.clone(), identity_connection.clone())
+                Self::spawn_with_connection(identity.game_object.clone(), identity_connection.downgrade())
             } else {
                 Self::send_spawn_message(identity.clone(), identity_connection.clone())
             }
@@ -1043,10 +1043,7 @@ impl NetworkServer {
                         && Self::valid_parent(real_identity)
                     {
                         if let Some(game_object) = real_identity.game_object.get() {
-                            if let Some(identity_connection) = real_identity.connection().upgrade()
-                            {
-                                Self::spawn(real_identity.game_object.clone(), identity_connection)
-                            }
+                            Self::spawn_with_connection(real_identity.game_object.clone(), real_identity.connection());
                         }
                     }
                 }
@@ -1056,16 +1053,23 @@ impl NetworkServer {
         true
     }
 
-    fn spawn(
+
+    pub fn spawn(
         game_object: RevelWeak<GameObject>,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
+        Self::spawn_object(game_object, RevelWeak::default());
+    }
+
+    pub fn spawn_with_connection(
+        game_object: RevelWeak<GameObject>,
+        connection: RevelWeak<Box<NetworkConnectionToClient>>,
     ) {
         Self::spawn_object(game_object, connection);
     }
 
     fn spawn_object(
         game_object: RevelWeak<GameObject>,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        connection: RevelWeak<Box<NetworkConnectionToClient>>,
     ) {
         if let Some(real_game_object) = game_object.get() {
             if !Self.active {
@@ -1094,7 +1098,7 @@ impl NetworkServer {
                                 return;
                             }
 
-                            identity.set_connection(connection.downgrade());
+                            identity.set_connection(connection.clone());
 
                             if let Some(game_object) = identity.game_object.get() {
                                 game_object.set_active(true);

@@ -13,6 +13,7 @@ log = "0.4.27"
 unity-mirror-rs = { path = "../../unity-mirror-rs" }
 unity-mirror-macro-rs = { path = "../unity-mirror-macro-rs" }
 serde = { version = "1.0.217", features = ["derive"] }
+nalgebra = "0.33.2"
 
 [profile.release]
 opt-level = 3
