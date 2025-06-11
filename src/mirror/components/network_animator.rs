@@ -339,38 +339,49 @@ impl NetworkAnimator {
 impl NetworkBehaviourOnSerializer for NetworkAnimator {
     #[parent_on_serialize]
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
-        self.serialize_sync_objects(writer, initial_state);
-        self.serialize_sync_vars(writer, initial_state);
-
-        let ani_layers = &self.animator.layers;
-        let layer_count = ani_layers.len() as u8;
-        writer.write_blittable(layer_count);
-
-        for layer in ani_layers.iter() {
-            writer.write_blittable(layer.full_path_hash);
-            writer.write_blittable(layer.normalized_time);
-            writer.write_blittable(layer.layer_weight);
+        // base.OnSerialize(writer, initialState);  base -> NetworkBehaviour default impl
+        {
+            self.serialize_sync_objects(writer, initial_state);
+            self.serialize_sync_vars(writer, initial_state);
         }
 
-        self.write_parameters(writer, true);
+        if initial_state {
+            let ani_layers = &self.animator.layers;
+            let layer_count = ani_layers.len() as u8;
+            writer.write_blittable(layer_count);
+
+            for layer in ani_layers.iter() {
+                writer.write_blittable(layer.full_path_hash);
+                writer.write_blittable(layer.normalized_time);
+                writer.write_blittable(layer.layer_weight);
+            }
+
+            self.write_parameters(writer, true);
+        }
     }
 }
 impl NetworkBehaviourOnDeserializer for NetworkAnimator {
     #[parent_on_deserialize]
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
-        self.deserialize_sync_objects(reader, initial_state);
-        self.deserialize_sync_vars(reader, initial_state);
-        let ani_layers = reader.read_blittable::<u8>() as usize;
-        if ani_layers != self.animator.layers.len() {
-            log::error!("Animator layers count mismatch");
-            return;
-        }
-        for _ in 0..ani_layers {
-            let _full_path_hash = reader.read_blittable::<i32>();
-            let _normalized_time = reader.read_blittable::<f32>();
-            let _layer_weight = reader.read_blittable::<f32>();
+        // base.OnDeserialize(reader, initialState);  base -> NetworkBehaviour default impl
+        {
+            self.deserialize_sync_objects(reader, initial_state);
+            self.deserialize_sync_vars(reader, initial_state);
         }
 
-        self.read_parameters(reader);
+        if initial_state {
+            let ani_layers = reader.read_blittable::<u8>() as usize;
+            if ani_layers != self.animator.layers.len() {
+                log::error!("Animator layers count mismatch");
+                return;
+            }
+            for _ in 0..ani_layers {
+                let _full_path_hash = reader.read_blittable::<i32>();
+                let _normalized_time = reader.read_blittable::<f32>();
+                let _layer_weight = reader.read_blittable::<f32>();
+            }
+
+            self.read_parameters(reader);
+        }
     }
 }
