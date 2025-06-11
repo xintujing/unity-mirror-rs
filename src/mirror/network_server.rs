@@ -958,18 +958,20 @@ impl NetworkServer {
         if identity.server_only {
             return;
         }
-        let mut owner_writer = RevelArc::new(NetworkWriterPool::get());
-        let mut observers_writer = RevelArc::new(NetworkWriterPool::get());
 
         let is_owner = identity.connection().ptr_eq(&connection.downgrade());
         let is_local_player = connection.identity.ptr_eq(&identity.downgrade());
 
+        let mut owner_writer = RevelArc::new(NetworkWriterPool::get());
+        let mut observers_writer = RevelArc::new(NetworkWriterPool::get());
         let payload = Self::create_spawn_message_payload(
             is_owner,
             identity.clone(),
             owner_writer.clone(),
             observers_writer.clone(),
         );
+        NetworkWriterPool::return_(owner_writer.into_inner());
+        NetworkWriterPool::return_(observers_writer.into_inner());
 
         if let Some(identity_game_object) = identity.game_object.upgrade() {
             let mut spawn_message = SpawnMessage::new(
@@ -984,11 +986,10 @@ impl NetworkServer {
                 payload,
             );
 
+            log::debug!("{} SpawnMessage: {:?}", identity.name(), spawn_message);
+
             connection.send_message(spawn_message, TransportChannel::Reliable);
         }
-
-        NetworkWriterPool::return_(owner_writer.into_inner());
-        NetworkWriterPool::return_(observers_writer.into_inner());
     }
 
     pub fn create_spawn_message_payload(

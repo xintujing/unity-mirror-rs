@@ -1,6 +1,6 @@
 use crate::backend_metadata::tank::MetadataTank;
-use std::any::{Any, TypeId};
 use nalgebra::{Quaternion, Vector3};
+use std::any::{Any, TypeId};
 use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour, target_rpc};
 use unity_mirror_rs::commons::revel_arc::RevelArc;
 use unity_mirror_rs::commons::revel_weak::RevelWeak;
@@ -51,10 +51,10 @@ impl TNetworkBehaviour for Tank {
 impl Tank {
     #[command(Tank)]
     fn cmd_fire(&self, _pos: Vec<f32>, _rot: Vec<f32>) {
-        if let Some(prefab) = Metadata::get_prefab(&self.projectile_prefab) {
-            let mut obj= GameObject::instantiate(&prefab);
-            obj.transform.position=Vector3::new(_pos[0], _pos[1], _pos[2]);
-            obj.transform.rotation = Quaternion::new(_rot[3], _rot[0], _rot[1], _rot[2]);
+        if let Some(prefab) = Metadata::get_prefab("Assets/Prefabs/Projectile.prefab") {
+            let mut obj = GameObject::instantiate(&prefab);
+            obj.transform.local_position = Vector3::new(_pos[0], _pos[1], _pos[2]);
+            obj.transform.local_rotation = Quaternion::new(_rot[3], _rot[0], _rot[1], _rot[2]);
             NetworkServer::spawn(obj.downgrade());
         }
 
