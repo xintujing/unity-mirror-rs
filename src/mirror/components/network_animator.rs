@@ -224,9 +224,9 @@ impl TNetworkBehaviour for NetworkAnimator {
         let mut animator = Self::default();
         {
             let config = metadata.get::<MetadataNetworkAnimator>();
-            animator.initialize(config);
             animator.client_authority = config.client_authority;
-            animator.set_animator_speed(1.0)
+            animator.set_animator_speed(1.0);
+            animator.initialize(config);
         }
         animator
     }
