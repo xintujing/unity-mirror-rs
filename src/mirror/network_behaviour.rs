@@ -169,18 +169,7 @@ impl NetworkBehaviour {
         }
     }
 
-    pub fn send_target_rpc_internal(
-        &self,
-        mut target_rpc_conn: Option<RevelArc<Box<NetworkConnectionToClient>>>,
-        function_full_name: &str,
-        function_hash_code: u16,
-        writer: &mut NetworkWriter,
-        channel_id: TransportChannel,
-    ) {
-        // rpc消息
-        let mut message = RpcMessage::new(0, 0, function_hash_code, writer.to_vec());
-        // 找出需要的数据
-
+    pub fn send_target_rpc_internal(&self, mut target_rpc_conn: Option<RevelArc<Box<NetworkConnectionToClient>>>, function_full_name: &str, function_hash_code: u16, writer: &mut NetworkWriter, channel_id: TransportChannel) {
         if target_rpc_conn.is_none() {
             if let Some(connection) = self.connection_to_client().upgrade() {
                 target_rpc_conn = Some(connection);
@@ -196,17 +185,13 @@ impl NetworkBehaviour {
             return;
         }
 
-        message.component_index = self.component_index;
-        message.net_id = self.net_id;
+        // rpc消息
+        let mut message = RpcMessage::new(self.net_id, self.component_index, function_hash_code, writer.to_vec());
 
         let mut connection = target_rpc_conn.unwrap();
 
         if connection.is_ready {
-            let mut writer = NetworkWriterPool::get();
-            {
-                MessageSerializer::serialize(&mut message, &mut writer);
-                connection.send_message(message, channel_id);
-            }
+            connection.send_message(message, channel_id);
         }
     }
 }
