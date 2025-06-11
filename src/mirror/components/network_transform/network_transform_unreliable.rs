@@ -49,22 +49,8 @@ impl NetworkTransformUnreliable {
     }
 
     // RpcServerToClientSync(SyncData syncData)
-    // #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
-    // fn rpc_server_to_client_sync(&self, sync_data: SyncData) {}
-    fn rpc_server_to_client_sync(&self, sync_data: SyncData) {
-        {
-            use crate::mirror::stable_hash::StableHash;
-            use crate::commons::object::Object;
-            crate::mirror::NetworkWriterPool::get_by_closure(|mut writer| {
-                crate::mirror::DataTypeSerializer::serialize(&sync_data, &mut writer);
-                let full_path_str = format!("System.Void {}::{}({})", Self::get_full_name(), "RpcServerToClientSync", vec![{
-                                                                                                                               use crate::commons::object::Object;
-                                                                                                                               SyncData::get_full_name()
-                                                                                                                           }, ].join(","), );
-                self.send_rpc_internal(&full_path_str, full_path_str.fn_hash() as u16, &mut writer, TransportChannel::Unreliable, true);
-            });
-        }
-    }
+    #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
+    fn rpc_server_to_client_sync(&self, sync_data: SyncData) {}
 }
 
 impl MonoBehaviour for NetworkTransformUnreliable {
