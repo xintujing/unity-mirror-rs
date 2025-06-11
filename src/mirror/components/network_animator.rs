@@ -135,7 +135,7 @@ impl NetworkAnimator {
     }
 
     // RpcOnAnimationClientMessage(int stateHash, float normalizedTime, int layerId, float weight, byte[] parameters)
-    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    #[client_rpc(channel = TransportChannel::Reliable)]
     fn rpc_on_animation_client_message(
         &self,
         state_hash: i32,
@@ -162,7 +162,7 @@ impl NetworkAnimator {
     }
 
     // RpcOnAnimationParametersClientMessage(byte[] parameters)
-    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    #[client_rpc(channel = TransportChannel::Reliable)]
     fn rpc_on_animation_parameters_client_message(&self, parameters: &[u8]) {
         let _ = parameters;
     }

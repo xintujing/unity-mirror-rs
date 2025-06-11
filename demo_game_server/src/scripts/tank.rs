@@ -51,7 +51,7 @@ impl Tank {
         self.rpc_on_fire();
     }
 
-    #[client_rpc(include_owner)]
+    #[client_rpc]
     fn rpc_on_fire(&self) {}
 
     // #[target_rpc]

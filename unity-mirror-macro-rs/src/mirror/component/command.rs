@@ -3,7 +3,7 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{FnArg, LitStr, Path, Token, parse_macro_input};
+use syn::{Expr, FnArg, LitStr, Path, Token, parse_macro_input, parse_quote};
 
 mod kw {
     syn::custom_keyword!(struct_path);
@@ -13,7 +13,7 @@ mod kw {
 
 struct CommandArgs {
     struct_path: Path,
-    non_authority: bool,
+    authority: Option<Expr>,
     rename: Option<String>,
 }
 
@@ -25,7 +25,7 @@ impl Parse for CommandArgs {
                 return Err(syn::Error::new(input.span(), "Expected a struct path"));
             }
         };
-        let mut non_authority = false;
+        let mut authority = None;
         let mut rename = None;
 
         while !input.is_empty() {
@@ -33,7 +33,8 @@ impl Parse for CommandArgs {
                 input.parse::<kw::struct_path>()?;
             } else if input.peek(kw::non_authority) {
                 let _ = input.parse::<kw::non_authority>()?;
-                non_authority = true;
+                input.parse::<Token![=]>()?;
+                authority = Some(input.parse()?);
             } else if input.peek(kw::rename) {
                 let _ = input.parse::<kw::rename>()?;
                 input.parse::<Token![=]>()?;
@@ -54,7 +55,7 @@ impl Parse for CommandArgs {
 
         Ok(CommandArgs {
             struct_path,
-            non_authority,
+            authority,
             rename,
         })
     }
@@ -63,9 +64,13 @@ impl Parse for CommandArgs {
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let CommandArgs {
         struct_path,
-        non_authority,
+        mut authority,
         rename,
     } = parse_macro_input!(attr as CommandArgs);
+
+    if authority.is_none() {
+        authority = Some(parse_quote!{ true });
+    }
 
     let item_fn = parse_macro_input!(item as syn::ItemFn);
 
@@ -124,7 +129,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                     #struct_path::get_full_name(),
                     #fn_name, #csharp_func_inputs,
                 );
-                crate::mirror::RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, !#non_authority);
+                crate::mirror::RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, #authority);
             }
         }
     })
