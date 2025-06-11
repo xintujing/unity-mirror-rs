@@ -1,3 +1,4 @@
+use crate::backend_metadata::tank::MetadataTank;
 use std::any::{Any, TypeId};
 use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour, target_rpc};
 use unity_mirror_rs::commons::revel_arc::RevelArc;
@@ -7,6 +8,7 @@ use unity_mirror_rs::mirror::sync_list::SyncList;
 use unity_mirror_rs::mirror::{NetworkConnectionToClient, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::Transform;
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
+
 #[namespace]
 #[network_behaviour(
     parent(unity_mirror_rs::mirror::NetworkBehaviour),
@@ -18,6 +20,7 @@ pub struct Tank {
     projectile_mount: Transform,
     #[sync_variable]
     health: i32,
+    #[sync_object]
     u32_list: SyncList<u32>,
 }
 
@@ -26,14 +29,16 @@ impl TankOnChangeCallback for Tank {}
 impl MonoBehaviour for Tank {}
 
 impl TNetworkBehaviour for Tank {
-    fn new(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Self
+    fn new(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
-        Self::default()
+        let mut tank = Self::default();
+        {
+            let config = metadata.get::<MetadataTank>();
+            tank.set_health(config.health);
+        }
+        tank
     }
 }
 

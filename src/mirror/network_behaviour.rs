@@ -145,14 +145,7 @@ impl NetworkBehaviour {
 }
 
 impl NetworkBehaviour {
-    pub fn send_rpc_internal(
-        &self,
-        _function_full_name: &str,
-        function_hash_code: u16,
-        writer: &mut NetworkWriter,
-        channel_id: TransportChannel,
-        include_owner: bool,
-    ) {
+    pub fn send_rpc_internal(&self, _function_full_name: &str, function_hash_code: u16, writer: &mut NetworkWriter, channel_id: TransportChannel, include_owner: bool) {
         if let Some(network_identity) = self.network_identity.get() {
             if network_identity.observers.is_empty() {
                 return;
@@ -165,14 +158,10 @@ impl NetworkBehaviour {
                 writer.to_vec(),
             );
 
-            let mut writer = NetworkWriterPool::get();
-            {
-                MessageSerializer::serialize(&mut message, &mut writer);
-
-                for (_, observer) in network_identity.observers.iter() {
-                    if let (Some(mut observer), Some(connection)) =
-                        (observer.upgrade(), network_identity.connection().upgrade())
-                    {
+            NetworkWriterPool::get_by_closure(|writer| {
+                MessageSerializer::serialize(&mut message, writer);
+                for observer in network_identity.observers.values() {
+                    if let (Some(mut observer), Some(connection)) = (observer.upgrade(), network_identity.connection().upgrade()) {
                         let is_owner = observer.connection_id == connection.connection_id;
 
                         if (!is_owner || include_owner) && observer.is_ready {
@@ -180,7 +169,7 @@ impl NetworkBehaviour {
                         }
                     }
                 }
-            }
+            });
         }
     }
 

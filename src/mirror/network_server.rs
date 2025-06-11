@@ -708,7 +708,7 @@ impl NetworkServer {
             };
 
             if !vec![17487, 27095, 57097].contains(&msg_type) {
-                log::debug!("Received message of type {}", msg_name);
+                // log::debug!("Received message of type {}", msg_name);
             }
 
             return match self.message_handlers.get_mut(&msg_type) {
