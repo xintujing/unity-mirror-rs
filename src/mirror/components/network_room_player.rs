@@ -39,7 +39,7 @@ impl Hash for NetworkRoomPlayer {
 impl NetworkRoomPlayerOnChangeCallback for NetworkRoomPlayer {}
 
 impl NetworkRoomPlayer {
-    #[command(NetworkRoomPlayer, authority)]
+    #[command(NetworkRoomPlayer)]
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         self.set_ready_to_begin(ready_state);
         log::debug!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());

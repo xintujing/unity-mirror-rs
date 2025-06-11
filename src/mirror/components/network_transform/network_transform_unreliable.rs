@@ -39,7 +39,7 @@ impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {
 
 impl NetworkTransformUnreliable {
     // CmdClientToServerSync(SyncData syncData)
-    #[command(NetworkTransformUnreliable, authority)]
+    #[command(NetworkTransformUnreliable)]
     fn cmd_client_to_server_sync(&self, sync_data: SyncData) {
         if self.sync_direction != SyncDirection::ClientToServer {
             return;

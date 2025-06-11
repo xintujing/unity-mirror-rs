@@ -57,7 +57,7 @@ impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
 // 远程调用
 impl NetworkTransformBase {
-    #[command(NetworkTransformBase, authority, rename = "CmdTeleport")]
+    #[command(NetworkTransformBase, rename = "CmdTeleport")]
     fn cmd_teleport(&self, destination: Vector3<f32>) {
         if self.sync_direction != SyncDirection::ClientToServer {
             return;
@@ -67,7 +67,7 @@ impl NetworkTransformBase {
         self.rpc_teleport(destination);
     }
 
-    #[command(NetworkTransformBase, authority, rename = "CmdTeleport")]
+    #[command(NetworkTransformBase, rename = "CmdTeleport")]
     fn cmd_teleport_(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {
         if self.sync_direction != SyncDirection::ClientToServer {
             return;
