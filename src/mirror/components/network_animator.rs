@@ -337,7 +337,7 @@ impl NetworkAnimator {
     }
 }
 impl NetworkBehaviourOnSerializer for NetworkAnimator {
-    #[parent_on_serialize]
+    #[parent_on_serialize] // 保证 on_serialize 调用链必须连贯，最上层有对 sync_object 脏位的处理
     fn on_serialize(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
         // base.OnSerialize(writer, initialState);  base -> NetworkBehaviour default impl
         {
@@ -361,7 +361,7 @@ impl NetworkBehaviourOnSerializer for NetworkAnimator {
     }
 }
 impl NetworkBehaviourOnDeserializer for NetworkAnimator {
-    #[parent_on_deserialize]
+    #[parent_on_deserialize] // 保证 on_deserialize 调用链必须连贯，最上层有对 sync_object 脏位的处理
     fn on_deserialize(&mut self, reader: &mut NetworkReader, initial_state: bool) {
         // base.OnDeserialize(reader, initialState);  base -> NetworkBehaviour default impl
         {
