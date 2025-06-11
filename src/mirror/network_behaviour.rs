@@ -158,18 +158,14 @@ impl NetworkBehaviour {
                 writer.to_vec(),
             );
 
-            NetworkWriterPool::get_by_closure(|writer| {
-                MessageSerializer::serialize(&mut message, writer);
-                for observer in network_identity.observers.values() {
-                    if let (Some(mut observer), Some(connection)) = (observer.upgrade(), network_identity.connection().upgrade()) {
-                        let is_owner = observer.connection_id == connection.connection_id;
-
-                        if (!is_owner || include_owner) && observer.is_ready {
-                            observer.send_message(message.clone(), channel_id.into());
-                        }
+            for weak_observer in network_identity.observers.values() {
+                let is_owner = weak_observer.ptr_eq(&network_identity.connection());
+                if let Some(mut observer) = weak_observer.upgrade() {
+                    if (!is_owner || include_owner) && observer.is_ready {
+                        observer.send_message(message.clone(), channel_id.into());
                     }
                 }
-            });
+            }
         }
     }
 
