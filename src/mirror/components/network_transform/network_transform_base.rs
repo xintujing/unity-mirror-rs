@@ -4,8 +4,8 @@ use crate::mirror::components::network_transform::transform_snapshot::TransformS
 
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
-use crate::mirror::TNetworkBehaviour;
 use crate::mirror::transport::TransportChannel;
+use crate::mirror::TNetworkBehaviour;
 use crate::mirror::{NetworkBehaviour, NetworkServer, SyncDirection};
 use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
@@ -213,7 +213,22 @@ impl TNetworkBehaviour for NetworkTransformBase {
                     );
                 }
             }
+
+            base.sync_position = config.sync_position;
+            base.sync_rotation = config.sync_rotation;
+            base.sync_scale = config.sync_scale;
+
+            base.only_sync_on_change = config.only_sync_on_change;
+            base.compress_rotation = config.compress_rotation;
+
+            base.interpolate_position = config.interpolate_position;
+            base.interpolate_rotation = config.interpolate_rotation;
+            base.interpolate_scale = config.interpolate_scale;
+
+            base.coordinate_space = config.coordinate_space.clone().into();
         }
+
+
         base
     }
 }

@@ -62,14 +62,20 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 }
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
-    fn new(
-        _weak_game_object: RevelWeak<GameObject>,
-        _metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Self
+    fn new(_weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
-        Self::default()
+        let mut unreliable = Self::default();
+        {
+            let config = metadata.get::<MetadataNetworkTransformUnreliable>();
+            unreliable.buffer_reset_multiplier = config.buffer_reset_multiplier;
+            unreliable.position_sensitivity = config.position_sensitivity;
+            unreliable.rotation_sensitivity = config.rotation_sensitivity;
+            unreliable.scale_sensitivity = config.scale_sensitivity;
+        }
+
+        unreliable
     }
 }
 
