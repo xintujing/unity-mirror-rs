@@ -57,7 +57,7 @@ impl NetworkTransformBaseOnChangeCallback for NetworkTransformBase {}
 
 // 远程调用
 impl NetworkTransformBase {
-    #[command(NetworkTransformBase, authority, rename = "CmdTeleport")]
+    #[command(NetworkTransformBase, rename = "CmdTeleport")]
     fn cmd_teleport(&self, destination: Vector3<f32>) {
         if self.sync_direction != SyncDirection::ClientToServer {
             return;
@@ -67,7 +67,7 @@ impl NetworkTransformBase {
         self.rpc_teleport(destination);
     }
 
-    #[command(NetworkTransformBase, authority, rename = "CmdTeleport")]
+    #[command(NetworkTransformBase, rename = "CmdTeleport")]
     fn cmd_teleport_(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {
         if self.sync_direction != SyncDirection::ClientToServer {
             return;
@@ -77,10 +77,10 @@ impl NetworkTransformBase {
         self.rpc_teleport_(destination, rotation);
     }
 
-    #[client_rpc(include_owner, channel = TransportChannel::Reliable, rename = "RpcTeleport")]
+    #[client_rpc( channel = TransportChannel::Reliable, rename = "RpcTeleport")]
     fn rpc_teleport(&self, destination: Vector3<f32>) {}
 
-    #[client_rpc(include_owner, channel = TransportChannel::Reliable, rename = "RpcTeleport")]
+    #[client_rpc( channel = TransportChannel::Reliable, rename = "RpcTeleport")]
     fn rpc_teleport_(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {}
 
     pub fn server_teleport(&self, destination: Vector3<f32>, rotation: Quaternion<f32>) {
@@ -88,7 +88,7 @@ impl NetworkTransformBase {
         self.rpc_teleport_(destination, rotation);
     }
 
-    #[client_rpc(include_owner, channel = TransportChannel::Reliable)]
+    #[client_rpc(channel = TransportChannel::Reliable)]
     fn rpc_reset_state(&self) {}
 }
 
@@ -227,7 +227,6 @@ impl TNetworkBehaviour for NetworkTransformBase {
 
             base.coordinate_space = config.coordinate_space.clone().into();
         }
-
 
         base
     }

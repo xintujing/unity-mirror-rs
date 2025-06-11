@@ -8,9 +8,7 @@ use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::TNetworkBehaviour;
-use crate::mirror::{
-    NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, SyncDirection,
-};
+use crate::mirror::{NetworkBehaviourOnDeserializer, NetworkBehaviourOnSerializer, SyncDirection};
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour};
@@ -39,7 +37,7 @@ impl NetworkTransformUnreliableOnChangeCallback for NetworkTransformUnreliable {
 
 impl NetworkTransformUnreliable {
     // CmdClientToServerSync(SyncData syncData)
-    #[command(NetworkTransformUnreliable, authority)]
+    #[command(NetworkTransformUnreliable)]
     fn cmd_client_to_server_sync(&self, sync_data: SyncData) {
         if self.sync_direction != SyncDirection::ClientToServer {
             return;
@@ -49,7 +47,7 @@ impl NetworkTransformUnreliable {
     }
 
     // RpcServerToClientSync(SyncData syncData)
-    #[client_rpc(include_owner, channel = TransportChannel::Unreliable)]
+    #[client_rpc(channel = TransportChannel::Unreliable)]
     fn rpc_server_to_client_sync(&self, sync_data: SyncData) {}
 }
 
@@ -62,7 +60,10 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 }
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
-    fn new(_weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        _weak_game_object: RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {

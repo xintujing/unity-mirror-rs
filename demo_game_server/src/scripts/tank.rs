@@ -29,7 +29,10 @@ impl TankOnChangeCallback for Tank {}
 impl MonoBehaviour for Tank {}
 
 impl TNetworkBehaviour for Tank {
-    fn new(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(
+        weak_game_object: RevelWeak<GameObject>,
+        metadata: &MetadataNetworkBehaviourWrapper,
+    ) -> Self
     where
         Self: Sized,
     {

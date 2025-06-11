@@ -13,14 +13,14 @@ mod kw {
 
 struct TargetRpcArgs {
     channel: Option<Expr>,
-    include_owner: bool,
+    include_owner: Option<Expr>,
     rename: Option<String>,
 }
 
 impl Parse for TargetRpcArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut channel = None;
-        let mut include_owner = false;
+        let mut include_owner = None;
         let mut rename = None;
 
         while !input.is_empty() {
@@ -30,7 +30,8 @@ impl Parse for TargetRpcArgs {
                 channel = Some(input.parse()?);
             } else if input.peek(kw::include_owner) {
                 input.parse::<kw::include_owner>()?;
-                include_owner = true;
+                input.parse::<Token![=]>()?;
+                include_owner = Some(input.parse()?);
             } else if input.peek(kw::rename) {
                 let _ = input.parse::<kw::rename>()?;
                 input.parse::<Token![=]>()?;
@@ -60,12 +61,15 @@ impl Parse for TargetRpcArgs {
 pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let TargetRpcArgs {
         mut channel,
-        include_owner,
+        mut include_owner,
         rename,
     } = parse_macro_input!(attr as TargetRpcArgs);
 
     if channel.is_none() {
         channel = Some(parse_quote! { crate::mirror::transport::TransportChannel::Reliable })
+    }
+    if include_owner.is_none() {
+        include_owner = Some(parse_quote! { true })
     }
 
     let mut item_fn = parse_macro_input!(item as syn::ItemFn);
@@ -77,8 +81,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             if let Pat::Ident(a) = pat.as_ref() {
                 let arg_name = &a.ident;
                 arg_block.push(quote! {
-                        crate::mirror::DataTypeSerializer::serialize(&#arg_name, &mut writer);
-                    });
+                    crate::mirror::DataTypeSerializer::serialize(&#arg_name, &mut writer);
+                });
             }
         }
     }
