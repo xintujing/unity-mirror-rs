@@ -56,7 +56,6 @@ pub struct NetworkBehaviour {
     pub sync_interval: f32,
     last_sync_time: f64,
 
-    net_id: u32,
     pub component_index: u8,
 
     pub network_identity: RevelWeak<Box<NetworkIdentity>>,
@@ -101,6 +100,13 @@ impl NetworkBehaviour {
             return network_identity.is_owned;
         }
         false
+    }
+
+    pub fn net_id(&self) -> u32 {
+        if let Some(network_identity) = self.network_identity.get() {
+            return network_identity.net_id();
+        }
+        0
     }
 }
 
@@ -151,8 +157,9 @@ impl NetworkBehaviour {
                 return;
             }
 
+
             let mut message = RpcMessage::new(
-                self.net_id,
+                self.net_id(),
                 self.component_index,
                 function_hash_code,
                 writer.to_vec(),
@@ -186,7 +193,7 @@ impl NetworkBehaviour {
         }
 
         // rpc消息
-        let mut message = RpcMessage::new(self.net_id, self.component_index, function_hash_code, writer.to_vec());
+        let mut message = RpcMessage::new(self.net_id(), self.component_index, function_hash_code, writer.to_vec());
 
         let mut connection = target_rpc_conn.unwrap();
 
