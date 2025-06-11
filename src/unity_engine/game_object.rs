@@ -299,11 +299,9 @@ macro_rules! recursive_event_fn {
                 for (_, children_game_object) in self.children.iter_mut() {
                      children_game_object.$fn_name()
                 }
-                for component in &mut self.components {
-                    if let Some(component_mut) = component.last_mut() {
-                        if let Some(component_mut) = component.last_mut() {
-                            component_mut.$fn_name();
-                        }
+                for component_chain in self.components.iter_mut() {
+                    if let Some(component) = component_chain.last_mut() {
+                        component.$fn_name();
                     }
                 }
             }
@@ -324,20 +322,22 @@ impl GameObject {
     );
 
     pub(crate) fn update(&mut self) {
-        for (_, children_game_object) in self.children.iter_mut() {
+        for children_game_object in self.children.values_mut() {
             children_game_object.update()
         }
-        for component in &mut self.components {
-            #[allow(static_mut_refs)]
-            unsafe {
-                let started = STARTED_COMPONENT.iter().any(|weak_component| {
-                    weak_component.ptr_eq(&component.last_mut().unwrap().downgrade())
-                });
-                if !started {
-                    component.last_mut().unwrap().start();
-                    STARTED_COMPONENT.push(component.last_mut().unwrap().downgrade())
+        for component_chain in self.components.clone().iter_mut() {
+            if let Some(component) = component_chain.last_mut() {
+                #[allow(static_mut_refs)]
+                unsafe {
+                    let started = STARTED_COMPONENT.iter().any(|weak_component| {
+                        weak_component.ptr_eq(&component.downgrade())
+                    });
+                    if !started {
+                        component.start();
+                        STARTED_COMPONENT.push(component.downgrade())
+                    }
                 }
-                component.last_mut().unwrap().update()
+                component.update()
             }
         }
     }
@@ -346,16 +346,18 @@ impl GameObject {
         for (_, children_game_object) in self.children.iter_mut() {
             children_game_object.on_destroy()
         }
-        for component in &mut self.components {
-            #[allow(static_mut_refs)]
-            unsafe {
-                component.last_mut().unwrap().on_destroy();
-                STARTED_COMPONENT.retain(|weak_component| {
-                    if weak_component.ptr_eq(&component.last_mut().unwrap().downgrade()) {
-                        return false;
-                    }
-                    true
-                });
+        for component_chain in self.components.iter_mut() {
+            if let Some(component) = component_chain.last_mut() {
+                #[allow(static_mut_refs)]
+                unsafe {
+                    STARTED_COMPONENT.retain(|weak_component| {
+                        if weak_component.ptr_eq(&component.downgrade()) {
+                            return false;
+                        }
+                        true
+                    });
+                }
+                component.on_destroy();
             }
         }
     }
