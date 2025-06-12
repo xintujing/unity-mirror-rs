@@ -54,7 +54,7 @@ pub struct GameObject {
 }
 
 impl GameObject {
-    pub fn instance(metadata_prefab: &MetadataPrefab) -> RevelArc<GameObject> {
+    pub(super) fn instance(metadata_prefab: &MetadataPrefab) -> RevelArc<GameObject> {
         let arc_game_object = Self::new(RevelWeak::default(), metadata_prefab);
         Self::recursive_children(arc_game_object.downgrade(), &metadata_prefab.children);
         component_loading();
@@ -77,13 +77,9 @@ impl GameObject {
         }
     }
 
-    pub fn new(
-        parent: RevelWeak<GameObject>,
-        metadata_prefab: &MetadataPrefab,
-    ) -> RevelArc<GameObject> {
+    fn new(parent: RevelWeak<GameObject>, metadata_prefab: &MetadataPrefab) -> RevelArc<GameObject> {
         // 随机数
         let mut rng = rand::rng();
-        // println!("new game object: {}", metadata_prefab.name);
         let mut game_object = GameObject {
             id: rng.next_u64(),
             name: metadata_prefab.name.clone(),
@@ -168,10 +164,7 @@ impl GameObject {
 }
 
 impl GameObject {
-    pub fn add_component(
-        &mut self,
-        mono_behaviour_chain: Vec<(RevelArc<Box<dyn MonoBehaviour + 'static>>, TypeId)>,
-    ) {
+    pub fn add_component(&mut self, mono_behaviour_chain: Vec<(RevelArc<Box<dyn MonoBehaviour + 'static>>, TypeId)>) {
         if mono_behaviour_chain.len() == 0 {
             panic!("MonoBehaviourChain is empty");
         }
@@ -227,9 +220,7 @@ impl GameObject {
         None
     }
 
-    pub fn get_components<T: MonoBehaviour + 'static>(
-        &self,
-    ) -> Vec<RevelWeak<Box<dyn MonoBehaviour>>> {
+    pub fn get_components<T: MonoBehaviour + 'static>(&self) -> Vec<RevelWeak<Box<dyn MonoBehaviour>>> {
         let type_id = TypeId::of::<T>();
 
         let vec_index = self
@@ -296,7 +287,7 @@ macro_rules! recursive_event_fn {
     ($($fn_name:ident),*) => {
         $(
             pub(crate) fn $fn_name(&mut self) {
-                for (_, children_game_object) in self.children.iter_mut() {
+                for children_game_object in self.children.values_mut() {
                      children_game_object.$fn_name()
                 }
                 for component_chain in self.components.iter_mut() {
@@ -343,19 +334,14 @@ impl GameObject {
     }
 
     pub(crate) fn on_destroy(&mut self) {
-        for (_, children_game_object) in self.children.iter_mut() {
-            children_game_object.on_destroy()
+        for children_game_object in self.children.values_mut() {
+            children_game_object.on_destroy();
         }
         for component_chain in self.components.iter_mut() {
             if let Some(component) = component_chain.last_mut() {
                 #[allow(static_mut_refs)]
                 unsafe {
-                    STARTED_COMPONENT.retain(|weak_component| {
-                        if weak_component.ptr_eq(&component.downgrade()) {
-                            return false;
-                        }
-                        true
-                    });
+                    STARTED_COMPONENT.retain(|weak_component| !weak_component.ptr_eq(&component.downgrade()));
                 }
                 component.on_destroy();
             }
