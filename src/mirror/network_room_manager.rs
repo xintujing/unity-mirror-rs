@@ -156,25 +156,32 @@ impl NetworkRoomManager {
         self.client_index += 1;
 
         if let Some(mut world) = WorldManager::active_world().upgrade() {
-            if world.get_scene_path() == self.room_scene {
-                self.set_all_players_ready(false);
-
-                let new_room_game_object = self
-                    .on_room_server_create_room_player(connection.clone())
-                    .map_or_else(
-                        || {
-                            if let Some(prefab) = Metadata::get_prefab(&*self.room_player_prefab) {
-                                return Some(GameObject::instantiate(prefab));
-                            }
-                            None
-                        },
-                        |f| Some(f),
-                    );
-
-                NetworkServer::add_player_for_connection(connection, new_room_game_object.unwrap());
-            } else {
+            if world.get_scene_path() != self.room_scene {
                 log::info!("Not in Room scene...disconnecting");
                 connection.disconnect.call(());
+                return;
+            }
+
+            self.set_all_players_ready(false);
+
+            let new_room_game_object = self.on_room_server_create_room_player(connection.clone())
+                .map_or_else(|| {
+                    if let Some(prefab) = Metadata::get_prefab(&self.room_player_prefab) {
+                        return Some(GameObject::instantiate(prefab));
+                    }
+                    None
+                }, |f| Some(f));
+
+            match new_room_game_object {
+                None => {
+                    log::error!(
+                        "NetworkRoomManager: Failed to find room player prefab: {}",
+                        self.room_player_prefab
+                    );
+                }
+                Some(v) => {
+                    NetworkServer::add_player_for_connection(connection, v);
+                }
             }
         }
     }
