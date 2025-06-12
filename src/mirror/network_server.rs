@@ -1252,7 +1252,9 @@ impl NetworkServer {
                 Self::un_spawn_internal(game_object.clone(), false);
                 identity.destroy_called = true;
 
-                WorldManager::destroy(&game_object.get().unwrap().id);
+                if let Some(go) = game_object.get() {
+                    WorldManager::destroy(&go.id);
+                }
             }
         } else {
             log::warn!("NetworkServer.Destroy() called on {} which doesn't have a NetworkIdentity component.",game_object.get().unwrap().name);
