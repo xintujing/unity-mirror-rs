@@ -440,7 +440,7 @@ impl NetworkRoomManagerInitialize for NetworkRoomManager {
 impl NetworkRoomManager {
     fn check_ready_to_begin(&mut self) {
         if let Some(world) = WorldManager::active_world().upgrade() {
-            if world.get_scene_path() != self.get_network_scene_name() {
+            if world.get_scene_path() != self.network_scene_name() {
                 return;
             }
         }

@@ -121,7 +121,7 @@ pub struct NetworkManager {
 }
 
 impl NetworkManager {
-    pub fn get_network_scene_name(&self) -> String {
+    pub fn network_scene_name(&self) -> String {
         self.network_scene_name.clone()
     }
     fn set_network_scene_name(&mut self, name: &str) {
