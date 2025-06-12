@@ -370,8 +370,7 @@ impl NetworkManager {
         NetworkServer::set_all_clients_not_ready();
         self.set_network_scene_name(&new_scene_name);
 
-        self.on_server_change_scene
-            .call((new_scene_name.to_string(),));
+        self.on_server_change_scene.call((new_scene_name.to_string(),));
 
         NetworkServer.is_loading_scene = true;
 
