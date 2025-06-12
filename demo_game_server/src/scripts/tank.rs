@@ -31,10 +31,7 @@ impl TankOnChangeCallback for Tank {}
 impl MonoBehaviour for Tank {}
 
 impl TNetworkBehaviour for Tank {
-    fn new(
-        weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Self
+    fn new(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
@@ -50,13 +47,15 @@ impl TNetworkBehaviour for Tank {
 
 impl Tank {
     #[command(Tank)]
-    fn cmd_fire(&self, _pos: Vec<f32>, _rot: Vec<f32>) {
+    fn cmd_fire(&mut self, _pos: Vec<f32>, _rot: Vec<f32>) {
         if let Some(prefab) = Metadata::get_prefab("Assets/Prefabs/Projectile.prefab") {
             let mut obj = GameObject::instantiate(&prefab);
             obj.transform.local_position = Vector3::new(_pos[0], _pos[1], _pos[2]);
             obj.transform.local_rotation = Quaternion::new(_rot[3], _rot[0], _rot[1], _rot[2]);
             NetworkServer::spawn(obj.downgrade());
         }
+
+        self.u32_list.add(1);
 
         self.rpc_on_fire();
     }
