@@ -437,10 +437,7 @@ impl NetworkManager {
     }
 
     // 服务器事件处理
-    pub fn on_server_connect_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-    ) {
+    pub fn on_server_connect_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         log::info!(
             "on_server_connect_internal {} self.authenticator = {}",
             connection.connection_id,
