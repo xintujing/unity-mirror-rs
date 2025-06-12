@@ -344,7 +344,7 @@ impl NetworkManager {
 
         if self.is_server_online_scene_change_needed() {
             let online_scene = self.online_scene.clone();
-            self.server_change_scene(online_scene);
+            self.server_change_scene.call((online_scene,));
         } else {
             NetworkServer::spawn_objects();
         }
