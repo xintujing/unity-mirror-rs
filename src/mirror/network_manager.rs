@@ -520,10 +520,3 @@ impl NetworkManager {
     #[action]
     pub fn on_stop_server(&mut self) {}
 }
-
-// pub fn reset_statics(&mut self)
-// pub fn stop_server(&mut self)
-// pub fn register_start_position(&mut self, start: Transform)
-// pub fn unregister_start_position(&mut self, start: Transform)
-// pub fn on_application_quit(&mut self)
-// pub fn on_destroy(&mut self)
