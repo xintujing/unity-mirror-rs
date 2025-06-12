@@ -10,7 +10,7 @@ use crate::mirror::{
     NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer,
     ReplacePlayerOptions,
 };
-use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
+use crate::unity_engine::{GameObject, MonoBehaviour, World, WorldManager};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::Pointer;
@@ -234,12 +234,21 @@ impl NetworkRoomManager {
 
 impl NetworkRoomManager {
     fn scene_loaded_for_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, room_player: RevelArc<GameObject>) {
-        if WorldManager::active_world().get().unwrap().get_scene_path() == self.room_scene {
-            let player = PendingPlayer {
-                connection: connection.downgrade(),
-                room_player: room_player.downgrade(),
-            };
-            self.pending_players.push(player);
+        match WorldManager::active_world().upgrade() {
+            None => {
+                log::error!("NetworkRoomManager: No active world found. Cannot load scene for player.");
+                return;
+            }
+            Some(world) => {
+                if world.get_scene_path() == self.room_scene {
+                    let player = PendingPlayer {
+                        connection: connection.downgrade(),
+                        room_player: room_player.downgrade(),
+                    };
+                    self.pending_players.push(player);
+                    return;
+                }
+            }
         }
 
         let mut game_player = self.on_room_server_create_game_player(connection.clone(), room_player.clone());
@@ -247,9 +256,10 @@ impl NetworkRoomManager {
         if game_player.is_none() {
             if let Some(prefab) = Metadata::get_prefab(&self.player_prefab) {
                 let mut game_object = GameObject::instantiate(prefab);
+                // 设置位置
                 if let Some(start_position) = self.get_start_position() {
-                    game_object.transform.position = start_position.position;
-                    game_object.transform.rotation = start_position.rotation;
+                    game_object.transform.local_position = start_position.position;
+                    game_object.transform.local_rotation = start_position.rotation;
                 }
                 game_player = Some(game_object);
             } else {

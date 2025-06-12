@@ -424,7 +424,7 @@ impl NetworkManager {
         }
 
         let index = match self.player_spawn_method {
-            PlayerSpawnMethod::Random => rand::rng().random_range(0..=start_positions.len()),
+            PlayerSpawnMethod::Random => rand::rng().random_range(0..start_positions.len()),
             PlayerSpawnMethod::RoundRobin => self.start_position_index,
         };
 
