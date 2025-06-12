@@ -22,9 +22,6 @@ pub trait Authenticator: AuthenticatorBase + MonoBehaviour {
 
 pub trait AuthenticatorBase {
     fn set_weak_self(&mut self, weak_self: RevelWeak<Box<dyn Authenticator>>);
-    fn set_on_server_authenticated(
-        &mut self,
-        event: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    );
+    fn set_on_server_authenticated(&mut self, event: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>);
     fn on_server_authenticated(&self) -> &SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>;
 }

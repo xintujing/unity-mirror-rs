@@ -16,12 +16,15 @@ use unity_mirror_macro_rs::{authenticator_factory, namespace, NetworkMessage};
 pub struct BasicAuthenticator {}
 
 impl BasicAuthenticator {
-    pub fn on_auth_request_message(
-        &mut self,
-        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
-        message: BasicAuthenticatorRequestMessage,
-        channel: TransportChannel,
-    ) {
+    pub fn on_auth_request_message(&mut self, mut connection: RevelArc<Box<NetworkConnectionToClient>>, message: BasicAuthenticatorRequestMessage, channel: TransportChannel) {
+        {
+            // TODO: Implement your authentication logic here
+            let auth_response_message = BasicAuthenticatorResponseMessage {
+                code: 100,
+                message: "Success".to_string(),
+            };
+            connection.send_message(auth_response_message, channel);
+        }
         self.server_accept(connection);
     }
 }
@@ -35,10 +38,7 @@ impl Authenticator for BasicAuthenticator {
     }
 
     fn on_start_server(&self) {
-        NetworkServer.register_handler::<BasicAuthenticatorRequestMessage>(
-            SelfMutAction::new(self.weak.clone(), Self::on_auth_request_message),
-            false,
-        );
+        NetworkServer.register_handler::<BasicAuthenticatorRequestMessage>(SelfMutAction::new(self.weak.clone(), Self::on_auth_request_message), false);
     }
 
     fn on_stop_server(&self) {

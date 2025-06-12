@@ -10,11 +10,11 @@ use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::scene_message::{SceneMessage, SceneOperation};
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::transport::{Transport, TransportChannel, TransportError, TransportManager};
-use crate::mirror::NetworkManagerFactory;
 use crate::mirror::{
     Authenticator,
     NetworkConnectionToClient, NetworkServer, TNetworkManager,
 };
+use crate::mirror::{AuthenticatorFactory, NetworkManagerFactory};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
 use crate::unity_engine::{
     GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager,
@@ -195,12 +195,11 @@ impl NetworkManagerInitialize for NetworkManager {
             .map(|prefab| prefab.asset_path.clone())
             .collect::<Vec<_>>();
         self.max_connections = 100;
-        // self.disconnect_inactive_connections = config.disconnect_inactive_connections;
         self.disconnect_inactive_timeout = 60f32;
 
-        // self.authenticator = Some(AuthenticatorFactory::create(
-        //     "Mirror.Authenticators.BasicAuthenticator",
-        // ));
+        self.authenticator = Some(AuthenticatorFactory::create(
+            "Mirror.Authenticators.BasicAuthenticator",
+        ));
 
         self.transport = Some(RevelArc::new(Kcp2kTransport::new(Some(Kcp2KConfig {
             ..Kcp2KConfig::default()
@@ -291,22 +290,13 @@ impl NetworkManager {
     }
 
     fn register_server_messages(&self) {
-        NetworkServer.on_connected_event =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
-        NetworkServer.on_disconnected_event =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
+        NetworkServer.on_connected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
+        NetworkServer.on_disconnected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
         NetworkServer.on_error_event = SelfMutAction::new(self.weak.clone(), Self::on_server_error);
-        NetworkServer.on_transport_exception_event =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
+        NetworkServer.on_transport_exception_event = SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
 
-        NetworkServer.register_handler::<AddPlayerMessage>(
-            SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal),
-            false,
-        );
-        NetworkServer.replace_handler::<ReadyMessage>(
-            SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal),
-            false,
-        );
+        NetworkServer.register_handler::<AddPlayerMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal), false);
+        NetworkServer.replace_handler::<ReadyMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal), false);
     }
 
     // 服务器设置与启动
@@ -319,10 +309,7 @@ impl NetworkManager {
 
         if let Some(ref mut authenticator) = self.authenticator {
             authenticator.on_start_server();
-            authenticator.set_on_server_authenticated(SelfMutAction::new(
-                self.weak.clone(),
-                Self::on_server_authenticated,
-            ))
+            authenticator.set_on_server_authenticated(SelfMutAction::new(self.weak.clone(), Self::on_server_authenticated));
         }
 
         self.configure_headless_frame_rate();
