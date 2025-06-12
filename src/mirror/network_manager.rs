@@ -516,20 +516,11 @@ impl NetworkManager {
         }
     }
 
-    pub fn on_server_error(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        error: TransportError,
-        reason: String,
-    ) {
+    pub fn on_server_error(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: TransportError, reason: String) {
         self.on_server_error.call((connection, error, reason))
     }
 
-    pub fn on_server_transport_exception(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        error: Box<dyn std::error::Error>,
-    ) {
+    pub fn on_server_transport_exception(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: Box<dyn std::error::Error>) {
         self.on_server_transport_exception.call((connection, error))
     }
 
