@@ -189,6 +189,10 @@ impl NetworkManagerInitialize for NetworkManager {
         // self.evaluation_interval = config.evaluation_interval;
         // self.time_interpolation_gui = config.time_interpolation_gui;
 
+        self.start_positions = config.start_positions.iter().map(|(k, v)| {
+            (k.clone(), v.iter().map(|t| Transform::new_with_metadata(t)).collect::<Vec<_>>())
+        }).collect::<HashMap<String, Vec<Transform>>>();
+
         self.spawn_prefabs = config
             .spawn_prefabs
             .iter()
