@@ -101,7 +101,7 @@ pub struct NetworkManager {
 
     player_spawn_method: PlayerSpawnMethod,
     start_position_index: usize,
-    pub start_positions: HashMap<String, Vec<Transform>>,
+    start_positions: HashMap<String, Vec<Transform>>,
 
     pub authenticator: Option<RevelArc<Box<dyn Authenticator>>>,
     transport: Option<RevelArc<Box<dyn Transport>>>,
