@@ -81,17 +81,13 @@ for SyncList<T>
 
 impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer> SyncList<T> {
     // 遍历列表
-    pub fn iter(&mut self, f: fn(&T)) {
-        for item in self.value.iter() {
-            f(item);
-        }
+    pub fn iter(&self) -> impl Iterator<Item=&T> {
+        self.value.iter()
     }
 
     // 遍历列表
-    pub fn iter_mut(&mut self, f: fn(&mut T)) {
-        for item in self.value.iter_mut() {
-            f(item);
-        }
+    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut T> {
+        self.value.iter_mut()
     }
 
     // ********************************************************************
