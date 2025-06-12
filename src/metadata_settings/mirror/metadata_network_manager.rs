@@ -73,6 +73,7 @@ pub struct MetadataNetworkManager {
     pub online_scene: Option<MetadataAsset>,
     #[serde(rename = "offlineSceneLoadDelay")]
     pub offline_scene_load_delay: f32,
+    pub authenticator: Option<String>,
     #[serde(rename = "playerPrefab")]
     pub player_prefab: MetadataAsset,
     #[serde(rename = "autoCreatePlayer")]

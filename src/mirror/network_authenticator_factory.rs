@@ -33,6 +33,7 @@ impl AuthenticatorFactory {
                 .borrow_mut()
                 .insert(full_name.to_string(), factory);
         }
+        log::debug!("Register authenticator: {}", full_name);
     }
     pub fn create(full_name: &str) -> RevelArc<Box<dyn Authenticator>> {
         #[allow(static_mut_refs)]
