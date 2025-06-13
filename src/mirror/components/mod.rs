@@ -1,3 +1,8 @@
-pub mod network_room_player;
-pub mod network_animator;
-pub mod network_transform;
+mod network_room_player;
+pub use network_room_player::*;
+
+mod network_animator;
+pub use network_animator::*;
+
+mod network_transform;
+pub use network_transform::*;

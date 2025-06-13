@@ -3,7 +3,7 @@ use proc_macro2::Ident;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::token::Comma;
-use syn::{Fields, Path, parse_macro_input, parse_quote};
+use syn::{parse_macro_input, parse_quote, Fields, Path};
 
 struct ParentArgs {
     pub value: Path,
@@ -78,8 +78,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut parent_instance = None;
     let mut instance_field_slot = None;
     let mut instance_to_trait_slot = quote! {
-        let arc_instance =  crate::commons::revel_arc::RevelArc::new(
-            box_instance as Box<dyn crate::mirror::TNetworkManager>
+        let arc_instance =  RevelArc::new(
+            box_instance as Box<dyn TNetworkManager>
         );
         if let Some(weak_instance) = arc_instance.downgrade().downcast::<Self>() {
             if let Some(real_instance) = weak_instance.get() {
@@ -92,10 +92,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     match &mut item_struct.fields {
         Fields::Named(fields_named) => {
             fields_named.named.push(parse_quote! {
-                game_object: crate::commons::revel_weak::RevelWeak<crate::unity_engine::GameObject>
+                game_object: RevelWeak<GameObject>
             });
             fields_named.named.push(parse_quote! {
-                weak: crate::commons::revel_weak::RevelWeak<Box<Self>>
+                weak: RevelWeak<Box<Self>>
             });
         }
         _ => {
@@ -103,8 +103,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 item_struct.fields,
                 "NetworkManager can only be used on structs with named fields",
             )
-            .to_compile_error()
-            .into();
+                .to_compile_error()
+                .into();
         }
     };
 
@@ -113,7 +113,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         if let Fields::Named(fields_named) = &mut item_struct.fields {
             fields_named.named.push(parse_quote! {
-                parent: crate::commons::revel_arc::RevelArc<Box<#parent_path>>
+                parent: RevelArc<Box<#parent_path>>
             })
         }
 
@@ -134,7 +134,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
 
         parent_instance = Some(quote! {
-            use crate::mirror::NetworkManagerInstance;
             let parent = #parent_path::instance(weak_game_object.clone(), metadata);
             instances.extend(parent.clone());
         });
@@ -149,12 +148,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         if let Some(callbacks_path) = &parent.callbacks {
             instance_to_trait_slot = quote! {
-                let arc_instance = crate::commons::revel_arc::RevelArc::new(
-                    box_instance as Box<dyn #callbacks_path> as Box<dyn crate::mirror::TNetworkManager>,
+                let arc_instance = RevelArc::new(
+                    box_instance as Box<dyn #callbacks_path> as Box<dyn TNetworkManager>,
                 );
 
                 let instance = unsafe {
-                    &*(&arc_instance as *const dyn Any as *const crate::commons::revel_arc::RevelArc<Box<dyn #callbacks_path>>)
+                    &*(&arc_instance as *const dyn Any as *const RevelArc<Box<dyn #callbacks_path>>)
                 };
 
                 if let Some(weak_instance) = arc_instance.downgrade().downcast::<Self>() {
@@ -178,7 +177,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         trait #struct_initialize_trait_ident {
             fn initialize(
                 &mut self,
-                metadata: &crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper,
+                metadata: &MetadataNetworkManagerWrapper,
             );
         }
 
@@ -190,16 +189,16 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             check::<#struct_ident>();
         };
 
-        impl crate::mirror::TNetworkManager for #struct_ident {}
+        impl TNetworkManager for #struct_ident {}
 
         #parent_deref_slot
 
-        impl crate::mirror::NetworkManagerInstance for #struct_ident {
+        impl NetworkManagerInstance for #struct_ident {
             fn instance(
-                weak_game_object: crate::commons::revel_weak::RevelWeak<crate::unity_engine::GameObject>,
-                metadata: &crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper
+                weak_game_object: RevelWeak<GameObject>,
+                metadata: &MetadataNetworkManagerWrapper
             )
-                -> Vec<(crate::commons::revel_arc::RevelArc<Box<dyn crate::mirror::TNetworkManager>>, std::any::TypeId)>
+                -> Vec<(RevelArc<Box<dyn TNetworkManager>>, std::any::TypeId)>
             where
                 Self: Sized,
             {
@@ -218,21 +217,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 let box_instance = Box::new(instance);
 
                 #instance_to_trait_slot
-                // #parent_callbacks_slot
-
-                // let arc_instance =  crate::commons::revel_arc::RevelArc::new(
-                //     box_instance as Box<dyn crate::mirror::TNetworkManager>
-                // );
-
-                // let weka_instance = arc_instance.downgrade().downcast::<Self>().unwrap().clone();
-                // //
-                //
-                // if let Some(get_instance) = weka_instance.get() {
-                //     get_instance.self_weak = weka_instance.clone();
-                //     get_instance.initialize(metadata);
-                // }
-
-                // arc_instance.self_weak = weka_instance;
 
                 instances.push((
                     arc_instance,

@@ -1,7 +1,7 @@
 use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{DeriveInput, parse_macro_input};
+use syn::{parse_macro_input, DeriveInput};
 
 pub(crate) fn handler(input: TokenStream) -> TokenStream {
     let mut output = TokenStream::new();
@@ -28,24 +28,24 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
         static #registers_ident: once_cell::sync::Lazy<std::sync::Mutex<
             std::collections::HashMap<
                 &'static str,
-                fn(serde_json::Value) -> Result<Box<dyn crate::metadata_settings::wrapper::Settings>, serde_json::Error>
+                fn(serde_json::Value) -> Result<Box<dyn Settings>, serde_json::Error>
             >
         >> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(std::collections::HashMap::new()));
         // 定义 Wrapper 结构体
 
         #[derive(Clone)]
         pub struct #wrapper_struct_ident {
-            value: std::collections::BTreeMap<std::any::TypeId, Box<dyn crate::metadata_settings::wrapper::Settings>>,
+            value: std::collections::BTreeMap<std::any::TypeId, Box<dyn Settings>>,
             final_type_id: std::any::TypeId,
             final_full_name: String,
         }
 
         impl #wrapper_struct_ident {
             // 注册组件方法
-            pub fn register<T: crate::metadata_settings::wrapper::Settings + 'static + for<'a> serde::Deserialize<'a>>() {
+            pub fn register<T: Settings + 'static + for<'a> serde::Deserialize<'a>>() {
                 let name = T::get_full_name();
-                let parser = |value: serde_json::Value| -> Result<Box<dyn crate::metadata_settings::wrapper::Settings>, serde_json::Error> {
-                    T::parse(value).map(|c| c as Box<dyn crate::metadata_settings::wrapper::Settings>)
+                let parser = |value: serde_json::Value| -> Result<Box<dyn Settings>, serde_json::Error> {
+                    T::parse(value).map(|c| c as Box<dyn Settings>)
                 };
                 if let Ok(mut component_registry) = #registers_ident.lock() {
                     if component_registry.contains_key(name) {
@@ -55,14 +55,14 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
                 }
             }
             // 获取某个组件实例
-            pub fn get<T: crate::metadata_settings::wrapper::Settings>(&self) -> &T {
+            pub fn get<T: Settings>(&self) -> &T {
                 if let Some(component) = self.value.get(&std::any::TypeId::of::<T>()) {
                     return component.as_any().downcast_ref::<T>().unwrap();
                 }
                 panic!("Settings not found: {}", std::any::type_name::<T>());
             }
             // 获取最终组件实例
-            pub fn get_finally(&self) -> (String, &Box<dyn crate::metadata_settings::wrapper::Settings>) {
+            pub fn get_finally(&self) -> (String, &Box<dyn Settings>) {
                 if let Some(component) = self.value.get(&self.final_type_id) {
                     return (self.final_full_name.clone(), component);
                 }

@@ -1,13 +1,13 @@
-use crate::commons::object::Object;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::wrapper::Settings;
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::Settings;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::GameObject;
 use once_cell::sync::Lazy;
 use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use crate::commons::revel_arc::RevelArc;
 
 static mut MONO_BEHAVIOUR_FACTORIES: Lazy<
     RefCell<

@@ -11,11 +11,11 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
     // 扩展字段
     let mut ext_fields: Vec<Field> = Vec::new();
     ext_fields.push(syn::parse_quote! {
-        weak: crate::commons::revel_weak::RevelWeak<Box<Self>>
+        weak: RevelWeak<Box<Self>>
     });
     ext_fields.push(syn::parse_quote! {
-        on_server_authenticated: crate::commons::action::SelfMutAction<(
-            crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>>,),()>
+        on_server_authenticated: SelfMutAction<(
+            RevelArc<Box<NetworkConnectionToClient>>,),()>
     });
 
     // 检查结构体的字段是否为命名字段（即标准的 struct，而不是 tuple struct 或 unit struct）
@@ -36,10 +36,10 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
         #input
 
         // impl of the Authenticator trait
-        impl crate::mirror::AuthenticatorBase for #struct_ident {
+        impl AuthenticatorBase for #struct_ident {
             fn set_weak_self(
                 &mut self,
-                weak_self: crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::Authenticator>>,
+                weak_self: RevelWeak<Box<dyn Authenticator>>,
             ) {
                 if let Some(weak_self) = weak_self.downcast::<Self>() {
                     self.weak = weak_self.clone();
@@ -47,15 +47,15 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
             }
             fn set_on_server_authenticated(
                 &mut self,
-                event: crate::commons::action::SelfMutAction<(crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>>,),(),>,
+                event: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,),(),>,
             ) {
                 self.on_server_authenticated = event;
             }
 
             fn on_server_authenticated(
                 &self,
-            ) -> &crate::commons::action::SelfMutAction<(
-                crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>,>,),(),> {
+            ) -> &SelfMutAction<(
+                RevelArc<Box<NetworkConnectionToClient>,>,),(),> {
                 &self.on_server_authenticated
             }
         }
@@ -63,7 +63,7 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
         #[ctor::ctor]
         #[inline]
         fn #register_cotr_fn_ident() {
-            crate::mirror::AuthenticatorFactory::register::<#struct_ident>();
+            AuthenticatorFactory::register::<#struct_ident>();
         }
     };
 

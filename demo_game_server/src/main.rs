@@ -1,11 +1,7 @@
 #![allow(dead_code, unused)]
 
-use crate::mirror::{DataTypeSerializer, NetworkManager, NetworkWriter};
-use crate::unity_engine::PlayerLooper;
-
-use unity_mirror_rs::*;
-#[macro_use]
-extern crate unity_mirror_rs;
+use unity_mirror_rs::mirror::NetworkManager;
+use unity_mirror_rs::unity_engine::PlayerLooper;
 
 mod backend_metadata;
 mod scripts;

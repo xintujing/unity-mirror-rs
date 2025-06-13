@@ -1,18 +1,21 @@
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
 
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_transform_base::MetadataNetworkTransformBase;
+use crate::commons::Object;
+use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
+use crate::metadata_settings::MetadataNetworkTransformBase;
+use crate::mirror::components::*;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::TNetworkBehaviour;
+use crate::mirror::*;
 use crate::mirror::{NetworkBehaviour, NetworkServer, SyncDirection};
 use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
-use unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour};
+use crate::{client_rpc, command, namespace, network_behaviour, SyncState};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 #[allow(unused)]
@@ -22,11 +25,11 @@ pub enum CoordinateSpace {
     World,
 }
 
-impl Into<CoordinateSpace> for metadata_network_transform_base::CoordinateSpace {
+impl Into<CoordinateSpace> for crate::metadata_settings::CoordinateSpace {
     fn into(self) -> CoordinateSpace {
         match self {
-            metadata_network_transform_base::CoordinateSpace::Local => CoordinateSpace::Local,
-            metadata_network_transform_base::CoordinateSpace::World => CoordinateSpace::World,
+            crate::metadata_settings::CoordinateSpace::Local => CoordinateSpace::Local,
+            crate::metadata_settings::CoordinateSpace::World => CoordinateSpace::World,
         }
     }
 }

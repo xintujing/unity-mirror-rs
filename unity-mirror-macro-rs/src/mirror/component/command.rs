@@ -93,7 +93,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
         .map(|_| {
             quote! {
-                crate::mirror::DataTypeDeserializer::deserialize(reader)
+                DataTypeDeserializer::deserialize(reader)
             }
         })
         .collect::<Vec<_>>();
@@ -104,9 +104,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #item_fn
 
         fn #invoke_user_code(
-            mut obj_chain: Vec<crate::commons::revel_weak::RevelWeak<Box<dyn crate::mirror::TNetworkBehaviour>>>,
-            reader: &mut crate::mirror::NetworkReader,
-            connection: crate::commons::revel_arc::RevelArc<Box<crate::mirror::NetworkConnectionToClient>>,
+            mut obj_chain: Vec<RevelWeak<Box<dyn TNetworkBehaviour>>>,
+            reader: &mut NetworkReader,
+            connection: RevelArc<Box<NetworkConnectionToClient>>,
         ) {
             obj_chain.reverse();
 
@@ -123,13 +123,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             #[ctor::ctor]
             fn __static_init() {
-                use crate::commons::object::Object;
                 let fn_full_name= format!(
                     "System.Void {}::{}({})",
                     #struct_path::get_full_name(),
                     #fn_name, #csharp_func_inputs,
                 );
-                crate::mirror::RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, #authority);
+                RemoteProcedureCalls.register_command::<#struct_path>(&fn_full_name, #struct_path::#invoke_user_code, #authority);
             }
         }
     })

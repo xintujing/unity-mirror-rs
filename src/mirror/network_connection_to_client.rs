@@ -1,6 +1,6 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::batching::un_batcher::UnBatcher;
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::snapshot_interpolation::snapshot_interpolation::SnapshotInterpolation;
@@ -13,7 +13,7 @@ use crate::mirror::{NetworkConnection, NetworkIdentity, NetworkServer, RemovePla
 use crate::unity_engine::{ExponentialMovingAverage, Time};
 use ordered_float::OrderedFloat;
 use std::collections::{BTreeMap, HashSet};
-use unity_mirror_macro_rs::extends;
+use crate::extends;
 
 #[extends(NetworkConnection)]
 #[derive(Default)]

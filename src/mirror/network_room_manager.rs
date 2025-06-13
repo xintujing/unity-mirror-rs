@@ -1,11 +1,13 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::metadata::Metadata;
-use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
-use crate::metadata_settings::mirror::metadata_network_root_manager::MetadataNetworkRootManager;
-use crate::mirror::components::network_room_player::NetworkRoomPlayer;
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::MetadataNetworkRootManager;
+use crate::metadata_settings::{Metadata, MetadataNetworkManagerWrapper};
+use crate::mirror::components::*;
 use crate::mirror::transport::TransportError;
+use crate::mirror::NetworkManagerInstance;
+use crate::mirror::TNetworkManager;
 use crate::mirror::{
     NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer,
     ReplacePlayerOptions,
@@ -14,7 +16,7 @@ use crate::unity_engine::{GameObject, MonoBehaviour, World, WorldManager};
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::Pointer;
-use unity_mirror_macro_rs::{action, namespace, network_manager, NetworkManagerFactory};
+use crate::{action, namespace, network_manager, NetworkManagerFactory};
 
 #[derive(Clone)]
 pub struct PendingPlayer {

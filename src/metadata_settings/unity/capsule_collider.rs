@@ -1,6 +1,8 @@
 use crate::metadata_settings::unity::collider::MetadataColliderWrapper;
 use serde::Deserialize;
-use unity_mirror_macro_rs::{namespace, settings_wrapper_register};
+use crate::{namespace, settings_wrapper_register};
+use crate::commons::Object;
+use crate::metadata_settings::Settings;
 
 #[namespace(prefix = "UnityEngine", rename = "CapsuleCollider")]
 #[derive(Deserialize, Clone)]

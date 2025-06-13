@@ -1,9 +1,8 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::metadata_network_identity::{
-    MetadataNetworkIdentity, MetadataNetworkIdentityWrapper,
-};
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::{MetadataNetworkIdentity, MetadataNetworkIdentityWrapper};
 use crate::mirror::NetworkBehaviourFactory;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
@@ -22,7 +21,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering::SeqCst;
-use unity_mirror_macro_rs::namespace;
+use crate::namespace;
 
 #[ctor::ctor]
 fn static_init() {
@@ -81,13 +80,13 @@ pub enum Visibility {
 }
 
 impl Into<Visibility>
-for crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility
+for crate::metadata_settings::MetadataVisibility
 {
     fn into(self) -> Visibility {
         match self {
-            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::Default => Visibility::Normal,
-            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::ForceHidden => Visibility::ForceHidden,
-            crate::metadata_settings::mirror::metadata_network_identity::MetadataVisibility::ForceShown => Visibility::ForceShown,
+            crate::metadata_settings::MetadataVisibility::Default => Visibility::Normal,
+            crate::metadata_settings::MetadataVisibility::ForceHidden => Visibility::ForceHidden,
+            crate::metadata_settings::MetadataVisibility::ForceShown => Visibility::ForceShown,
         }
     }
 }

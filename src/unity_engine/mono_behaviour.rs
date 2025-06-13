@@ -1,5 +1,5 @@
-use crate::commons::object::Object;
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::Object;
+use crate::commons::RevelWeak;
 use std::any::{Any, TypeId};
 
 pub trait MonoBehaviour: Object + MonoBehaviourAny {

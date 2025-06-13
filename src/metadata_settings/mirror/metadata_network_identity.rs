@@ -1,8 +1,10 @@
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::commons::Object;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
+use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
+use crate::metadata_settings::Settings;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use unity_mirror_macro_rs::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
+use crate::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
 
 #[namespace(prefix = "Mirror", rename = "NetworkIdentity")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]
@@ -27,7 +29,7 @@ pub enum MetadataVisibility {
     ForceShown = 2,
 }
 
-impl crate::commons::object::Object for MetadataNetworkIdentityWrapper {
+impl Object for MetadataNetworkIdentityWrapper {
     fn get_full_name() -> &'static str
     where
         Self: Sized,

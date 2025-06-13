@@ -1,9 +1,10 @@
 #![allow(dead_code)]
-use crate::commons::object::Object;
+use crate::commons::Object;
 use crate::metadata_settings::unity::collider::LayerMask;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use serde::Deserialize;
-use unity_mirror_macro_rs::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
+use crate::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
+use crate::metadata_settings::Settings;
 
 #[namespace(prefix = "UnityEngine", rename = "Rigidbody")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]

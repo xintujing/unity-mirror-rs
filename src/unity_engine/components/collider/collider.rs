@@ -1,9 +1,10 @@
-use crate::metadata_settings::unity::collider::{MetadataCollider, MetadataColliderWrapper};
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::metadata_settings::collider::{MetadataCollider, MetadataColliderWrapper};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use std::any::Any;
-use unity_mirror_macro_rs::namespace;
-use crate::commons::revel_arc::RevelArc;
+use crate::namespace;
 
 #[ctor::ctor]
 fn static_init() {

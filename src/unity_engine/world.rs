@@ -1,7 +1,7 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::metadata::Metadata;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::Metadata;
 use crate::unity_engine::game_object::GameObject;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;

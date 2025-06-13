@@ -1,11 +1,11 @@
 #![allow(dead_code)]
-use crate::commons::object::Object;
+use crate::commons::Object;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::stable_hash::StableHash;
 use nalgebra::{Quaternion, Vector3};
-use unity_mirror_macro_rs::{namespace, NetworkMessage};
+use crate::{namespace, NetworkMessage};
 
 #[derive(Clone, Debug, Default, PartialEq, Copy)]
 #[repr(u8)]

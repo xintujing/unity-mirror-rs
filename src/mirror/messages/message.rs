@@ -1,6 +1,6 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::object::Object;
-use crate::commons::revel_arc::RevelArc;
+use crate::commons::Object;
+use crate::commons::RevelArc;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::NetworkConnectionToClient;

@@ -4,7 +4,8 @@ use crate::unity_engine::Transform;
 use nalgebra::{Quaternion, UnitQuaternion, Vector3};
 use std::fmt::Debug;
 use std::ops::BitOrAssign;
-use unity_mirror_macro_rs::namespace;
+use crate::namespace;
+use crate::commons::Object;
 
 #[namespace(prefix = "Mirror")]
 #[derive(Clone, Copy, PartialEq, Debug, Default)]

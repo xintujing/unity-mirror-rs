@@ -28,7 +28,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         Fields::Named(fields_named) => fields_named.named.insert(
             0,
             parse_quote! {
-                pub parent: crate::commons::revel_arc::RevelArc<Box<#parent>>
+                pub parent: RevelArc<Box<#parent>>
             },
         ),
         _ => {

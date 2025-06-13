@@ -1,4 +1,4 @@
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelWeak;
 use crate::mirror::sync_object::SyncObject;
 use crate::mirror::NetworkBehaviour;
 use crate::mirror::{DataTypeDeserializer, NetworkReader};

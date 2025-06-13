@@ -1,7 +1,7 @@
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
-use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::metadata_component::MetadataComponentWrapper;
+use crate::metadata_settings::metadata_prefab::MetadataPrefab;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use crate::unity_engine::transform::Transform;

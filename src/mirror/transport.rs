@@ -1,4 +1,4 @@
-use crate::commons::revel_arc::RevelArc;
+use crate::commons::RevelArc;
 use once_cell::sync::Lazy;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};

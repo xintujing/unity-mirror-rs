@@ -66,7 +66,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     } = parse_macro_input!(attr as TargetRpcArgs);
 
     if channel.is_none() {
-        channel = Some(parse_quote! { crate::mirror::transport::TransportChannel::Reliable })
+        channel = Some(parse_quote! { TransportChannel::Reliable })
     }
     if include_owner.is_none() {
         include_owner = Some(parse_quote! { true })
@@ -81,7 +81,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             if let Pat::Ident(a) = pat.as_ref() {
                 let arg_name = &a.ident;
                 arg_block.push(quote! {
-                    crate::mirror::DataTypeSerializer::serialize(&#arg_name, &mut writer);
+                    DataTypeSerializer::serialize(&#arg_name, &mut writer);
                 });
             }
         }
@@ -98,12 +98,8 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         0,
         syn::parse_quote! {
             {
-                use crate::mirror::stable_hash::StableHash;
-                use crate::mirror::NetworkWriter;
-                use crate::mirror::NetworkBehaviour;
-                use crate::commons::object::Object;
 
-                crate::mirror::NetworkWriterPool::get_by_closure(|mut writer|{
+                NetworkWriterPool::get_by_closure(|mut writer|{
                     #(#arg_block)*
 
                     let full_path_str = format!(

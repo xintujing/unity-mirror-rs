@@ -1,13 +1,16 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_room_player::MetadataNetworkRoomPlayer;
-use crate::mirror::{NetworkBehaviour, NetworkManager, NetworkRoomManager};
-use crate::mirror::{NetworkServer, TNetworkBehaviour};
+use crate::commons::Object;
+use crate::commons::RevelWeak;
+use crate::commons::RevelArc;
+use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
+use crate::metadata_settings::MetadataNetworkRoomPlayer;
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::{GameObject, WorldManager};
 use std::hash::{Hash, Hasher};
-use unity_mirror_macro_rs::{command, namespace, network_behaviour};
+use crate::{command, namespace, network_behaviour,SyncState};
+
+use crate::mirror::components::*;
+use crate::mirror::*;
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]

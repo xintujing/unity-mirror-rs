@@ -1,4 +1,4 @@
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelWeak;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::{NetworkBehaviour};

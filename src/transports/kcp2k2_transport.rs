@@ -1,4 +1,5 @@
 use crate::mirror::transport::{CallbackProcessor, Transport, TransportChannel, TransportError};
+use crate::CallbackProcessor;
 use http::Uri;
 use kcp2k_rust::error_code::ErrorCode;
 use kcp2k_rust::kcp2k::Kcp2K;
@@ -10,7 +11,6 @@ use kcp2k_rust::kcp2k_peer::Kcp2KPeer;
 use std::net::ToSocketAddrs;
 use std::process::exit;
 use std::str::FromStr;
-use unity_mirror_macro_rs::CallbackProcessor;
 
 const SCHEMA: &str = "kcp";
 

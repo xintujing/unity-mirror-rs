@@ -1,6 +1,7 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::object::Object;
-use crate::commons::revel_arc::RevelArc;
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::transport::TransportChannel;
@@ -8,7 +9,9 @@ use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::{Authenticator, NetworkConnectionToClient, NetworkServer};
 use crate::unity_engine::MonoBehaviour;
-use unity_mirror_macro_rs::{authenticator_factory, namespace, NetworkMessage};
+use crate::{authenticator_factory, namespace, NetworkMessage};
+use crate::mirror::AuthenticatorBase;
+use crate::mirror::AuthenticatorFactory;
 
 #[namespace(prefix = "Mirror.Authenticators")]
 #[authenticator_factory]

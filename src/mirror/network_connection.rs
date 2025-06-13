@@ -1,6 +1,6 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::batching::batcher::Batcher;
 use crate::mirror::messages::message;
 use crate::mirror::messages::message::NetworkMessage;
@@ -11,7 +11,7 @@ use crate::mirror::NetworkWriterPool;
 use crate::unity_engine::Time;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
-use unity_mirror_macro_rs::action;
+use crate::action;
 
 #[derive(Default)]
 pub struct NetworkConnection {

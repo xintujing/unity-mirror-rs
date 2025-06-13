@@ -1,4 +1,4 @@
-use crate::commons::revel_arc::RevelArc;
+use crate::commons::RevelArc;
 use crate::mirror::Authenticator;
 use once_cell::sync::Lazy;
 use std::cell::RefCell;

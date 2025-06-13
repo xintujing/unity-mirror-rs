@@ -1,6 +1,6 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::NetworkConnectionToClient;
 use crate::unity_engine::MonoBehaviour;
 

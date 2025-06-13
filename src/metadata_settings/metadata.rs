@@ -1,4 +1,4 @@
-use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
+use crate::metadata_settings::MetadataNetworkManagerWrapper;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
 use once_cell::sync::Lazy;
 use serde::Deserialize;

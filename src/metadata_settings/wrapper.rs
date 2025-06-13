@@ -1,4 +1,4 @@
-use crate::commons::object::Object;
+use crate::commons::Object;
 use serde::Deserialize;
 use serde_json::{Error, Value};
 use std::any::Any;

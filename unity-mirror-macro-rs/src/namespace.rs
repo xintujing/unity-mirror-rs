@@ -39,7 +39,7 @@ pub(crate) fn handler(attr: TokenStream, input: TokenStream) -> TokenStream {
     quote! {
         #item_struct
 
-        impl crate::commons::object::Object for #struct_ident {
+        impl Object for #struct_ident {
             fn get_full_name() -> &'static str
             where
                 Self: Sized,

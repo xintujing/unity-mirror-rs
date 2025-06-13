@@ -1,5 +1,5 @@
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::NetworkReader;
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::{NetworkConnectionToClient, TNetworkBehaviour};

@@ -3,7 +3,7 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{Path, Token, parse_macro_input};
+use syn::{parse_macro_input, Path, Token};
 
 // 输入解析部分
 struct WrapperInput {
@@ -35,7 +35,7 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
 
     // 生成代码
     let expanded = quote! {
-        impl crate::metadata_settings::wrapper::Settings for #struct_path {}
+        impl Settings for #struct_path {}
         #[ctor::ctor]
         fn #register_ident(){
             #wrapper_path::register::<#struct_path>();

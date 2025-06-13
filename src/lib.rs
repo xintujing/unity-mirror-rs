@@ -12,7 +12,7 @@ macro_rules! expand_macro {
         )*
     };
 }
-// pub use unity_mirror_macro_rs;
+
 expand_macro! {
     SyncState,
     network_behaviour,

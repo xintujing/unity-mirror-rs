@@ -1,6 +1,6 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
 use crate::mirror::accurate_interval::AccurateInterval;
 use crate::mirror::batching::un_batcher_pool::UnBatcherPool;
 use crate::mirror::messages::change_owner_message::ChangeOwnerMessage;

@@ -1,6 +1,7 @@
-use crate::metadata_settings::unity::capsule_collider::MetadataCapsuleCollider;
+use crate::commons::Object;
+use crate::metadata_settings::capsule_collider::MetadataCapsuleCollider;
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
-use unity_mirror_macro_rs::namespace;
+use crate::namespace;
 
 #[namespace(prefix = "UnityEngine")]
 pub struct CapsuleCollider {

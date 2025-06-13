@@ -1,9 +1,7 @@
-use crate::commons::revel_arc::RevelArc;
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::{
-    MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection,
-    MetadataSyncMode,
-};
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::{MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection, MetadataSyncMode};
 use crate::mirror::messages::message::MessageSerializer;
 use crate::mirror::messages::rpc_message::RpcMessage;
 use crate::mirror::transport::TransportChannel;
@@ -14,7 +12,7 @@ use crate::mirror::{NetworkConnectionToClient, NetworkIdentity};
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
 use std::any::TypeId;
-use unity_mirror_macro_rs::namespace;
+use crate::namespace;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub enum SyncDirection {

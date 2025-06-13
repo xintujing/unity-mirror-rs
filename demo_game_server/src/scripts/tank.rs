@@ -1,17 +1,21 @@
 use crate::backend_metadata::tank::MetadataTank;
 use nalgebra::{Quaternion, Vector3};
 use std::any::{Any, TypeId};
-use unity_mirror_rs::commons::revel_arc::RevelArc;
-use unity_mirror_rs::commons::revel_weak::RevelWeak;
-use unity_mirror_rs::metadata_settings::metadata::Metadata;
-use unity_mirror_rs::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use unity_mirror_rs::commons::Object;
+use unity_mirror_rs::commons::RevelArc;
+use unity_mirror_rs::commons::RevelWeak;
+use unity_mirror_rs::metadata_settings::Metadata;
+use unity_mirror_rs::metadata_settings::MetadataNetworkBehaviourWrapper;
 use unity_mirror_rs::mirror::sync_list::SyncList;
+use unity_mirror_rs::mirror::*;
 use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::Transform;
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
+use unity_mirror_rs::{client_rpc, command, namespace, network_behaviour, SyncState};
+
 #[namespace]
 #[network_behaviour(
-    parent(unity_mirror_rs::mirror::NetworkBehaviour),
+    parent(NetworkBehaviour),
     metadata(MetadataTank)
 )]
 pub struct Tank {

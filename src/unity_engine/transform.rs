@@ -1,6 +1,6 @@
 #![allow(unused)]
-use crate::commons::revel_weak::RevelWeak;
-use crate::metadata_settings::unity::metadata_transform::MetadataTransform;
+use crate::commons::RevelWeak;
+use crate::metadata_settings::metadata_transform::MetadataTransform;
 use crate::unity_engine::GameObject;
 use nalgebra::{Matrix3, Matrix4, Quaternion, Translation3, UnitQuaternion, Vector3};
 

@@ -1,4 +1,4 @@
-use crate::commons::revel_arc::RevelArc;
+use crate::commons::RevelArc;
 use crate::mirror::messages::network_ping_message::NetworkPingMessage;
 use crate::mirror::messages::network_pong_message::NetworkPongMessage;
 use crate::mirror::transport::TransportChannel;

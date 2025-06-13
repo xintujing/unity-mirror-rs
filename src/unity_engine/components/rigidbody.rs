@@ -1,9 +1,10 @@
-use crate::commons::revel_arc::RevelArc;
-use crate::metadata_settings::unity::rigid_body::{MetadataRigidBody, MetadataRigidBodyWrapper};
+use crate::commons::Object;
+use crate::commons::RevelArc;
+use crate::metadata_settings::rigid_body::{MetadataRigidBody, MetadataRigidBodyWrapper};
 use crate::unity_engine::mono_behaviour::MonoBehaviour;
 use crate::unity_engine::mono_behaviour_factory::MonoBehaviourFactory;
 use std::any::Any;
-use unity_mirror_macro_rs::namespace;
+use crate::namespace;
 
 #[ctor::ctor]
 fn static_init() {

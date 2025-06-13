@@ -2,7 +2,9 @@ use crate::metadata_settings::mirror::network_behaviours::metadata_network_behav
 use crate::metadata_settings::unity::metadata_transform::MetadataTransform;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use unity_mirror_macro_rs::{namespace, settings_wrapper_register};
+use crate::{namespace, settings_wrapper_register};
+use crate::commons::Object;
+use crate::metadata_settings::Settings;
 
 #[derive(Deserialize_repr, Debug, Clone)]
 #[repr(u8)]
