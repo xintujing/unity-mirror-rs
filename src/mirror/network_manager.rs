@@ -1,6 +1,7 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::{RevelArc, RevelWeak};
 use crate::macro_namespace::*;
+use crate::macro_network_manager::*;
 use crate::metadata_settings::{Metadata, MetadataNetworkManager, MetadataNetworkManagerWrapper};
 use crate::mirror::messages::add_player_message::AddPlayerMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
@@ -12,7 +13,7 @@ use crate::mirror::{Authenticator, NetworkConnectionToClient, NetworkServer, TNe
 use crate::mirror::{AuthenticatorFactory, NetworkManagerFactory};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
 use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
-use crate::{action, network_manager, NetworkManagerFactory};
+use crate::{action, network_manager};
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
@@ -106,21 +107,8 @@ pub struct NetworkManager {
     pub on_server_scene_changed: SelfMutAction<(String,), ()>,
     pub on_server_disconnect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_server_ready: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    pub on_server_error: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            TransportError,
-            String,
-        ),
-        (),
-    >,
-    pub on_server_transport_exception: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            Box<dyn std::error::Error>,
-        ),
-        (),
-    >,
+    pub on_server_error: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, TransportError, String), ()>,
+    pub on_server_transport_exception: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, Box<dyn std::error::Error>,), ()>,
     pub on_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
 }
 

@@ -17,7 +17,6 @@ expand_macro! {
     MetadataSettingsWrapper,
     settings_wrapper_register,
     network_manager,
-    NetworkManagerFactory,
     extends,
     action
 }
@@ -58,6 +57,11 @@ pub mod macro_callback_processor {
     pub use unity_mirror_macro_rs::CallbackProcessor;
 }
 
+
+pub mod macro_network_manager {
+    pub use unity_mirror_macro_rs::network_manager;
+    pub use unity_mirror_macro_rs::NetworkManagerFactory;
+}
 
 // use unity_mirror_rs::macro_network_behaviour::*;
 // use crate::macro_network_behaviour::*;

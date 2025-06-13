@@ -1,5 +1,7 @@
 use crate::commons::action::SelfMutAction;
+use crate::commons::{RevelArc, RevelWeak};
 use crate::macro_namespace::*;
+use crate::macro_network_manager::*;
 use crate::metadata_settings::MetadataNetworkRootManager;
 use crate::metadata_settings::{Metadata, MetadataNetworkManagerWrapper};
 use crate::mirror::components::NetworkRoomPlayer;
@@ -8,10 +10,9 @@ use crate::mirror::NetworkManagerInstance;
 use crate::mirror::TNetworkManager;
 use crate::mirror::{NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer, ReplacePlayerOptions};
 use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
-use crate::{action, network_manager, NetworkManagerFactory};
+use crate::action;
 use std::collections::HashSet;
 use std::error::Error;
-use crate::commons::{RevelArc, RevelWeak};
 
 #[derive(Clone)]
 pub struct PendingPlayer {
