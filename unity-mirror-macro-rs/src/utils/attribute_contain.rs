@@ -7,6 +7,7 @@ pub(crate) trait VecAttributeExpand {
     where
         T: Parse;
 
+    #[allow(unused)]
     fn contain(&self, attr_str: &str) -> bool;
 }
 
