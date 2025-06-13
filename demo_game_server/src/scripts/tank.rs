@@ -3,7 +3,7 @@ use nalgebra::{Quaternion, Vector3};
 use std::any::{Any, TypeId};
 use unity_mirror_rs::macro_namespace::*;
 use unity_mirror_rs::macro_network_behaviour::*;
-use unity_mirror_rs::metadata_settings::*;
+use unity_mirror_rs::metadata_settings::{Metadata, MetadataNetworkBehaviourWrapper};
 use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, SyncList, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, Transform};
 
@@ -27,7 +27,7 @@ impl TankOnChangeCallback for Tank {}
 impl MonoBehaviour for Tank {}
 
 impl TNetworkBehaviour for Tank {
-    fn new(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(_weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {

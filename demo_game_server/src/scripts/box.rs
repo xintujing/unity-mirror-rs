@@ -1,4 +1,3 @@
-use unity_mirror_rs::commons::Object;
 use unity_mirror_rs::commons::RevelWeak;
 use unity_mirror_rs::macro_namespace::*;
 use unity_mirror_rs::macro_network_behaviour::*;

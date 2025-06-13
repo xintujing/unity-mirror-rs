@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use unity_mirror_rs::commons::Object;
 use unity_mirror_rs::macro_namespace::*;
 use unity_mirror_rs::metadata_settings::metadata_asset::MetadataAsset;
 use unity_mirror_rs::metadata_settings::metadata_transform::MetadataTransform;
