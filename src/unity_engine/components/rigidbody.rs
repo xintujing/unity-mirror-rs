@@ -43,8 +43,7 @@ impl MonoBehaviour for RigidBody {
 }
 
 impl RigidBody {
-    fn instance(settings: &MetadataRigidBody) -> Self {
-        // println!("UnityEngine: RigidBody Instance");
+    fn instance(_settings: &MetadataRigidBody) -> Self {
         Self {}
     }
 }

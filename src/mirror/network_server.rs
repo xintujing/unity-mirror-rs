@@ -696,7 +696,7 @@ impl NetworkServer {
         channel: TransportChannel,
     ) -> bool {
         if let Some(msg_type) = MessageHandler::unpack_id(reader) {
-            let msg_name = match msg_type {
+            let _msg_name = match msg_type {
                 43708 => "Mirror.ReadyMessage",
                 39124 => "Mirror.CommandMessage",
                 12339 => "Mirror.EntityStateMessage",
@@ -928,14 +928,14 @@ impl NetworkServer {
                 return;
             }
 
-            let mut count = 0;
+            let mut _count = 0;
 
             for connection in Self.connections.values_mut() {
                 if send_to_ready_only && !connection.is_ready {
                     continue;
                 }
 
-                count += 1;
+                _count += 1;
                 connection.send(&segment, channel);
             }
         })
@@ -962,8 +962,8 @@ impl NetworkServer {
         let is_owner = identity.connection().ptr_eq(&connection.downgrade());
         let is_local_player = connection.identity.ptr_eq(&identity.downgrade());
 
-        let mut owner_writer = RevelArc::new(NetworkWriterPool::get());
-        let mut observers_writer = RevelArc::new(NetworkWriterPool::get());
+        let owner_writer = RevelArc::new(NetworkWriterPool::get());
+        let observers_writer = RevelArc::new(NetworkWriterPool::get());
         let payload = Self::create_spawn_message_payload(
             is_owner,
             identity.clone(),
@@ -974,7 +974,7 @@ impl NetworkServer {
         NetworkWriterPool::return_(observers_writer.into_inner());
 
         if let Some(identity_game_object) = identity.game_object.upgrade() {
-            let mut spawn_message = SpawnMessage::new(
+            let spawn_message = SpawnMessage::new(
                 identity.net_id(),
                 is_local_player,
                 is_owner,
@@ -1039,11 +1039,8 @@ impl NetworkServer {
         for identity in identities.iter() {
             if let Some(weak_identity) = identity.downcast::<NetworkIdentity>() {
                 if let Some(real_identity) = weak_identity.get() {
-                    if real_identity.is_scene_object()
-                        && real_identity.net_id() == 0
-                        && Self::valid_parent(real_identity)
-                    {
-                        if let Some(game_object) = real_identity.game_object.get() {
+                    if real_identity.is_scene_object() && real_identity.net_id() == 0 && Self::valid_parent(real_identity) {
+                        if real_identity.game_object.upgradable() {
                             Self::spawn_with_connection(real_identity.game_object.clone(), real_identity.connection());
                         }
                     }
@@ -1150,7 +1147,7 @@ impl NetworkServer {
         }
     }
 
-    fn disconnect_if_inactive(mut connection: RevelArc<Box<NetworkConnectionToClient>>) -> bool {
+    fn disconnect_if_inactive(connection: RevelArc<Box<NetworkConnectionToClient>>) -> bool {
         if Self.disconnect_inactive_connections && !connection.is_alive.call((Self.disconnect_inactive_timeout,)) {
             log::warn!("Disconnecting {} for inactivity!", connection.connection_id);
             connection.disconnect.call(());

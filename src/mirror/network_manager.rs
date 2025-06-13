@@ -499,8 +499,8 @@ impl NetworkManager {
 
     pub fn on_server_add_player_internal(
         &mut self,
-        mut connection: RevelArc<Box<NetworkConnectionToClient>>,
-        message: AddPlayerMessage,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        _: AddPlayerMessage,
         _: TransportChannel,
     ) {
         if self.auto_create_player && self.player_prefab.is_empty() {
@@ -520,17 +520,17 @@ impl NetworkManager {
     }
 
     #[action]
-    pub fn on_server_connect(&mut self, conn: RevelArc<Box<NetworkConnectionToClient>>) {}
+    pub fn on_server_connect(&mut self, _conn: RevelArc<Box<NetworkConnectionToClient>>) {}
 
     #[action]
     pub fn on_server_disconnect(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        // self.on_server_disconnect.call((connection,))
-        NetworkServer::destroy_player_for_connection(connection)
+        self.on_server_disconnect.call((connection.clone(),));
+        NetworkServer::destroy_player_for_connection(connection);
     }
 
     #[action]
-    pub fn on_server_ready(&self, mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        if let Some(conn) = connection.identity.upgrade() {}
+    pub fn on_server_ready(&self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
+        if let Some(_conn) = connection.identity.upgrade() {}
         NetworkServer::set_client_ready(connection);
     }
 
@@ -564,10 +564,10 @@ impl NetworkManager {
     }
 
     #[action]
-    pub fn on_server_change_scene(&mut self, new_scene_name: String) {}
+    pub fn on_server_change_scene(&mut self, _new_scene_name: String) {}
 
     #[action]
-    pub fn on_server_scene_changed(&mut self, scene_name: String) {}
+    pub fn on_server_scene_changed(&mut self, _scene_name: String) {}
 
     #[action]
     pub fn on_stop_server(&mut self) {}

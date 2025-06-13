@@ -8,16 +8,14 @@ use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::{GameObject, WorldManager};
 use std::hash::{Hash, Hasher};
 use crate::{command, namespace, network_behaviour,SyncState};
-
-use crate::mirror::components::*;
 use crate::mirror::*;
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
 pub struct NetworkRoomPlayer {
-    #[sync_variable]
+    #[sync_var]
     ready_to_begin: bool,
-    #[sync_variable]
+    #[sync_var]
     index: i32,
 
     pub on_client_enter_room: SelfMutAction<(), ()>,

@@ -18,7 +18,7 @@ impl AuthenticatorFactory {
             if AUTHENTICATOR_FACTORY.borrow().contains_key(full_name) {
                 panic!("Authenticator {} is already registered", full_name);
             }
-            let mut factory = || -> RevelArc<Box<dyn Authenticator>> {
+            let factory = || -> RevelArc<Box<dyn Authenticator>> {
                 // 新建一个 authenticator 实例，并设置其弱引用
                 let mut authenticator: RevelArc<Box<dyn Authenticator>> =
                     RevelArc::new(Box::new(T::new()));

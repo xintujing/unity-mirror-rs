@@ -2,17 +2,15 @@ use crate::commons::Object;
 use crate::commons::RevelArc;
 use crate::commons::RevelWeak;
 use crate::metadata_settings::{MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection, MetadataSyncMode};
-use crate::mirror::messages::message::MessageSerializer;
 use crate::mirror::messages::rpc_message::RpcMessage;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
-use crate::mirror::NetworkWriterPool;
 use crate::mirror::{NetworkConnectionToClient, NetworkIdentity};
+use crate::namespace;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
 use std::any::TypeId;
-use crate::namespace;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub enum SyncDirection {
@@ -156,7 +154,7 @@ impl NetworkBehaviour {
             }
 
 
-            let mut message = RpcMessage::new(
+            let message = RpcMessage::new(
                 self.net_id(),
                 self.component_index,
                 function_hash_code,
@@ -191,7 +189,7 @@ impl NetworkBehaviour {
         }
 
         // rpc消息
-        let mut message = RpcMessage::new(self.net_id(), self.component_index, function_hash_code, writer.to_vec());
+        let message = RpcMessage::new(self.net_id(), self.component_index, function_hash_code, writer.to_vec());
 
         let mut connection = target_rpc_conn.unwrap();
 

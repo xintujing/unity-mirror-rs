@@ -19,7 +19,7 @@ use crate::mirror::AuthenticatorFactory;
 pub struct BasicAuthenticator {}
 
 impl BasicAuthenticator {
-    pub fn on_auth_request_message(&mut self, mut connection: RevelArc<Box<NetworkConnectionToClient>>, message: BasicAuthenticatorRequestMessage, channel: TransportChannel) {
+    pub fn on_auth_request_message(&mut self, mut connection: RevelArc<Box<NetworkConnectionToClient>>, _message: BasicAuthenticatorRequestMessage, channel: TransportChannel) {
         {
             // TODO: Implement your authentication logic here
             let auth_response_message = BasicAuthenticatorResponseMessage {
@@ -36,7 +36,7 @@ impl MonoBehaviour for BasicAuthenticator {}
 
 impl Authenticator for BasicAuthenticator {
     fn new() -> Self {
-        let mut authenticator = Self::default();
+        let authenticator = Self::default();
         authenticator
     }
 

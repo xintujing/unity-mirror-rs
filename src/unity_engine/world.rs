@@ -16,6 +16,7 @@ static mut DONT_DESTROY_OBJECT: Lazy<HashMap<u64, RevelArc<GameObject>>> =
 
 #[derive(Default)]
 pub struct World {
+    #[allow(unused)]
     scene_name: String,
     scene_path: String,
     game_objects: HashMap<u64, RevelArc<GameObject>>,
@@ -86,6 +87,7 @@ pub struct WorldManagerStatic {
 }
 
 impl WorldManagerStatic {
+    #[allow(unused)]
     pub(crate) fn loading(&self) -> bool {
         self.loading
     }
@@ -159,11 +161,6 @@ impl WorldManager {
                 panic!("Invalid world index: {}", index);
             }
             ACTIVE_WORLD_INDEX.store(index as isize, SeqCst);
-            {
-                // println!("Active world index: {} [{}]", index, WORLDS.len());
-                let active_world = WORLDS.get(index).unwrap();
-                // Self::active_world(active_world)
-            }
         }
         index
     }

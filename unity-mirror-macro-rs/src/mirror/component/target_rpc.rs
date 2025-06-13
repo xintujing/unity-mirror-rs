@@ -3,7 +3,7 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Expr, FnArg, LitStr, Pat, PatType, Token, Type, parse_macro_input, parse_quote};
+use syn::{parse_macro_input, parse_quote, Expr, FnArg, LitStr, Pat, PatType, Token, Type};
 
 mod kw {
     syn::custom_keyword!(channel);
@@ -54,7 +54,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     } = parse_macro_input!(attr as TargetRpcArgs);
 
     if channel.is_none() {
-        channel = Some(parse_quote! { crate::mirror::transport::TransportChannel::Reliable })
+        channel = Some(parse_quote! { TransportChannel::Reliable })
     }
 
     let mut item_fn = parse_macro_input!(item as syn::ItemFn);
@@ -75,7 +75,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
                 if i > 1 {
                     arg_block.push(quote! {
-                        crate::mirror::MethodParameterSerializer::serialize(#arg_name, &mut writer);
+                        MethodParameterSerializer::serialize(#arg_name, &mut writer);
                     });
                 }
             }
@@ -93,12 +93,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         0,
         syn::parse_quote! {
             {
-                use crate::mirror::stable_hash::StableHash;
-                use crate::mirror::NetworkWriter;
-                use crate::mirror::NetworkBehaviour;
-                use crate::commons::object::Object;
-
-                crate::mirror::NetworkWriterPool::get_by_closure(|mut writer|{
+                NetworkWriterPool::get_by_closure(|mut writer|{
                     #(#arg_block)*
 
                     let full_path_str = format!(

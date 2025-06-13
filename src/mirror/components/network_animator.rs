@@ -3,7 +3,6 @@ use crate::commons::RevelArc;
 use crate::commons::RevelWeak;
 use crate::metadata_settings::{MetadataAnimator, MetadataNetworkAnimator, MetadataParameterType};
 use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
-use crate::mirror::components::*;
 use crate::mirror::*;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::{client_rpc, command, namespace, network_behaviour, parent_on_deserialize, parent_on_serialize, SyncState};
@@ -88,7 +87,7 @@ pub struct Animator {
 pub struct NetworkAnimator {
     pub client_authority: bool,
     pub animator: Animator,
-    #[sync_variable]
+    #[sync_var]
     animator_speed: f32,
     previous_speed: f32,
 

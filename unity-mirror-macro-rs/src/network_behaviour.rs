@@ -142,11 +142,11 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         for attr in &field.attrs {
-            if attr.path().is_ident("sync_object") {
+            if attr.path().is_ident("sync_obj") {
                 sync_obj_fields.push(field.ident.clone().unwrap());
                 break;
             }
-            if attr.path().is_ident("sync_variable") {
+            if attr.path().is_ident("sync_var") {
                 // 修改字段的可见性
                 field.vis = Visibility::Inherited;
                 sync_var_fields.push((field.ident.clone().unwrap(), field.ty.clone()));

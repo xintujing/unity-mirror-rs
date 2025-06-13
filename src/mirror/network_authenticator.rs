@@ -14,7 +14,7 @@ pub trait Authenticator: AuthenticatorBase + MonoBehaviour {
     fn server_accept(&self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         self.on_server_authenticated().call((connection,));
     }
-    fn on_server_authenticate(&self, connection: RevelArc<Box<NetworkConnectionToClient>>) {}
+    fn on_server_authenticate(&self, _connection: RevelArc<Box<NetworkConnectionToClient>>) {}
     fn server_reject(&self, conn: &mut NetworkConnectionToClient) {
         conn.disconnect.call(());
     }

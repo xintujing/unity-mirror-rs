@@ -4,14 +4,10 @@ use std::any::{Any, TypeId};
 use unity_mirror_rs::commons::Object;
 use unity_mirror_rs::commons::RevelArc;
 use unity_mirror_rs::commons::RevelWeak;
-use unity_mirror_rs::metadata_settings::Metadata;
-use unity_mirror_rs::metadata_settings::MetadataNetworkBehaviourWrapper;
-use unity_mirror_rs::mirror::sync_list::SyncList;
+use unity_mirror_rs::metadata_settings::*;
 use unity_mirror_rs::mirror::*;
-use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, TNetworkBehaviour};
-use unity_mirror_rs::unity_engine::Transform;
-use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
-use unity_mirror_rs::{client_rpc, command, namespace, network_behaviour, SyncState};
+use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, Transform};
+use unity_mirror_rs::{client_rpc, command, namespace, network_behaviour, target_rpc, SyncState};
 
 #[namespace]
 #[network_behaviour(
@@ -22,9 +18,9 @@ pub struct Tank {
     turret: Transform,
     projectile_prefab: String,
     projectile_mount: Transform,
-    #[sync_variable]
+    #[sync_var]
     health: i32,
-    #[sync_object]
+    #[sync_obj]
     u32_list: SyncList<u32>,
 }
 
@@ -65,9 +61,8 @@ impl Tank {
     #[client_rpc]
     fn rpc_on_fire(&self) {}
 
-    // #[target_rpc]
-    // fn target_rpc1(&self) {}
-    // #[target_rpc]
-    // fn target_rpc2(&self, conn: RevelArc<Box<unity_mirror_rs::mirror::NetworkConnectionToClient>>) {
-    // }
+    #[target_rpc]
+    fn target_rpc1(&self) {}
+    #[target_rpc]
+    fn target_rpc2(&self, conn: RevelArc<Box<NetworkConnectionToClient>>) {}
 }

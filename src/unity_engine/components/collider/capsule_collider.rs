@@ -11,7 +11,7 @@ pub struct CapsuleCollider {
 impl MonoBehaviour for CapsuleCollider {}
 
 impl CapsuleCollider {
-    fn instance(settings: &MetadataCapsuleCollider) -> Self {
+    fn instance(_settings: &MetadataCapsuleCollider) -> Self {
         Self {}
     }
 }

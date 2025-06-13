@@ -5,17 +5,16 @@ use crate::mirror::components::network_transform::transform_snapshot::TransformS
 use crate::commons::Object;
 use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::MetadataNetworkTransformBase;
-use crate::mirror::components::*;
 use crate::mirror::transport::TransportChannel;
 use crate::mirror::TNetworkBehaviour;
 use crate::mirror::*;
 use crate::mirror::{NetworkBehaviour, NetworkServer, SyncDirection};
 use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
+use crate::{client_rpc, command, namespace, network_behaviour, SyncState};
 use nalgebra::{Quaternion, Vector3};
 use ordered_float::OrderedFloat;
 use std::collections::BTreeMap;
-use crate::{client_rpc, command, namespace, network_behaviour, SyncState};
 
 #[derive(Debug, PartialOrd, PartialEq, Clone, Default)]
 #[allow(unused)]
@@ -53,6 +52,12 @@ pub struct NetworkTransformBase {
     pub buffer_reset_multiplier: u32,
     pub send_interval_counter: u32,
     pub last_send_interval_time: f64,
+}
+
+impl NetworkTransformBase {
+    fn on_client_authority_changed(&mut self) {
+        self.rpc_reset_state();
+    }
 }
 
 // sync hooks
@@ -110,7 +115,7 @@ impl NetworkTransformBase {
         NetworkServer.send_interval() * (self.send_interval_multiplier() - 1) as f64
     }
 
-    pub fn offset(&self, time_stamp: f64) -> f64 {
+    pub fn offset(&self) -> f64 {
         if self.timeline_offset {
             return NetworkServer.send_interval() * self.send_interval_multiplier() as f64;
         }

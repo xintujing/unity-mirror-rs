@@ -126,9 +126,6 @@ pub struct NetworkIdentity {
     pub destroy_called: bool,
     pub visibility: Visibility,
 
-    owner_payload: Vec<u8>,
-    observers_payload: Vec<u8>,
-
     pub(crate) observers: HashMap<u64, RevelWeak<Box<NetworkConnectionToClient>>>,
     last_serialization: RevelArc<NetworkIdentitySerialization>,
 
@@ -136,7 +133,7 @@ pub struct NetworkIdentity {
     has_spawned: bool,
     had_authority: bool,
 
-    client_authority_callback: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<Box<NetworkIdentity>>, bool), ()>,
+    pub client_authority_callback: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, RevelArc<Box<NetworkIdentity>>, bool), ()>,
 }
 
 impl PartialEq<Self> for NetworkIdentity {

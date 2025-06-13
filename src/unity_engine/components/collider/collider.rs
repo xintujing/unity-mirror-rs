@@ -43,7 +43,7 @@ impl MonoBehaviour for Collider {
 }
 
 impl Collider {
-    fn instance(settings: &MetadataCollider) -> Self {
+    fn instance(_settings: &MetadataCollider) -> Self {
         // println!("UnityEngine: Collider Instance");
         Self {}
     }

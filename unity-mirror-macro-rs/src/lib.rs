@@ -55,8 +55,8 @@ macro_rules! attribute_args {
     };
 }
 
-//  #[sync_variable]
-//  #[sync_object]
+//  #[sync_var]
+//  #[sync_obj]
 #[proc_macro_attribute]
 pub fn network_behaviour(attr: TokenStream, item: TokenStream) -> TokenStream {
     network_behaviour::handler(attr, item)
@@ -83,7 +83,7 @@ pub fn settings_wrapper_register(input: TokenStream) -> TokenStream {
     metadata_settings::wrapper_register::handler(input)
 }
 
-#[proc_macro_derive(SyncState, attributes(sync_variable, sync_object))]
+#[proc_macro_derive(SyncState, attributes(sync_var, sync_obj))]
 pub fn derive_sync_state(_: TokenStream) -> TokenStream {
     TokenStream::new()
 }

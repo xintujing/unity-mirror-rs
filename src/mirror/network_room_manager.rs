@@ -12,11 +12,10 @@ use crate::mirror::{
     NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer,
     ReplacePlayerOptions,
 };
-use crate::unity_engine::{GameObject, MonoBehaviour, World, WorldManager};
+use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
+use crate::{action, namespace, network_manager, NetworkManagerFactory};
 use std::collections::HashSet;
 use std::error::Error;
-use std::fmt::Pointer;
-use crate::{action, namespace, network_manager, NetworkManagerFactory};
 
 #[derive(Clone)]
 pub struct PendingPlayer {
@@ -157,7 +156,7 @@ impl NetworkRoomManager {
     fn on_server_add_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         self.client_index += 1;
 
-        if let Some(mut world) = WorldManager::active_world().upgrade() {
+        if let Some(world) = WorldManager::active_world().upgrade() {
             if world.get_scene_path() != self.room_scene {
                 log::info!("Not in Room scene...disconnecting");
                 connection.disconnect.call(());
@@ -300,15 +299,15 @@ impl NetworkRoomManager {
     #[action]
     fn on_room_server_create_room_player(
         &self,
-        conn: RevelArc<Box<NetworkConnectionToClient>>,
+        _conn: RevelArc<Box<NetworkConnectionToClient>>,
     ) -> Option<RevelArc<GameObject>> {
         None
     }
     #[action]
     fn on_room_server_create_game_player(
         &self,
-        conn: RevelArc<Box<NetworkConnectionToClient>>,
-        room_player: RevelArc<GameObject>,
+        _conn: RevelArc<Box<NetworkConnectionToClient>>,
+        _room_player: RevelArc<GameObject>,
     ) -> Option<RevelArc<GameObject>> {
         None
     }
@@ -321,9 +320,9 @@ impl NetworkRoomManager {
     #[action]
     pub fn on_room_server_scene_loaded_for_player(
         &self,
-        conn: RevelArc<Box<NetworkConnectionToClient>>,
-        room_player: RevelArc<GameObject>,
-        game_player: RevelArc<GameObject>,
+        _conn: RevelArc<Box<NetworkConnectionToClient>>,
+        _room_player: RevelArc<GameObject>,
+        _game_player: RevelArc<GameObject>,
     ) -> bool {
         true
     }
@@ -384,18 +383,9 @@ impl NetworkRoomManager {
 }
 
 impl NetworkRoomManager {
-    fn on_server_error(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        error: TransportError,
-        reason: String,
-    ) {}
+    fn on_server_error(&mut self, _connection: RevelArc<Box<NetworkConnectionToClient>>, _error: TransportError, _reason: String) {}
 
-    fn on_server_transport_exception(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        error: Box<dyn Error>,
-    ) {}
+    fn on_server_transport_exception(&mut self, _connection: RevelArc<Box<NetworkConnectionToClient>>, _error: Box<dyn Error>) {}
 }
 
 impl MonoBehaviour for NetworkRoomManager {
@@ -450,7 +440,7 @@ impl NetworkRoomManager {
         let number_of_ready_players = NetworkServer
             .connections
             .iter()
-            .filter(|(a, conn)| {
+            .filter(|(_, conn)| {
                 if let Some(identity) = conn.identity.upgrade() {
                     if let Some(game_object) = identity.game_object.upgrade() {
                         if let Some(player) = game_object.try_get_component2::<NetworkRoomPlayer>()

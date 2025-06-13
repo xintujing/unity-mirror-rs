@@ -8,29 +8,29 @@ use crate::metadata_settings::Settings;
 
 #[namespace(prefix = "Mirror", rename = "NetworkAnimator")]
 #[derive(Deserialize, Clone)]
-pub(crate) struct MetadataNetworkAnimator {
+pub struct MetadataNetworkAnimator {
     #[serde(rename = "clientAuthority")]
-    pub(crate) client_authority: bool,
+    pub client_authority: bool,
     #[serde(rename = "animator")]
-    pub(crate) animator: MetadataAnimator,
+    pub animator: MetadataAnimator,
 }
 settings_wrapper_register!(MetadataNetworkAnimator as MetadataNetworkBehaviourWrapper);
 
 #[derive(Deserialize, Clone)]
-pub(crate) struct MetadataLayer {
+pub struct MetadataLayer {
     #[serde(rename = "name")]
-    pub(crate) name: String,
+    pub name: String,
     #[serde(rename = "fullPathHash")]
-    pub(crate) full_path_hash: i32,
+    pub full_path_hash: i32,
     #[serde(rename = "normalizedTime")]
-    pub(crate) normalized_time: f32,
+    pub normalized_time: f32,
     #[serde(rename = "weight")]
-    pub(crate) weight: f32,
+    pub weight: f32,
 }
 
 #[derive(Deserialize_repr, Debug, Clone, Eq, PartialEq)]
 #[repr(u8)]
-pub(crate) enum MetadataParameterType {
+pub enum MetadataParameterType {
     Float = 1,
     Int = 3,
     Bool = 4,
@@ -38,19 +38,19 @@ pub(crate) enum MetadataParameterType {
 }
 
 #[derive(Deserialize, Clone)]
-pub(crate) struct MetadataParameter {
+pub struct MetadataParameter {
     #[serde(rename = "name")]
-    pub(crate) name: String,
+    pub name: String,
     #[serde(rename = "type")]
-    pub(crate) r#type: MetadataParameterType,
+    pub r#type: MetadataParameterType,
     #[serde(default)]
-    pub(crate) value: Vec<u8>,
+    pub value: Vec<u8>,
 }
 
 #[derive(Deserialize, Clone)]
-pub(crate) struct MetadataAnimator {
+pub struct MetadataAnimator {
     #[serde(rename = "layers")]
-    pub(crate) layers: Vec<MetadataLayer>,
+    pub layers: Vec<MetadataLayer>,
     #[serde(rename = "parameters")]
-    pub(crate) parameters: Vec<MetadataParameter>,
+    pub parameters: Vec<MetadataParameter>,
 }
