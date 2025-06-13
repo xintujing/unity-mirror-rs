@@ -72,7 +72,7 @@ pub use sync_list::*;
 pub mod sync_object;
 pub use sync_object::*;
 
-pub mod transport;
+mod transport;
 pub use transport::*;
 
 mod network_authenticator;

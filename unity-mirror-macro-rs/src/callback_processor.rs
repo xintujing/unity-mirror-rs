@@ -20,9 +20,9 @@ pub(crate) fn callback_processor_handler(input: TokenStream) -> TokenStream {
     );
 
     let expanded = quote! {
-        static mut #static_callback_processor_ident: once_cell::sync::Lazy<Option<crate::mirror::transport::CallbackProcessor>> = once_cell::sync::Lazy::new(|| None);
+        static mut #static_callback_processor_ident: once_cell::sync::Lazy<Option<CallbackProcessor>> = once_cell::sync::Lazy::new(|| None);
 
-        fn #init_callback_processor_fn_ident(callback_processor: crate::mirror::transport::CallbackProcessor){
+        fn #init_callback_processor_fn_ident(callback_processor: CallbackProcessor){
             unsafe {
                 *#static_callback_processor_ident = Some(callback_processor);
             }

@@ -16,7 +16,7 @@ macro_rules! expand_macro {
 expand_macro! {
     MetadataSettingsWrapper,
     settings_wrapper_register,
-    CallbackProcessor,
+    // CallbackProcessor,
     network_manager,
     NetworkManagerFactory,
     extends,
@@ -45,9 +45,16 @@ pub mod macro_namespace {
     pub use crate::commons::Object;
     pub use unity_mirror_macro_rs::namespace;
 }
+
+
 pub mod macro_network_message {
     pub use super::mirror::message::NetworkMessage;
     pub use unity_mirror_macro_rs::NetworkMessage;
+}
+
+pub mod macro_callback_processor {
+    pub use super::mirror::CallbackProcessor;
+    pub use unity_mirror_macro_rs::CallbackProcessor;
 }
 
 

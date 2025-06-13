@@ -1,11 +1,10 @@
-use crate::commons::Object;
+use crate::macro_namespace::*;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
 use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::Settings;
+use crate::{settings_wrapper_register, MetadataSettingsWrapper};
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use crate::{settings_wrapper_register, MetadataSettingsWrapper};
-use crate::macro_namespace::*;
 
 #[namespace(prefix = "Mirror", rename = "NetworkIdentity")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]
