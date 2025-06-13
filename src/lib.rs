@@ -54,6 +54,7 @@ pub mod macro_network_message {
 pub mod macro_callback_processor {
     pub use super::mirror::CallbackProcessor;
     pub use super::mirror::TransportChannel;
+    pub use super::mirror::TransportError;
     pub use unity_mirror_macro_rs::CallbackProcessor;
 }
 
