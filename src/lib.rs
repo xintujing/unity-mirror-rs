@@ -16,7 +16,6 @@ macro_rules! expand_macro {
 expand_macro! {
     MetadataSettingsWrapper,
     settings_wrapper_register,
-    // CallbackProcessor,
     network_manager,
     NetworkManagerFactory,
     extends,
@@ -54,6 +53,7 @@ pub mod macro_network_message {
 
 pub mod macro_callback_processor {
     pub use super::mirror::CallbackProcessor;
+    pub use super::mirror::TransportChannel;
     pub use unity_mirror_macro_rs::CallbackProcessor;
 }
 

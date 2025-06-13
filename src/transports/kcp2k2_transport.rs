@@ -1,5 +1,5 @@
 use crate::macro_callback_processor::*;
-use crate::mirror::{Transport, TransportChannel, TransportError};
+use crate::mirror::{Transport, TransportError};
 use http::Uri;
 use kcp2k_rust::error_code::ErrorCode;
 use kcp2k_rust::kcp2k::Kcp2K;
