@@ -9,8 +9,6 @@ use unity_mirror_rs::mirror::sync_list::SyncList;
 use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::Transform;
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
-use unity_mirror_rs::unity_mirror_macro_rs::{client_rpc, command, namespace, network_behaviour};
-
 #[namespace]
 #[network_behaviour(
     parent(unity_mirror_rs::mirror::NetworkBehaviour),

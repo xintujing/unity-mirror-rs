@@ -90,7 +90,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // 添加属性
     item_struct.attrs.push(parse_quote!(
-        #[derive(Default, Debug, crate::unity_mirror_macro_rs::SyncState)]
+        #[derive(Default, Debug, crate::SyncState)]
     ));
 
     let mut on_serialize_ts = Vec::new();

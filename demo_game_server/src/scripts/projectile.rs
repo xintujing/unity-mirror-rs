@@ -2,7 +2,6 @@ use unity_mirror_rs::commons::revel_weak::RevelWeak;
 use unity_mirror_rs::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use unity_mirror_rs::mirror::{NetworkServer, NetworkTime, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour};
-use unity_mirror_rs::unity_mirror_macro_rs::{namespace, network_behaviour};
 
 #[namespace]
 #[network_behaviour(
