@@ -4,14 +4,11 @@ use crate::commons::RevelArc;
 use crate::commons::RevelWeak;
 use crate::metadata_settings::MetadataNetworkRootManager;
 use crate::metadata_settings::{Metadata, MetadataNetworkManagerWrapper};
-use crate::mirror::components::*;
+use crate::mirror::components::NetworkRoomPlayer;
 use crate::mirror::transport::TransportError;
 use crate::mirror::NetworkManagerInstance;
 use crate::mirror::TNetworkManager;
-use crate::mirror::{
-    NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer,
-    ReplacePlayerOptions,
-};
+use crate::mirror::{NetworkConnectionToClient, NetworkIdentity, NetworkManager, NetworkServer, ReplacePlayerOptions};
 use crate::unity_engine::{GameObject, MonoBehaviour, WorldManager};
 use crate::{action, namespace, network_manager, NetworkManagerFactory};
 use std::collections::HashSet;

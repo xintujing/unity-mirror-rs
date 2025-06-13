@@ -8,13 +8,11 @@ use crate::mirror::messages::ready_message::ReadyMessage;
 use crate::mirror::messages::scene_message::{SceneMessage, SceneOperation};
 use crate::mirror::snapshot_interpolation::snapshot_interpolation_settings::SnapshotInterpolationSettings;
 use crate::mirror::transport::{Transport, TransportChannel, TransportError, TransportManager};
-use crate::mirror::*;
+use crate::mirror::NetworkManagerInstance;
 use crate::mirror::{Authenticator, NetworkConnectionToClient, NetworkServer, TNetworkManager};
 use crate::mirror::{AuthenticatorFactory, NetworkManagerFactory};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
-use crate::unity_engine::{
-    GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager,
-};
+use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
 use crate::{action, namespace, network_manager, NetworkManagerFactory};
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
