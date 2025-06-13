@@ -96,6 +96,7 @@ pub mod macro_network_behaviour {
 pub mod macro_authenticator_factory {
     pub use super::commons::RevelArc;
     pub use super::commons::RevelWeak;
+    pub use super::mirror::AuthenticatorBase;
     pub use super::mirror::AuthenticatorFactory;
     pub use super::mirror::NetworkConnectionToClient;
     pub use unity_mirror_macro_rs::authenticator_factory;
