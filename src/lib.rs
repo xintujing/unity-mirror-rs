@@ -21,22 +21,6 @@ expand_macro! {
     action
 }
 
-// expand_macro! {
-//     MetadataSettingsWrapper,
-//     settings_wrapper_register,
-//     ancestor_on_serialize,
-//     ancestor_on_deserialize,
-//     parent_on_serialize,
-//     parent_on_deserialize,
-//     NetworkMessage,
-//     CallbackProcessor,
-//     network_manager,
-//     NetworkManagerFactory,
-//     authenticator_factory,
-//     extends,
-//     action
-// }
-
 // use unity_mirror_rs::macro_namespace::*;
 // use crate::macro_namespace::*;
 pub mod macro_namespace {
@@ -45,11 +29,16 @@ pub mod macro_namespace {
 }
 
 
+// use unity_mirror_rs::macro_network_message::*;
+// use crate::macro_network_message::*;
 pub mod macro_network_message {
     pub use super::mirror::message::NetworkMessage;
     pub use unity_mirror_macro_rs::NetworkMessage;
 }
 
+
+// use unity_mirror_rs::macro_callback_processor::*;
+// use crate::macro_callback_processor::*;
 pub mod macro_callback_processor {
     pub use super::mirror::CallbackProcessor;
     pub use super::mirror::TransportChannel;
@@ -58,6 +47,8 @@ pub mod macro_callback_processor {
 }
 
 
+// use unity_mirror_rs::macro_network_manager::*;
+// use crate::macro_network_manager::*;
 pub mod macro_network_manager {
     pub use unity_mirror_macro_rs::network_manager;
     pub use unity_mirror_macro_rs::NetworkManagerFactory;
@@ -100,6 +91,8 @@ pub mod macro_network_behaviour {
     pub use unity_mirror_macro_rs::SyncState;
 }
 
+// use unity_mirror_rs::macro_authenticator_factory::*;
+// use crate::macro_authenticator_factory::*;
 pub mod macro_authenticator_factory {
     pub use super::commons::RevelArc;
     pub use super::commons::RevelWeak;
