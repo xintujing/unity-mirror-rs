@@ -1,11 +1,10 @@
+use crate::macro_namespace::*;
 use crate::mirror::{DataTypeDeserializer, NetworkReader, ReadCompress};
 use crate::mirror::{DataTypeSerializer, NetworkWriter, WriteCompress};
 use crate::unity_engine::Transform;
 use nalgebra::{Quaternion, UnitQuaternion, Vector3};
 use std::fmt::Debug;
 use std::ops::BitOrAssign;
-use crate::namespace;
-use crate::commons::Object;
 
 #[namespace(prefix = "Mirror")]
 #[derive(Clone, Copy, PartialEq, Debug, Default)]

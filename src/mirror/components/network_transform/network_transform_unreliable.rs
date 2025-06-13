@@ -1,14 +1,11 @@
-use crate::commons::Object;
-use crate::commons::RevelArc;
-use crate::commons::RevelWeak;
+use crate::macro_namespace::*;
+use crate::macro_network_behaviour::*;
 use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::MetadataNetworkTransformUnreliable;
-use crate::mirror::components::*;
-use crate::mirror::*;
+use crate::mirror::components::{NetworkTransformBase, SyncData, TransformSnapshot};
 use crate::unity_engine::{GameObject, MonoBehaviour};
-use crate::SyncState;
-use crate::{client_rpc, command, namespace, network_behaviour};
 use nalgebra::{Quaternion, Vector3};
+use crate::mirror::TNetworkBehaviour;
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(

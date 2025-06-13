@@ -1,8 +1,9 @@
-use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
-use serde::Deserialize;
-use crate::{namespace, settings_wrapper_register};
 use crate::commons::Object;
+use crate::macro_namespace::*;
+use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::Settings;
+use crate::settings_wrapper_register;
+use serde::Deserialize;
 
 #[namespace(prefix = "Mirror", rename = "NetworkTransformUnreliable")]
 #[derive(Deserialize, Debug, Clone)]

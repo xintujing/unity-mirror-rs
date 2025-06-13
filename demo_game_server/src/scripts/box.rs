@@ -1,12 +1,10 @@
-use std::any::Any;
 use unity_mirror_rs::commons::Object;
 use unity_mirror_rs::commons::RevelWeak;
-use unity_mirror_rs::commons::RevelArc;
+use unity_mirror_rs::macro_namespace::*;
+use unity_mirror_rs::macro_network_behaviour::*;
 use unity_mirror_rs::metadata_settings::MetadataNetworkBehaviourWrapper;
-use unity_mirror_rs::mirror::{NetworkBehaviour, TNetworkBehaviour};
-use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
-use unity_mirror_rs::{namespace, network_behaviour, SyncState};
 use unity_mirror_rs::mirror::*;
+use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, MonoBehaviourAny};
 
 
 #[namespace(rename = "Box")]

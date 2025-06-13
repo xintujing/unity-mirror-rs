@@ -1,9 +1,10 @@
+use crate::commons::Object;
+use crate::macro_namespace::*;
 use crate::metadata_settings::mirror::metadata_network_manager::MetadataNetworkManagerWrapper;
 use crate::metadata_settings::unity::metadata_asset::MetadataAsset;
-use serde::Deserialize;
-use crate::{namespace, settings_wrapper_register};
-use crate::commons::Object;
 use crate::metadata_settings::Settings;
+use crate::settings_wrapper_register;
+use serde::Deserialize;
 
 #[namespace(prefix = "Mirror", rename = "NetworkRoomManager")]
 #[derive(Deserialize, Clone)]

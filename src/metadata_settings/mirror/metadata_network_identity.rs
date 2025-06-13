@@ -4,7 +4,8 @@ use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::Settings;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use crate::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
+use crate::{settings_wrapper_register, MetadataSettingsWrapper};
+use crate::macro_namespace::*;
 
 #[namespace(prefix = "Mirror", rename = "NetworkIdentity")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]

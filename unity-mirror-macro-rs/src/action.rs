@@ -92,15 +92,15 @@ pub(crate) fn handler(_: TokenStream, item: TokenStream) -> TokenStream {
                 //     _ => {}
                 // }
 
-                if let Pat::Ident(pat_ident) = pat.as_ref() {
+                return if let Pat::Ident(pat_ident) = pat.as_ref() {
                     let pat_ident = &pat_ident.ident;
-                    return quote! {
+                    quote! {
                       #pat_ident
-                    };
+                    }
                 } else {
-                    return quote! {
+                    quote! {
                       #pat
-                    };
+                    }
                 }
                 //
                 // if pat_type

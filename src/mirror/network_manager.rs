@@ -1,7 +1,6 @@
 use crate::commons::action::SelfMutAction;
-use crate::commons::Object;
-use crate::commons::RevelArc;
-use crate::commons::RevelWeak;
+use crate::commons::{RevelArc, RevelWeak};
+use crate::macro_namespace::*;
 use crate::metadata_settings::{Metadata, MetadataNetworkManager, MetadataNetworkManagerWrapper};
 use crate::mirror::messages::add_player_message::AddPlayerMessage;
 use crate::mirror::messages::ready_message::ReadyMessage;
@@ -13,7 +12,7 @@ use crate::mirror::{Authenticator, NetworkConnectionToClient, NetworkServer, TNe
 use crate::mirror::{AuthenticatorFactory, NetworkManagerFactory};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
 use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
-use crate::{action, namespace, network_manager, NetworkManagerFactory};
+use crate::{action, network_manager, NetworkManagerFactory};
 use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;

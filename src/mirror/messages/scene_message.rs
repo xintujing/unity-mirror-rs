@@ -1,9 +1,9 @@
-use crate::commons::Object;
+use crate::macro_namespace::*;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
+use crate::mirror::stable_hash::StableHash;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
-use crate::mirror::stable_hash::StableHash;
-use crate::{namespace, NetworkMessage};
+use crate::macro_network_message::*;
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 #[repr(u8)]

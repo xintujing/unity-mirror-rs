@@ -1,8 +1,9 @@
+use crate::commons::Object;
+use crate::macro_namespace::*;
+use crate::metadata_settings::Settings;
+use crate::MetadataSettingsWrapper;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use crate::{namespace, MetadataSettingsWrapper};
-use crate::commons::Object;
-use crate::metadata_settings::Settings;
 
 #[derive(Deserialize_repr, Debug, Clone)]
 #[repr(u8)]

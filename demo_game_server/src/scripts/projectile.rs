@@ -1,15 +1,13 @@
-use unity_mirror_rs::commons::Object;
 use unity_mirror_rs::commons::RevelWeak;
-use unity_mirror_rs::commons::RevelArc;
+use unity_mirror_rs::macro_namespace::*;
+use unity_mirror_rs::macro_network_behaviour::*;
 use unity_mirror_rs::metadata_settings::MetadataNetworkBehaviourWrapper;
 use unity_mirror_rs::mirror::{NetworkServer, NetworkTime, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour};
-use unity_mirror_rs::{namespace, network_behaviour,SyncState};
-use unity_mirror_rs::mirror::*;
 
 #[namespace]
 #[network_behaviour(
-    parent(unity_mirror_rs::mirror::NetworkBehaviour),
+    parent(NetworkBehaviour),
     metadata(crate::backend_metadata::projectile::MetadataProjectile)
 )]
 pub struct Projectile {
@@ -18,7 +16,7 @@ pub struct Projectile {
 
 impl ProjectileOnChangeCallback for Projectile {}
 impl TNetworkBehaviour for Projectile {
-    fn new(weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
+    fn new(_weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {

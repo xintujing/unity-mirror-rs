@@ -1,10 +1,11 @@
 #![allow(dead_code)]
+use crate::commons::Object;
+use crate::macro_namespace::*;
 use crate::metadata_settings::mirror::network_behaviours::metadata_network_behaviour::MetadataNetworkBehaviourWrapper;
+use crate::metadata_settings::Settings;
+use crate::settings_wrapper_register;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
-use crate::{namespace, settings_wrapper_register};
-use crate::commons::Object;
-use crate::metadata_settings::Settings;
 
 #[namespace(prefix = "Mirror", rename = "NetworkAnimator")]
 #[derive(Deserialize, Clone)]

@@ -1,13 +1,11 @@
 use crate::backend_metadata::tank::MetadataTank;
 use nalgebra::{Quaternion, Vector3};
 use std::any::{Any, TypeId};
-use unity_mirror_rs::commons::Object;
-use unity_mirror_rs::commons::RevelArc;
-use unity_mirror_rs::commons::RevelWeak;
+use unity_mirror_rs::macro_namespace::*;
+use unity_mirror_rs::macro_network_behaviour::*;
 use unity_mirror_rs::metadata_settings::*;
-use unity_mirror_rs::mirror::*;
+use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, SyncList, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, Transform};
-use unity_mirror_rs::{client_rpc, command, namespace, network_behaviour, target_rpc, SyncState};
 
 #[namespace]
 #[network_behaviour(

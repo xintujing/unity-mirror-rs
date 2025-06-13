@@ -7,7 +7,7 @@ use crate::mirror::transport::TransportChannel;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::{NetworkConnectionToClient, NetworkIdentity};
-use crate::namespace;
+use crate::macro_namespace::*;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use crate::unity_engine::{Time, Transform};
 use std::any::TypeId;

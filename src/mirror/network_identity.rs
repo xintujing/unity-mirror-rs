@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering::SeqCst;
-use crate::namespace;
+use crate::macro_namespace::*;
 
 #[ctor::ctor]
 fn static_init() {

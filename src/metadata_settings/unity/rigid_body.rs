@@ -1,10 +1,11 @@
 #![allow(dead_code)]
 use crate::commons::Object;
+use crate::macro_namespace::*;
 use crate::metadata_settings::unity::collider::LayerMask;
 use crate::metadata_settings::unity::metadata_component::MetadataComponentWrapper;
-use serde::Deserialize;
-use crate::{namespace, settings_wrapper_register, MetadataSettingsWrapper};
 use crate::metadata_settings::Settings;
+use crate::{settings_wrapper_register, MetadataSettingsWrapper};
+use serde::Deserialize;
 
 #[namespace(prefix = "UnityEngine", rename = "Rigidbody")]
 #[derive(Deserialize, MetadataSettingsWrapper, Clone)]

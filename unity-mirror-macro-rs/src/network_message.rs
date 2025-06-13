@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, parse_macro_input};
+use syn::{parse_macro_input, DeriveInput};
 
 pub(crate) fn handler(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -8,7 +8,7 @@ pub(crate) fn handler(input: TokenStream) -> TokenStream {
 
     let output = quote! {
 
-        impl crate::mirror::messages::message::NetworkMessage for #struct_ident {
+        impl NetworkMessage for #struct_ident {
 
         }
     };
