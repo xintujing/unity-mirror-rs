@@ -7,7 +7,6 @@ use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::{MetadataAnimator, MetadataNetworkAnimator, MetadataParameterType};
 use crate::mirror::*;
 use crate::unity_engine::{GameObject, MonoBehaviour};
-use crate::{parent_on_deserialize, parent_on_serialize};
 
 impl Into<AnimatorParameterType> for MetadataParameterType {
     fn into(self) -> AnimatorParameterType {

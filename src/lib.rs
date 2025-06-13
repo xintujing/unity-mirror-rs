@@ -16,10 +16,6 @@ macro_rules! expand_macro {
 expand_macro! {
     MetadataSettingsWrapper,
     settings_wrapper_register,
-    ancestor_on_serialize,
-    ancestor_on_deserialize,
-    parent_on_serialize,
-    parent_on_deserialize,
     CallbackProcessor,
     network_manager,
     NetworkManagerFactory,
@@ -81,9 +77,13 @@ pub mod macro_network_behaviour {
     pub use super::mirror::SyncObject;
     pub use super::mirror::TBaseNetworkBehaviour;
     pub use super::mirror::TransportChannel;
+    pub use unity_mirror_macro_rs::ancestor_on_deserialize;
+    pub use unity_mirror_macro_rs::ancestor_on_serialize;
     pub use unity_mirror_macro_rs::client_rpc;
     pub use unity_mirror_macro_rs::command;
     pub use unity_mirror_macro_rs::network_behaviour;
+    pub use unity_mirror_macro_rs::parent_on_deserialize;
+    pub use unity_mirror_macro_rs::parent_on_serialize;
     pub use unity_mirror_macro_rs::target_rpc;
     pub use unity_mirror_macro_rs::SyncState;
 }
