@@ -1,7 +1,12 @@
 [package]
 name = "unity-mirror-macro-rs"
-version = "0.1.0"
-edition = "2024"
+version = "0.1.0-beta"
+edition = "2021"
+license = "MIT"
+description = "Unity Mirror Networking Server Only Rust"
+homepage = "https://unity-mirror-rs.github.io"
+documentation = "https://unity-mirror-rs.github.io/doc/"
+repository = "https://github.com/xintujing/unity-mirror-rs"
 
 [lib]
 proc-macro = true
