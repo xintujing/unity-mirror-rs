@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-unity-mirror-rs = "0.1.1-beta"
+unity-mirror-rs = {path = "../../unity-mirror-rs"}
 
 chrono = "0.4.41"
 colored = "3.0.0"
