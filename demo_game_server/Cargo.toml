@@ -4,13 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+unity-mirror-rs = "0.1.0-beta"
+
 chrono = "0.4.41"
 colored = "3.0.0"
 ctor = "0.4.2"
 delegate = "0.13.3"
 env_logger = "0.11.8"
 log = "0.4.27"
-unity-mirror-rs = "0.1.0-beta"
 serde = { version = "1.0.217", features = ["derive"] }
 nalgebra = "0.33.2"
 
