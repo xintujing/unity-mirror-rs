@@ -509,7 +509,7 @@ impl NetworkManager {
 
     #[action]
     pub fn on_server_disconnect(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        self.on_server_disconnect.call((connection.clone(),));
+        // self.on_server_disconnect.call((connection.clone(),));
         NetworkServer::destroy_player_for_connection(connection);
     }
 
