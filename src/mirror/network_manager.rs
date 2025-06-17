@@ -14,7 +14,7 @@ use crate::mirror::{AuthenticatorFactory, NetworkManagerFactory};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
 use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
 use crate::{action, network_manager};
-use kcp2k_rust::kcp2k_config::Kcp2KConfig;
+use kcp2k::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
 use std::any::{Any, TypeId};

@@ -303,9 +303,9 @@ dependencies = [
 
 [[package]]
 name = "kcp"
-version = "0.5.3"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e387a924f42063d380be14857714a2f0c177e44dbeab8895244e5370d8a8e68"
+checksum = "9be8f8058681ab8b7e4959a1ee88a4446f43b7c787f174d9d1b32ba493737a59"
 dependencies = [
  "bytes",
  "log",
@@ -313,9 +313,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "kcp2k_rust"
-version = "0.1.0"
-source = "git+https://github.com/xtjsk/kcp2k-rust.git#3d62564ef47e25f5efeeae079be41ab321d60c9e"
+name = "kcp2k"
+version = "0.0.1-beta"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e3d250b332b2ad48e5485b75b447f9837592e8044122d7cfa985e81e0f3f6dd"
 dependencies = [
  "bytes",
  "dashmap",
@@ -756,18 +757,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.69"
+version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.69"
+version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -842,14 +843,14 @@ dependencies = [
 
 [[package]]
 name = "unity-mirror-rs"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "backtrace",
  "bytes",
  "ctor",
  "hostname",
  "http",
- "kcp2k_rust",
+ "kcp2k",
  "lazy_static",
  "log",
  "nalgebra",

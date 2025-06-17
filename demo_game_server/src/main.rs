@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use unity_mirror_rs::mirror::NetworkManager;
 use unity_mirror_rs::unity_engine::PlayerLooper;
 
