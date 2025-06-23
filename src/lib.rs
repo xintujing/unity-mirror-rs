@@ -85,6 +85,10 @@ pub mod macro_network_behaviour {
     pub use super::mirror::SyncObject;
     pub use super::mirror::TBaseNetworkBehaviour;
     pub use super::mirror::TransportChannel;
+    pub use super::mirror::TNetworkBehaviour;
+    pub use super::metadata_settings::MetadataNetworkBehaviourWrapper;
+    pub use super::unity_engine::MonoBehaviour;
+    pub use super::unity_engine::GameObject;
     pub use unity_mirror_macro_rs::ancestor_on_deserialize;
     pub use unity_mirror_macro_rs::ancestor_on_serialize;
     pub use unity_mirror_macro_rs::client_rpc;
