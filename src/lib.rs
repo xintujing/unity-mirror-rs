@@ -50,8 +50,11 @@ pub mod macro_callback_processor {
 // use unity_mirror_rs::macro_network_manager::*;
 // use crate::macro_network_manager::*;
 pub mod macro_network_manager {
+    pub use super::commons::{RevelArc, RevelWeak};
+    pub use super::metadata_settings::MetadataNetworkManagerWrapper;
     pub use super::mirror::NetworkManagerFactory;
-    pub use super::mirror::NetworkManagerInstance;
+    pub use super::mirror::{NetworkManagerInstance, TNetworkManager};
+    pub use super::unity_engine::{GameObject, MonoBehaviour};
     pub use unity_mirror_macro_rs::network_manager;
     pub use unity_mirror_macro_rs::NetworkManagerFactory;
 }
