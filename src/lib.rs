@@ -50,6 +50,8 @@ pub mod macro_callback_processor {
 // use unity_mirror_rs::macro_network_manager::*;
 // use crate::macro_network_manager::*;
 pub mod macro_network_manager {
+    pub use super::mirror::NetworkManagerFactory;
+    pub use super::mirror::NetworkManagerInstance;
     pub use unity_mirror_macro_rs::network_manager;
     pub use unity_mirror_macro_rs::NetworkManagerFactory;
 }

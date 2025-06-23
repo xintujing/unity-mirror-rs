@@ -30,8 +30,7 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
         #[ctor::ctor]
         #[inline]
         fn #register_cotr_fn_ident() {
-            use unity_mirror_rs::mirror::NetworkManagerInstance;
-            unity_mirror_rs::mirror::NetworkManagerFactory::register::<#struct_ident>(
+            NetworkManagerFactory::register::<#struct_ident>(
                 #struct_ident::instance,
             );
         }
