@@ -15,8 +15,8 @@ pub(crate) fn handler(item: TokenStream) -> TokenStream {
                 input.ident.span(),
                 "NetworkManagerFactory can only be derived for structs",
             )
-            .to_compile_error()
-            .into();
+                .to_compile_error()
+                .into();
         }
     }
 
