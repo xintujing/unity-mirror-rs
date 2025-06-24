@@ -253,11 +253,10 @@ impl TNetworkBehaviour for NetworkTransformBase {
                 if let Some(transform) = game.find_transform(&config.target.instance_id) {
                     base.target = transform;
                 } else {
-                    log::error!(
-                        "Mirror: NetworkTransformBase target Transform with instance_id {} not found",
-                        config.target.instance_id
-                    );
+                    log::error!("Mirror: NetworkTransformBase target Transform with instance_id {} not found",config.target.instance_id);
                 }
+            } else {
+                log::error!("Mirror: NetworkTransformBase GameObject does not exist");
             }
 
             base.sync_position = config.sync_position;
