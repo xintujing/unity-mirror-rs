@@ -3,11 +3,11 @@ use crate::utils::string_case::StringCase;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{Expr, FnArg, LitStr, Path, Token, parse_macro_input, parse_quote};
+use syn::{parse_macro_input, parse_quote, Expr, FnArg, LitStr, Path, Token};
 
 mod kw {
     syn::custom_keyword!(struct_path);
-    syn::custom_keyword!(non_authority);
+    syn::custom_keyword!(requiresAuthority);
     syn::custom_keyword!(rename);
 }
 
@@ -31,8 +31,8 @@ impl Parse for CommandArgs {
         while !input.is_empty() {
             if input.peek(kw::struct_path) {
                 input.parse::<kw::struct_path>()?;
-            } else if input.peek(kw::non_authority) {
-                let _ = input.parse::<kw::non_authority>()?;
+            } else if input.peek(kw::requiresAuthority) {
+                let _ = input.parse::<kw::requiresAuthority>()?;
                 input.parse::<Token![=]>()?;
                 authority = Some(input.parse()?);
             } else if input.peek(kw::rename) {
@@ -69,7 +69,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     } = parse_macro_input!(attr as CommandArgs);
 
     if authority.is_none() {
-        authority = Some(parse_quote!{ true });
+        authority = Some(parse_quote! { true });
     }
 
     let item_fn = parse_macro_input!(item as syn::ItemFn);

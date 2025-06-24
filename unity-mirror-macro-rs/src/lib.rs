@@ -133,7 +133,8 @@ pub fn authenticator_factory(_: TokenStream, item: TokenStream) -> TokenStream {
     mirror::authenticator_factory::handler(item)
 }
 
-// #[command(NetworkAnimator, authority)]
+// #[command(NetworkAnimator, requiresAuthority = true)]
+// #[command(NetworkAnimator, requiresAuthority = false, rename = "***")]
 #[proc_macro_attribute]
 pub fn command(attr: TokenStream, item: TokenStream) -> TokenStream {
     mirror::component::command::handler(attr, item)
