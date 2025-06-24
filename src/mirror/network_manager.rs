@@ -442,15 +442,7 @@ impl NetworkManager {
     }
 
     // 服务器事件处理
-    pub fn on_server_connect_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-    ) {
-        log::info!(
-            "on_server_connect_internal {} self.authenticator = {}",
-            connection.connection_id,
-            self.authenticator.is_some()
-        );
+    pub fn on_server_connect_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         if let Some(authenticator) = &self.authenticator {
             authenticator.on_server_authenticate(connection)
         } else {
@@ -473,21 +465,11 @@ impl NetworkManager {
         self.on_server_connect.call((conn.clone(),));
     }
 
-    pub fn on_server_ready_message_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        _message: ReadyMessage,
-        _: TransportChannel,
-    ) {
+    pub fn on_server_ready_message_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _message: ReadyMessage, _: TransportChannel) {
         self.on_server_ready(connection);
     }
 
-    pub fn on_server_add_player_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        _: AddPlayerMessage,
-        _: TransportChannel,
-    ) {
+    pub fn on_server_add_player_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _: AddPlayerMessage, _: TransportChannel) {
         if self.auto_create_player && self.player_prefab.is_empty() {
             log::error!("The PlayerPrefab is empty on the NetworkManager. Please setup a PlayerPrefab object.");
             return;
