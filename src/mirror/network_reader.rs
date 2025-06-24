@@ -1,8 +1,8 @@
 #![allow(unused)]
 use crate::commons::to_hex_string::ToHexString;
+use crate::macro_network_behaviour::DataTypeSerializer;
 use crate::mirror::compress::Compress;
 use crate::mirror::NetworkWriter;
-use nalgebra::Vector4;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
@@ -143,10 +143,10 @@ impl ReadCompress for nalgebra::Quaternion<f32> {
 
         // 根据 largestIndex 重建四元数
         let v4 = match largest_index {
-            0 => Vector4::new(d, a, b, c),
-            1 => Vector4::new(a, d, b, c),
-            2 => Vector4::new(a, b, d, c),
-            _ => Vector4::new(a, b, c, d),
+            0 => nalgebra::Vector4::new(d, a, b, c),
+            1 => nalgebra::Vector4::new(a, d, b, c),
+            2 => nalgebra::Vector4::new(a, b, d, c),
+            _ => nalgebra::Vector4::new(a, b, c, d),
         };
 
         Compress.quaternion_normalize_safe(v4)
@@ -352,5 +352,23 @@ impl<T: DataTypeDeserializer> DataTypeDeserializer for &[T] {
             result.push(value);
         }
         unsafe { std::mem::transmute(result.as_slice()) }
+    }
+}
+
+impl<T: DataTypeDeserializer> DataTypeDeserializer for nalgebra::Vector3<T> {
+    fn deserialize(reader: &mut NetworkReader) -> Self {
+        reader.read_blittable()
+    }
+}
+
+impl<T: DataTypeDeserializer> DataTypeDeserializer for nalgebra::Vector4<T> {
+    fn deserialize(reader: &mut NetworkReader) -> Self {
+        reader.read_blittable()
+    }
+}
+
+impl<T: DataTypeDeserializer> DataTypeDeserializer for nalgebra::Quaternion<T> {
+    fn deserialize(reader: &mut NetworkReader) -> Self {
+        reader.read_blittable()
     }
 }

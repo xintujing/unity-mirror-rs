@@ -298,8 +298,6 @@ data_type_serialize!(
         f32,
         f64,
         bool,
-        nalgebra::Vector3<f32>,
-        nalgebra::Vector4<f32>,
         nalgebra::Quaternion<f32>
     ),
     |value, writer| writer.write_blittable(*value)
@@ -327,3 +325,22 @@ impl<T: DataTypeSerializer> DataTypeSerializer for &[T] {
         }
     }
 }
+
+impl<T: DataTypeSerializer + Copy> DataTypeSerializer for nalgebra::Vector3<T> {
+    fn serialize(&self, writer: &mut NetworkWriter) {
+        writer.write_blittable(*self);
+    }
+}
+
+impl<T: DataTypeSerializer + Copy> DataTypeSerializer for nalgebra::Vector4<T> {
+    fn serialize(&self, writer: &mut NetworkWriter) {
+        writer.write_blittable(*self);
+    }
+}
+
+impl<T: DataTypeSerializer + Copy> DataTypeSerializer for nalgebra::Quaternion<T> {
+    fn serialize(&self, writer: &mut NetworkWriter) {
+        writer.write_blittable(*self);
+    }
+}
+
