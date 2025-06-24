@@ -166,6 +166,8 @@ impl NetworkTransformBase {
                 CoordinateSpace::Local => target.local_position,
                 CoordinateSpace::World => target.position,
             };
+        } else {
+            log::error!("Mirror: NetworkTransformBase target Transform not found");
         }
         Vector3::new(0.0, 0.0, 0.0)
     }
@@ -179,6 +181,8 @@ impl NetworkTransformBase {
                     target.position = value;
                 }
             }
+        } else {
+            log::error!("Mirror: NetworkTransformBase target Transform not found");
         }
     }
 
@@ -188,6 +192,8 @@ impl NetworkTransformBase {
                 CoordinateSpace::Local => target.local_rotation,
                 CoordinateSpace::World => target.rotation,
             };
+        } else {
+            log::error!("Mirror: NetworkTransformBase target Transform not found");
         }
         Quaternion::identity()
     }
@@ -201,18 +207,24 @@ impl NetworkTransformBase {
                     target.rotation = value;
                 }
             }
+        } else {
+            log::error!("Mirror: NetworkTransformBase target Transform not found");
         }
     }
 
     pub fn get_scale(&self) -> Vector3<f32> {
         if let Some(target) = self.target.get() {
             return target.local_scale;
+        } else {
+            log::error!("Mirror: NetworkTransformBase target Transform not found");
         }
         Vector3::new(1.0, 1.0, 1.0)
     }
     pub fn set_scale(&self, value: Vector3<f32>) {
         if let Some(target) = self.target.get() {
             target.local_scale = value;
+        } else {
+            log::error!("Mirror: NetworkTransformBase target Transform not found");
         }
     }
 }
