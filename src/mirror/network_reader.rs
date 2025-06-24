@@ -324,10 +324,7 @@ data_type_deserialize!(
         u16,
         f32,
         f64,
-        bool,
-        nalgebra::Vector3<f32>,
-        nalgebra::Vector4<f32>,
-        nalgebra::Quaternion<f32>
+        bool
     ),
     { |reader| reader.read_blittable() }
 );

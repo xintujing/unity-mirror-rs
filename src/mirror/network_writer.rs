@@ -297,8 +297,7 @@ data_type_serialize!(
         u16,
         f32,
         f64,
-        bool,
-        nalgebra::Quaternion<f32>
+        bool
     ),
     |value, writer| writer.write_blittable(*value)
 );
