@@ -3,6 +3,7 @@ use crate::macro_network_behaviour::*;
 use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::MetadataNetworkTransformBase;
 use crate::mirror::components::network_transform::transform_snapshot::TransformSnapshot;
+use crate::mirror::components::{Changed, SyncData};
 use crate::mirror::{NetworkServer, TNetworkBehaviour};
 use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
@@ -51,6 +52,49 @@ pub struct NetworkTransformBase {
 impl NetworkTransformBase {
     fn on_client_authority_changed(&mut self) {
         self.rpc_reset_state();
+    }
+    pub fn update_sync_data(&self, sync_data: &SyncData) -> SyncData {
+        let mut sync_data = sync_data.clone();
+
+        // 如果没有变化的数据字节，或者是压缩旋转数据，则直接返回
+        if sync_data.changed_data_byte == Changed::None.to_u8() || sync_data.changed_data_byte == Changed::CompressRot.to_u8() {
+            sync_data.position = self.get_position();
+            sync_data.quat_rotation = self.get_rotation();
+            sync_data.scale = self.get_scale();
+            return sync_data;
+        }
+
+        if sync_data.changed_data_byte & Changed::PosX.to_u8() <= 0 {
+            sync_data.position.x = self.get_position().x;
+        }
+        if sync_data.changed_data_byte & Changed::PosY.to_u8() <= 0 {
+            sync_data.position.y = self.get_position().y;
+        }
+        if sync_data.changed_data_byte & Changed::PosZ.to_u8() <= 0 {
+            sync_data.position.z = self.get_position().z;
+        }
+
+        if sync_data.changed_data_byte & Changed::CompressRot.to_u8() == 0 {
+            if sync_data.changed_data_byte & Changed::RotX.to_u8() <= 0 {
+                sync_data.vec_rotation.x = Transform::quaternion_to_euler_angles(self.get_rotation()).x;
+            }
+            if sync_data.changed_data_byte & Changed::RotY.to_u8() <= 0 {
+                sync_data.vec_rotation.y = Transform::quaternion_to_euler_angles(self.get_rotation()).y;
+            }
+            if sync_data.changed_data_byte & Changed::RotZ.to_u8() <= 0 {
+                sync_data.vec_rotation.z = Transform::quaternion_to_euler_angles(self.get_rotation()).z;
+            }
+
+            sync_data.quat_rotation = Transform::euler_angles_to_quaternion(sync_data.vec_rotation);
+        } else if sync_data.changed_data_byte & Changed::Rot.to_u8() <= 0 {
+            sync_data.quat_rotation = self.get_rotation();
+        }
+
+        if sync_data.changed_data_byte & Changed::Scale.to_u8() <= 0 {
+            sync_data.scale = self.get_scale();
+        }
+
+        sync_data
     }
 }
 

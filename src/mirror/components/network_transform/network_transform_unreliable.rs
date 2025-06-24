@@ -3,9 +3,9 @@ use crate::macro_network_behaviour::*;
 use crate::metadata_settings::MetadataNetworkBehaviourWrapper;
 use crate::metadata_settings::MetadataNetworkTransformUnreliable;
 use crate::mirror::components::{NetworkTransformBase, SyncData, TransformSnapshot};
+use crate::mirror::TNetworkBehaviour;
 use crate::unity_engine::{GameObject, MonoBehaviour};
 use nalgebra::{Quaternion, Vector3};
-use crate::mirror::TNetworkBehaviour;
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(
@@ -37,6 +37,36 @@ impl NetworkTransformUnreliable {
             return;
         }
 
+        // OnClientToServerSync(syncData);
+        {
+            // 修正同步数据
+            let mut sync_data = self.update_sync_data(&sync_data);
+
+            if self.sync_position {
+                // match self.interpolate_position {
+                //     true => {}
+                //     false => {}
+                // }
+                self.set_position(sync_data.position);
+            }
+
+            if self.sync_rotation {
+                // match self.interpolate_rotation {
+                //     true => {}
+                //     false => {}
+                // }
+                self.set_rotation(sync_data.quat_rotation);
+            }
+
+            if self.sync_scale {
+                // match self.interpolate_scale {
+                //     true => {}
+                //     false => {}
+                // }
+                self.set_scale(sync_data.scale);
+            }
+        }
+
         self.rpc_server_to_client_sync(sync_data);
     }
 
@@ -54,10 +84,7 @@ impl MonoBehaviour for NetworkTransformUnreliable {
 }
 
 impl TNetworkBehaviour for NetworkTransformUnreliable {
-    fn new(
-        _weak_game_object: RevelWeak<GameObject>,
-        metadata: &MetadataNetworkBehaviourWrapper,
-    ) -> Self
+    fn new(_weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
     where
         Self: Sized,
     {
