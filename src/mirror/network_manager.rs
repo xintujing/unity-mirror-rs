@@ -12,7 +12,9 @@ use crate::mirror::NetworkManagerInstance;
 use crate::mirror::{Authenticator, NetworkConnectionToClient, NetworkServer, TNetworkManager};
 use crate::mirror::{AuthenticatorFactory, NetworkManagerFactory};
 use crate::transports::kcp2k2_transport::Kcp2kTransport;
-use crate::unity_engine::{GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager};
+use crate::unity_engine::{
+    GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager,
+};
 use crate::{action, network_manager};
 use kcp2k::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
@@ -107,8 +109,21 @@ pub struct NetworkManager {
     pub on_server_scene_changed: SelfMutAction<(String,), ()>,
     pub on_server_disconnect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_server_ready: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    pub on_server_error: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, TransportError, String), ()>,
-    pub on_server_transport_exception: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, Box<dyn std::error::Error>,), ()>,
+    pub on_server_error: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            TransportError,
+            String,
+        ),
+        (),
+    >,
+    pub on_server_transport_exception: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            Box<dyn std::error::Error>,
+        ),
+        (),
+    >,
     pub on_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
 }
 
@@ -442,7 +457,10 @@ impl NetworkManager {
     }
 
     // 服务器事件处理
-    pub fn on_server_connect_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
+    pub fn on_server_connect_internal(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
         if let Some(authenticator) = &self.authenticator {
             authenticator.on_server_authenticate(connection)
         } else {
@@ -465,11 +483,21 @@ impl NetworkManager {
         self.on_server_connect.call((conn.clone(),));
     }
 
-    pub fn on_server_ready_message_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _message: ReadyMessage, _: TransportChannel) {
+    pub fn on_server_ready_message_internal(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        _message: ReadyMessage,
+        _: TransportChannel,
+    ) {
         self.on_server_ready(connection);
     }
 
-    pub fn on_server_add_player_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _: AddPlayerMessage, _: TransportChannel) {
+    pub fn on_server_add_player_internal(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        _: AddPlayerMessage,
+        _: TransportChannel,
+    ) {
         if self.auto_create_player && self.player_prefab.is_empty() {
             log::error!("The PlayerPrefab is empty on the NetworkManager. Please setup a PlayerPrefab object.");
             return;
@@ -506,7 +534,9 @@ impl NetworkManager {
         if let Some(player_prefab) = Metadata::get_prefab(&self.player_prefab) {
             let mut player = GameObject::instantiate(player_prefab);
             if let Some(start_position) = self.get_start_position() {
-                player.transform = RevelArc::new(start_position);
+                player.transform.local_position = start_position.local_position;
+                player.transform.local_rotation = start_position.local_rotation;
+                player.transform.local_scale = start_position.local_scale;
             }
             player.name = format!("{} [connId={}]", player.name, connection.connection_id);
             NetworkServer::add_player_for_connection(connection, player);
