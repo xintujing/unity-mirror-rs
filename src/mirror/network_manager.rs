@@ -109,21 +109,8 @@ pub struct NetworkManager {
     pub on_server_scene_changed: SelfMutAction<(String,), ()>,
     pub on_server_disconnect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_server_ready: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    pub on_server_error: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            TransportError,
-            String,
-        ),
-        (),
-    >,
-    pub on_server_transport_exception: SelfMutAction<
-        (
-            RevelArc<Box<NetworkConnectionToClient>>,
-            Box<dyn std::error::Error>,
-        ),
-        (),
-    >,
+    pub on_server_error: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, TransportError, String,), ()>,
+    pub on_server_transport_exception: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, Box<dyn std::error::Error>,), ()>,
     pub on_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
 }
 
@@ -310,22 +297,13 @@ impl NetworkManager {
     }
 
     fn register_server_messages(&self) {
-        NetworkServer.on_connected_event =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
-        NetworkServer.on_disconnected_event =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
-        NetworkServer.on_error_event = SelfMutAction::new(self.weak.clone(), Self::on_server_error);
-        NetworkServer.on_transport_exception_event =
-            SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception);
+        NetworkServer.on_connected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
+        NetworkServer.on_disconnected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
+        NetworkServer.on_error_event = SelfMutAction::new(self.weak.clone(), Self::on_server_error_event);
+        NetworkServer.on_transport_exception_event = SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception_event);
 
-        NetworkServer.register_handler::<AddPlayerMessage>(
-            SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal),
-            false,
-        );
-        NetworkServer.replace_handler::<ReadyMessage>(
-            SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal),
-            false,
-        );
+        NetworkServer.register_handler::<AddPlayerMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal), false);
+        NetworkServer.replace_handler::<ReadyMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal), false);
     }
 
     // 服务器设置与启动
@@ -367,42 +345,6 @@ impl NetworkManager {
         } else {
             NetworkServer::spawn_objects();
         }
-    }
-
-    // 场景管理
-    #[action]
-    pub fn server_change_scene(&mut self, new_scene_name: String) {
-        if new_scene_name.is_empty() {
-            log::error!("ServerChangeScene empty scene name");
-            return;
-        }
-
-        if NetworkServer.is_loading_scene && new_scene_name == self.network_scene_name {
-            log::error!("Scene change is already in progress for {}", new_scene_name);
-            return;
-        }
-        if !NetworkServer.active && new_scene_name != self.offline_scene {
-            log::error!("ServerChangeScene can only be called on an active server.");
-            return;
-        }
-
-        NetworkServer::set_all_clients_not_ready();
-        self.set_network_scene_name(&new_scene_name);
-
-        self.on_server_change_scene
-            .call((new_scene_name.to_string(),));
-
-        NetworkServer.is_loading_scene = true;
-
-        WorldManager::load_scene(&new_scene_name, LoadSceneMode::Single);
-
-        if NetworkServer.active {
-            let message =
-                SceneMessage::new(new_scene_name.to_string(), SceneOperation::Normal, false);
-            NetworkServer::send_to_all(message, TransportChannel::Reliable, false);
-        }
-
-        self.start_position_index = 0;
     }
 
     pub fn on_scene_loaded(&mut self, _: String, mode: LoadSceneMode) {
@@ -457,10 +399,7 @@ impl NetworkManager {
     }
 
     // 服务器事件处理
-    pub fn on_server_connect_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-    ) {
+    pub fn on_server_connect_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         if let Some(authenticator) = &self.authenticator {
             authenticator.on_server_authenticate(connection)
         } else {
@@ -483,21 +422,11 @@ impl NetworkManager {
         self.on_server_connect.call((conn.clone(),));
     }
 
-    pub fn on_server_ready_message_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        _message: ReadyMessage,
-        _: TransportChannel,
-    ) {
+    pub fn on_server_ready_message_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _message: ReadyMessage, _: TransportChannel) {
         self.on_server_ready(connection);
     }
 
-    pub fn on_server_add_player_internal(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        _: AddPlayerMessage,
-        _: TransportChannel,
-    ) {
+    pub fn on_server_add_player_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _: AddPlayerMessage, _: TransportChannel) {
         if self.auto_create_player && self.player_prefab.is_empty() {
             log::error!("The PlayerPrefab is empty on the NetworkManager. Please setup a PlayerPrefab object.");
             return;
@@ -512,6 +441,50 @@ impl NetworkManager {
             return;
         }
         self.on_server_add_player(connection)
+    }
+
+    pub fn on_server_error_event(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: TransportError, reason: String) {
+        self.on_server_error.call((connection, error, reason))
+    }
+
+    pub fn on_server_transport_exception_event(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: Box<dyn std::error::Error>) {
+        self.on_server_transport_exception.call((connection, error))
+    }
+
+    // 场景管理
+    #[action]
+    pub fn server_change_scene(&mut self, new_scene_name: String) {
+        if new_scene_name.is_empty() {
+            log::error!("ServerChangeScene empty scene name");
+            return;
+        }
+
+        if NetworkServer.is_loading_scene && new_scene_name == self.network_scene_name {
+            log::error!("Scene change is already in progress for {}", new_scene_name);
+            return;
+        }
+        if !NetworkServer.active && new_scene_name != self.offline_scene {
+            log::error!("ServerChangeScene can only be called on an active server.");
+            return;
+        }
+
+        NetworkServer::set_all_clients_not_ready();
+        self.set_network_scene_name(&new_scene_name);
+
+        self.on_server_change_scene
+            .call((new_scene_name.to_string(),));
+
+        NetworkServer.is_loading_scene = true;
+
+        WorldManager::load_scene(&new_scene_name, LoadSceneMode::Single);
+
+        if NetworkServer.active {
+            let message =
+                SceneMessage::new(new_scene_name.to_string(), SceneOperation::Normal, false);
+            NetworkServer::send_to_all(message, TransportChannel::Reliable, false);
+        }
+
+        self.start_position_index = 0;
     }
 
     #[action]
@@ -541,23 +514,6 @@ impl NetworkManager {
             player.name = format!("{} [connId={}]", player.name, connection.connection_id);
             NetworkServer::add_player_for_connection(connection, player);
         }
-    }
-
-    pub fn on_server_error(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        error: TransportError,
-        reason: String,
-    ) {
-        self.on_server_error.call((connection, error, reason))
-    }
-
-    pub fn on_server_transport_exception(
-        &mut self,
-        connection: RevelArc<Box<NetworkConnectionToClient>>,
-        error: Box<dyn std::error::Error>,
-    ) {
-        self.on_server_transport_exception.call((connection, error))
     }
 
     #[action]
