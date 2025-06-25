@@ -89,11 +89,11 @@ pub struct NetworkManager {
     pub time_interpolation_gui: bool,
     pub spawn_prefabs: Vec<String>,
 
-    max_connections: i32,
-    disconnect_inactive_connections: bool,
-    disconnect_inactive_timeout: f32,
+    pub max_connections: i32,
+    pub disconnect_inactive_connections: bool,
+    pub disconnect_inactive_timeout: f32,
 
-    player_spawn_method: PlayerSpawnMethod,
+    pub player_spawn_method: PlayerSpawnMethod,
     start_position_index: usize,
     start_positions: HashMap<String, Vec<Transform>>,
 
