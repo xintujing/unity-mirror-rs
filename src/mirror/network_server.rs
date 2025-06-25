@@ -985,9 +985,6 @@ impl NetworkServer {
                 identity_game_object.transform.local_scale,
                 payload,
             );
-
-            log::debug!("{} SpawnMessage: {:?}", identity.name(), spawn_message);
-
             connection.send_message(spawn_message, TransportChannel::Reliable);
         }
     }
