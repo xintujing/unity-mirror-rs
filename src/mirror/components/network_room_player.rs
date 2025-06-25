@@ -7,6 +7,7 @@ use crate::mirror::{NetworkManager, NetworkRoomManager, NetworkServer, TNetworkB
 use crate::unity_engine::MonoBehaviour;
 use crate::unity_engine::{GameObject, WorldManager};
 use std::hash::{Hash, Hasher};
+use std::ptr;
 
 #[namespace(prefix = "Mirror")]
 #[network_behaviour(parent(NetworkBehaviour), metadata(MetadataNetworkRoomPlayer))]
@@ -23,7 +24,7 @@ impl Eq for NetworkRoomPlayer {}
 
 impl PartialEq for NetworkRoomPlayer {
     fn eq(&self, other: &Self) -> bool {
-        self.weak == other.weak
+        ptr::eq(self, other)
     }
 }
 
