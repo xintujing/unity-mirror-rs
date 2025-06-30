@@ -348,7 +348,7 @@ impl<T: DataTypeDeserializer> DataTypeDeserializer for &[T] {
             let value = T::deserialize(reader);
             result.push(value);
         }
-        unsafe { std::mem::transmute(result.as_slice()) }
+        unsafe { std::mem::transmute::<&[T], &'static [T]>(result.as_slice()) }
     }
 }
 
