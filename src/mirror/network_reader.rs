@@ -340,7 +340,7 @@ impl<T: DataTypeDeserializer> DataTypeDeserializer for Vec<T> {
     }
 }
 
-impl<T: DataTypeDeserializer + 'static> DataTypeDeserializer for &[T] {
+impl<T: DataTypeDeserializer> DataTypeDeserializer for &'static [T] {
     fn deserialize(reader: &mut NetworkReader) -> Self {
         let mut result: Vec<T> = DataTypeDeserializer::deserialize(reader);
         unsafe { std::mem::transmute::<&[T], &'static [T]>(result.as_slice()) }
