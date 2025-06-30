@@ -5,6 +5,7 @@ use crate::mirror::compress::Compress;
 use crate::mirror::NetworkWriter;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use std::sync::Mutex;
 
 pub trait ReadCompress {
     fn decompress(reader: &mut NetworkReader) -> Self
@@ -340,10 +341,10 @@ impl<T: DataTypeDeserializer> DataTypeDeserializer for Vec<T> {
     }
 }
 
-impl<T: DataTypeDeserializer> DataTypeDeserializer for &'static [T] {
+impl<T: DataTypeDeserializer> DataTypeDeserializer for &[T] {
     fn deserialize(reader: &mut NetworkReader) -> Self {
         let mut result: Vec<T> = DataTypeDeserializer::deserialize(reader);
-        unsafe { std::mem::transmute::<&[T], &'static [T]>(result.as_slice()) }
+        Box::leak(result.into_boxed_slice())
     }
 }
 
