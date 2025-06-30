@@ -340,14 +340,9 @@ impl<T: DataTypeDeserializer> DataTypeDeserializer for Vec<T> {
     }
 }
 
-impl<T: DataTypeDeserializer> DataTypeDeserializer for &[T] {
+impl<T: DataTypeDeserializer + 'static> DataTypeDeserializer for &[T] {
     fn deserialize(reader: &mut NetworkReader) -> Self {
-        let size = reader.read_blittable_compress::<u64>() as usize - 1;
-        let mut result = Vec::with_capacity(size);
-        for i in 0..size {
-            let value = T::deserialize(reader);
-            result.push(value);
-        }
+        let mut result: Vec<T> = DataTypeDeserializer::deserialize(reader);
         unsafe { std::mem::transmute::<&[T], &'static [T]>(result.as_slice()) }
     }
 }

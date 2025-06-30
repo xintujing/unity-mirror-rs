@@ -304,22 +304,14 @@ data_type_serialize!(
 
 impl<T: DataTypeSerializer> DataTypeSerializer for Vec<T> {
     fn serialize(&self, writer: &mut NetworkWriter) {
-        if self.len() == 0 {
-            writer.write_blittable_compress::<u64>(0);
-            return;
-        }
-
-        writer.write_blittable_compress::<u64>(self.len() as u64 + 1);
-        for item in self {
-            item.serialize(writer);
-        }
+        self.as_slice().serialize(writer);
     }
 }
 
 impl<T: DataTypeSerializer> DataTypeSerializer for &[T] {
     fn serialize(&self, writer: &mut NetworkWriter) {
         writer.write_blittable_compress::<u64>(self.len() as u64 + 1);
-        for item in *self {
+        for item in self.iter() {
             item.serialize(writer);
         }
     }

@@ -1,4 +1,6 @@
 #![allow(dead_code, unused)]
+extern crate core;
+
 pub mod commons;
 pub mod metadata_settings;
 pub mod mirror;
