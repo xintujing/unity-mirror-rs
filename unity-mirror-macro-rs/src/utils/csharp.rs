@@ -24,7 +24,7 @@ pub(crate) fn to_csharp_function_inputs(
                 });
             }
             Some(r#type) => {
-                params.push(quote! { #r#type.to_string() });
+                params.push(quote! { #r#type });
             }
         }
     }
