@@ -273,6 +273,7 @@ pub trait DataTypeSerializer {
         Self: Sized;
 }
 
+#[macro_export]
 macro_rules! data_type_serialize {
     (($($typ:ty),*), $logic:expr) => {
         $(

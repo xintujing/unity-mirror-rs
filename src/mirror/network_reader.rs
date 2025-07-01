@@ -295,16 +295,17 @@ impl NetworkReader {
 }
 
 pub trait DataTypeDeserializer {
-    fn deserialize(#[allow(unused)] reader: &mut NetworkReader) -> Self
+    fn deserialize(reader: &mut NetworkReader) -> Self
     where
         Self: Sized;
 }
 
+#[macro_export]
 macro_rules! data_type_deserialize {
     (($($typ:ty),*), {$closure:expr}) => {
         $(
             impl DataTypeDeserializer for $typ {
-                fn deserialize(#[allow(unused)] reader: &mut NetworkReader) -> Self {
+                fn deserialize(reader: &mut NetworkReader) -> Self {
                     let closure: &dyn Fn(&mut NetworkReader)->Self = &$closure;
                     closure(reader)
                 }
@@ -331,7 +332,7 @@ data_type_deserialize!(
 );
 
 impl<T: DataTypeDeserializer> DataTypeDeserializer for Vec<T> {
-    fn deserialize(#[allow(unused)] reader: &mut NetworkReader) -> Self {
+    fn deserialize(reader: &mut NetworkReader) -> Self {
         let size = reader.read_blittable_compress::<u64>() as usize - 1;
         let mut result = Vec::with_capacity(size);
         for _ in 0..size {
