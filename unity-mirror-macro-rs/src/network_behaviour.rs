@@ -220,24 +220,37 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             pub fn #set_sync_field_ident(&mut self, value: #field_type) {
 
-                 let old_value = unsafe {
+                let old_value_buffer = unsafe {
                     let mut value_buffer = [0u8; size_of::<#field_type>()];
                     std::ptr::copy_nonoverlapping(
                         &self.#field as *const #field_type as *const u8,
                         value_buffer.as_mut_ptr(),
                         size_of::<#field_type>(),
                     );
-                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(value_buffer)
+                    value_buffer
                 };
 
-                let new_value = unsafe {
+                let new_value_buffer = unsafe {
                     let mut value_buffer = [0u8; size_of::<#field_type>()];
                     std::ptr::copy_nonoverlapping(
                         &value as *const #field_type as *const u8,
                         value_buffer.as_mut_ptr(),
                         size_of::<#field_type>(),
                     );
-                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(value_buffer)
+                    value_buffer
+                };
+
+                if old_value_buffer == new_value_buffer {
+                    return;
+                }
+
+                 let old_value = unsafe {
+                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(old_value_buffer)
+                };
+
+
+                let new_value = unsafe {
+                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(new_value_buffer)
                 };
 
                 self.#field = value;
