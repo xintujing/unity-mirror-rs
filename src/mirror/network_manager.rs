@@ -507,9 +507,8 @@ impl NetworkManager {
         if let Some(player_prefab) = Metadata::get_prefab(&self.player_prefab) {
             let mut player = GameObject::instantiate(player_prefab);
             if let Some(start_position) = self.get_start_position() {
-                player.transform.local_position = start_position.local_position;
-                player.transform.local_rotation = start_position.local_rotation;
-                player.transform.local_scale = start_position.local_scale;
+                player.transform.position = start_position.position;
+                player.transform.rotation = start_position.rotation;
             }
             player.name = format!("{} [connId={}]", player.name, connection.connection_id);
             NetworkServer::add_player_for_connection(connection, player);
