@@ -560,7 +560,6 @@ impl NetworkIdentity {
 
         self.observers.insert(conn.connection_id, conn.downgrade());
         if let Some(self_arc) = self.self_weak.upgrade() {
-            log::debug!("has network_behaviours: {}", self.network_behaviours.len());
             conn.add_to_observing(self_arc)
         }
     }
