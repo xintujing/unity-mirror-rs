@@ -1154,7 +1154,8 @@ impl NetworkServer {
     }
 
     pub fn broadcast_to_connection(mut connection: RevelArc<Box<NetworkConnectionToClient>>) {
-        for weak_identity in connection.clone().observing.iter() {
+        let observing = connection.observing.clone();
+        for weak_identity in observing.iter() {
             match weak_identity.get() {
                 None => {
                     connection.observing.retain(|x| x.upgradable());
