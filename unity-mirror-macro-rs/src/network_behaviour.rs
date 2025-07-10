@@ -175,7 +175,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
 
         serialize_sync_objs_delta_ts.push(quote! {
-            self.#field.on_serialize_delta(writer);
+            if (dirty_bits & (1u64 << (self.obj_start_offset + #field_index as u8))) != 0 {
+                self.#field.on_serialize_delta(writer);
+            }
         });
 
         deserialize_sync_objs_all_ts.push(quote! {
@@ -183,7 +185,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
 
         deserialize_sync_objs_delta_ts.push(quote! {
-            self.#field.on_deserialize_delta(reader);
+            if (dirty_bits & (1u64 << (self.obj_start_offset + #field_index as u8))) != 0 {
+                self.#field.on_deserialize_delta(reader);
+            }
         });
 
         clear_sync_objs_changes_ts.push(quote! {
@@ -453,7 +457,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn serialize_sync_object_delta(&mut self, writer: &mut NetworkWriter) {
-                    #(#serialize_sync_objs_delta_ts)*
+                    if let Some(mut network_behaviour) = self.ancestor.get() {
+                        let dirty_bits = network_behaviour.sync_object_dirty_bits;
+                        #(#serialize_sync_objs_delta_ts)*
+                    }
                 }
 
                 fn serialize_sync_vars(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
@@ -488,7 +495,10 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn deserialize_sync_object_delta(&mut self, reader: &mut NetworkReader) {
-                    #(#deserialize_sync_objs_delta_ts)*
+                    if let Some(mut network_behaviour) = self.ancestor.get() {
+                        let dirty_bits = network_behaviour.sync_object_dirty_bits;
+                        #(#deserialize_sync_objs_delta_ts)*
+                    }
                 }
 
                 fn deserialize_sync_vars(&mut self, reader: &mut NetworkReader, initial_state: bool) {
