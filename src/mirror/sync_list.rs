@@ -1,4 +1,6 @@
+use crate::commons::action::SelfMutAction;
 use crate::commons::RevelWeak;
+use crate::macro_callback_processor::TransportChannel;
 use crate::mirror::sync_object::SyncObject;
 use crate::mirror::NetworkBehaviour;
 use crate::mirror::{DataTypeDeserializer, NetworkReader};
@@ -43,14 +45,14 @@ pub struct SyncList<T: PartialEq + Clone + Default + DataTypeSerializer + DataTy
     /// <para>For OP_ADD and OP_INSERT, T is the NEW value of the entry.</para>
     /// <para>For OP_SET and OP_REMOVE, T is the OLD value of the entry.</para>
     /// <para>For OP_CLEAR, T is default.</para>
-    pub on_change: Option<fn(Operation, usize, &T)>,
+    pub on_change: SelfMutAction<(Operation, usize, T), ()>,
     /// <summary>
     /// This is called for all changes to the List.
     /// Parameters: Operation, index, oldItem, newItem.
     /// Sometimes we need both oldItem and newItem.
     /// Keep for compatibility since 10 years of projects use this.
     /// </summary>
-    pub call_back: Option<fn(Operation, usize, &T, &T)>,
+    pub call_back: SelfMutAction<(Operation, usize, T, T), ()>,
 
     changes: Vec<Change<T>>,
     change_ahead: usize,
@@ -127,20 +129,12 @@ impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer>
 
         match operation {
             Operation::OpAdd | Operation::OpInsert | Operation::OpClear => {
-                if let Some(on_change) = self.on_change {
-                    on_change(operation, item_index, nv);
-                }
-                if let Some(call_back) = self.call_back {
-                    call_back(operation, item_index, ov, nv);
-                }
+                self.on_change.call((operation, item_index, nv.clone()));
+                self.call_back.call((operation, item_index, ov.clone(), nv.clone()));
             }
             Operation::OpSet | Operation::OpRemoveAt => {
-                if let Some(on_change) = self.on_change {
-                    on_change(operation, item_index, ov);
-                }
-                if let Some(call_back) = self.call_back {
-                    call_back(operation, item_index, ov, nv);
-                }
+                self.on_change.call((operation, item_index, ov.clone()));
+                self.call_back.call((operation, item_index, ov.clone(), nv.clone()));
             }
         }
     }
@@ -211,8 +205,8 @@ for SyncList<T>
             network_behaviour: Default::default(),
             index: 0,
             value: Self::Item::new(),
-            on_change: None,
-            call_back: None,
+            on_change: SelfMutAction::default(),
+            call_back: SelfMutAction::default(),
             changes: Vec::new(),
             change_ahead: 0,
         }
@@ -223,8 +217,8 @@ for SyncList<T>
             network_behaviour: Default::default(),
             index: 0,
             value,
-            on_change: None,
-            call_back: None,
+            on_change: SelfMutAction::default(),
+            call_back: SelfMutAction::default(),
             changes: Vec::new(),
             change_ahead: 0,
         }

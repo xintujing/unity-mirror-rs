@@ -1,10 +1,11 @@
 use crate::backend_metadata::tank::MetadataTank;
 use nalgebra::{Quaternion, Vector3};
 use std::any::{Any, TypeId};
+use unity_mirror_rs::commons::action::SelfMutAction;
 use unity_mirror_rs::macro_namespace::*;
 use unity_mirror_rs::macro_network_behaviour::*;
 use unity_mirror_rs::metadata_settings::{Metadata, MetadataNetworkBehaviourWrapper};
-use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, SyncList, TNetworkBehaviour};
+use unity_mirror_rs::mirror::{NetworkConnectionToClient, NetworkServer, Operation, SyncList, TNetworkBehaviour};
 use unity_mirror_rs::unity_engine::{GameObject, MonoBehaviour, Transform};
 
 #[namespace]
@@ -22,9 +23,14 @@ pub struct Tank {
     u32_list: SyncList<u32>,
 }
 
+
 impl TankOnChangeCallback for Tank {}
 
-impl MonoBehaviour for Tank {}
+impl MonoBehaviour for Tank {
+    fn on_enable(&mut self) {
+        self.u32_list.on_change = SelfMutAction::new(self.weak.clone(), Tank::on_u32_list_changed);
+    }
+}
 
 impl TNetworkBehaviour for Tank {
     fn new(_weak_game_object: RevelWeak<GameObject>, metadata: &MetadataNetworkBehaviourWrapper) -> Self
@@ -38,6 +44,12 @@ impl TNetworkBehaviour for Tank {
             tank.projectile_prefab = config.projectile_prefab.asset_path.clone();
         }
         tank
+    }
+}
+
+impl Tank {
+    fn on_u32_list_changed(&mut self, _op: Operation, _index: usize, _value: u32) {
+        log::info!("u32_list changed: op={:?}, index={}, value={}", _op, _index, _value);
     }
 }
 
