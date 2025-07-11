@@ -321,7 +321,9 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                 self.#field = value;
 
-                self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
+                if self.parent.upgradable() {
+                    self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
+                }
 
                 self.#on_change_callback_ident(&old_value, &new_value)
             }
