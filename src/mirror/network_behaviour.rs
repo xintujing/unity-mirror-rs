@@ -1,15 +1,15 @@
 use crate::commons::Object;
 use crate::commons::RevelArc;
 use crate::commons::RevelWeak;
+use crate::macro_namespace::*;
 use crate::metadata_settings::{MetadataNetworkBehaviour, MetadataNetworkBehaviourWrapper, MetadataSyncDirection, MetadataSyncMode};
 use crate::mirror::messages::rpc_message::RpcMessage;
 use crate::mirror::transport::TransportChannel;
-use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
 use crate::mirror::{NetworkConnectionToClient, NetworkIdentity};
-use crate::macro_namespace::*;
+use crate::mirror::{NetworkReader, NetworkTime};
+use crate::unity_engine::Transform;
 use crate::unity_engine::{GameObject, MonoBehaviour};
-use crate::unity_engine::{Time, Transform};
 use std::any::TypeId;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -50,7 +50,7 @@ pub struct NetworkBehaviour {
     pub sync_direction: SyncDirection,
     pub sync_mode: SyncMode,
     pub sync_interval: f32,
-    last_sync_time: f64,
+    pub last_sync_time: f64,
 
     pub component_index: u8,
 
@@ -216,8 +216,7 @@ impl NetworkBehaviourBase for NetworkBehaviour {
     }
 
     fn is_dirty(&self) -> bool {
-        (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64
-            && Time::unscaled_time_f64() - self.last_sync_time > self.sync_interval as f64
+        (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64 && NetworkTime.local_time() - self.last_sync_time > self.sync_interval as f64
     }
 
     fn get_sync_direction(&self) -> &SyncDirection {

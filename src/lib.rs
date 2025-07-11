@@ -66,6 +66,7 @@ pub mod macro_network_manager {
 pub mod macro_network_behaviour {
     pub use super::commons::RevelArc;
     pub use super::commons::RevelWeak;
+    pub use super::metadata_settings::MetadataNetworkBehaviourWrapper;
     pub use super::mirror::DataTypeDeserializer;
     pub use super::mirror::DataTypeSerializer;
     pub use super::mirror::NetworkBehaviour;
@@ -78,6 +79,7 @@ pub mod macro_network_behaviour {
     pub use super::mirror::NetworkConnectionToClient;
     pub use super::mirror::NetworkIdentity;
     pub use super::mirror::NetworkReader;
+    pub use super::mirror::NetworkTime;
     pub use super::mirror::NetworkWriter;
     pub use super::mirror::NetworkWriterPool;
     pub use super::mirror::RemoteProcedureCalls;
@@ -86,13 +88,10 @@ pub mod macro_network_behaviour {
     pub use super::mirror::SyncMode;
     pub use super::mirror::SyncObject;
     pub use super::mirror::TBaseNetworkBehaviour;
-    pub use super::mirror::TransportChannel;
     pub use super::mirror::TNetworkBehaviour;
-    pub use super::metadata_settings::MetadataNetworkBehaviourWrapper;
-    pub use super::unity_engine::MonoBehaviour;
+    pub use super::mirror::TransportChannel;
     pub use super::unity_engine::GameObject;
-    pub use unity_mirror_macro_rs::ancestor_on_deserialize;
-    pub use unity_mirror_macro_rs::ancestor_on_serialize;
+    pub use super::unity_engine::MonoBehaviour;
     pub use unity_mirror_macro_rs::client_rpc;
     pub use unity_mirror_macro_rs::command;
     pub use unity_mirror_macro_rs::network_behaviour;

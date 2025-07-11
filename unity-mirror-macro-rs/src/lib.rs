@@ -89,16 +89,6 @@ pub fn derive_sync_state(_: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn ancestor_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
-    network_behaviour::ancestor_on_serialize(attr, item)
-}
-
-#[proc_macro_attribute]
-pub fn ancestor_on_deserialize(attr: TokenStream, item: TokenStream) -> TokenStream {
-    network_behaviour::ancestor_on_deserialize(attr, item)
-}
-
-#[proc_macro_attribute]
 pub fn parent_on_serialize(attr: TokenStream, item: TokenStream) -> TokenStream {
     network_behaviour::parent_on_serialize(attr, item)
 }

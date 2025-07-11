@@ -96,11 +96,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     // 扩展字段
     let mut ext_fields = Punctuated::<Field, Comma>::new();
 
-    // 它的祖先 ancestor
-    ext_fields.push(parse_quote!(
-        pub(super) ancestor: RevelWeak<Box<NetworkBehaviour>>
-    ));
-
     let mut parent_slot = None;
 
     // 它的父组件
@@ -229,7 +224,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     for (field_index, field) in sync_obj_fields.iter().enumerate() {
         init_sync_objs.push(quote! {
-            this.#field.set_network_behaviour(this.ancestor.clone());
+            // 祖先弱指针
+            if let Some((arc_nb, _)) = network_behaviour_chain.first() {
+                if let Some(weak_nb) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
+                    this.#field.set_network_behaviour(weak_nb.clone());
+                }
+            }
             this.#field.set_index(#field_index as u8 + this.obj_start_offset);
         });
 
@@ -238,7 +238,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
 
         serialize_sync_objs_delta_ts.push(quote! {
-            if (dirty_bits & (1u64 << (self.obj_start_offset + #field_index as u8))) != 0 {
+            if (self.sync_object_dirty_bits & (1u64 << (self.obj_start_offset + #field_index as u8))) != 0 {
                 self.#field.on_serialize_delta(writer);
             }
         });
@@ -248,7 +248,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
 
         deserialize_sync_objs_delta_ts.push(quote! {
-            if (dirty_bits & (1u64 << (self.obj_start_offset + #field_index as u8))) != 0 {
+            if (self.sync_object_dirty_bits & (1u64 << (self.obj_start_offset + #field_index as u8))) != 0 {
                 self.#field.on_deserialize_delta(reader);
             }
         });
@@ -268,13 +268,13 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         let set_sync_field_ident = format_ident!("set_{}", field);
         let on_change_callback_ident = format_ident!("on_{}_changed", field);
         serialize_sync_var_ts.push(quote! {
-            if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
+            if initial_state || (self.sync_var_dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
                 self.#field.serialize(writer);
             }
         });
 
         deserialize_sync_var_ts.push(quote! {
-            if initial_state || (dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
+            if initial_state || (self.sync_var_dirty_bits & (1u64 << (self.var_start_offset + #field_index as u8))) != 0 {
                 self.#set_sync_field_ident(<#field_type as DataTypeDeserializer>::deserialize(reader));
             }
         });
@@ -321,9 +321,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                 self.#field = value;
 
-                if let Some(mut network_behaviour) = self.ancestor.get() {
-                    network_behaviour.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
-                }
+                self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
 
                 self.#on_change_callback_ident(&old_value, &new_value)
             }
@@ -362,13 +360,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                         *sync_object_offset += #sync_obj_count as u8;
                         *sync_var_offset += #sync_var_count as u8;
-                    }
-
-                     // 祖先弱指针
-                    if let Some((arc_nb, _)) = network_behaviour_chain.first() {
-                        if let Some(weak_nb) = arc_nb.downgrade().downcast::<NetworkBehaviour>() {
-                            this.ancestor = weak_nb.clone();
-                        }
                     }
 
                     // 父亲弱指针
@@ -421,10 +412,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn is_dirty(&self) -> bool {
-                    if let Some(ancestor) = self.ancestor.get() {
-                        return ancestor.is_dirty();
-                    }
-                    false
+                    (self.sync_var_dirty_bits | self.sync_object_dirty_bits) != 0u64 && NetworkTime.local_time() - self.last_sync_time > self.sync_interval as f64
                 }
 
                 fn get_sync_direction(&self) -> &SyncDirection {
@@ -458,10 +446,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn serialize_sync_object_delta(&mut self, writer: &mut NetworkWriter) {
-                    if let Some(mut network_behaviour) = self.ancestor.get() {
-                        let dirty_bits = network_behaviour.sync_object_dirty_bits;
-                        #(#serialize_sync_objs_delta_ts)*
-                    }
+                    #(#serialize_sync_objs_delta_ts)*
                 }
 
                 fn serialize_sync_vars(&mut self, writer: &mut NetworkWriter, initial_state: bool) {
@@ -469,15 +454,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         return;
                     }
 
-                    if let Some(mut network_behaviour) = self.ancestor.get() {
-                        let dirty_bits = network_behaviour.sync_var_dirty_bits;
-                        if initial_state{
-                            #(#serialize_sync_var_ts)*
-                            return;
-                        }
-                        writer.write_blittable_compress::<u64>(dirty_bits);
+                    if initial_state{
                         #(#serialize_sync_var_ts)*
+                        return;
                     }
+                    writer.write_blittable_compress::<u64>(self.sync_var_dirty_bits);
+                    #(#serialize_sync_var_ts)*
                 }
             }
 
@@ -496,10 +478,7 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
 
                 fn deserialize_sync_object_delta(&mut self, reader: &mut NetworkReader) {
-                    if let Some(mut network_behaviour) = self.ancestor.get() {
-                        let dirty_bits = network_behaviour.sync_object_dirty_bits;
-                        #(#deserialize_sync_objs_delta_ts)*
-                    }
+                    #(#deserialize_sync_objs_delta_ts)*
                 }
 
                 fn deserialize_sync_vars(&mut self, reader: &mut NetworkReader, initial_state: bool) {
@@ -507,16 +486,12 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
                         return;
                     }
 
-                    if let Some(mut network_behaviour) = self.ancestor.get() {
-                        let mut dirty_bits = 0;
-                        if initial_state{
-                            #(#deserialize_sync_var_ts)*
-                            return;
-                        }
-                        network_behaviour.sync_var_dirty_bits = reader.read_blittable::<u64>();
-                        dirty_bits = network_behaviour.sync_var_dirty_bits;
+                    if initial_state{
                         #(#deserialize_sync_var_ts)*
+                        return;
                     }
+                    self.sync_var_dirty_bits = reader.read_blittable::<u64>();
+                    #(#deserialize_sync_var_ts)*
                 }
             }
 
@@ -540,40 +515,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         impl TBaseNetworkBehaviour for #struct_ident {
         }
 
-    })
-}
-
-pub(crate) fn ancestor_on_serialize(_: TokenStream, item: TokenStream) -> TokenStream {
-    let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
-
-    item_fn.block.stmts.insert(
-        0,
-        parse_quote!({
-            if let Some(mut ancestor) = self.ancestor.get() {
-                ancestor.on_serialize(writer, initial_state);
-            }
-        }),
-    );
-
-    TokenStream::from(quote! {
-        #item_fn
-    })
-}
-
-pub(crate) fn ancestor_on_deserialize(_: TokenStream, item: TokenStream) -> TokenStream {
-    let mut item_fn = syn::parse_macro_input!(item as syn::ItemFn);
-
-    item_fn.block.stmts.insert(
-        0,
-        parse_quote!({
-            if let Some(mut ancestor) = self.ancestor.get() {
-                ancestor.on_deserialize(reader, initial_state);
-            }
-        }),
-    );
-
-    TokenStream::from(quote! {
-        #item_fn
     })
 }
 
