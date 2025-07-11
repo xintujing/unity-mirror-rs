@@ -93,6 +93,69 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[derive(Default, Debug, SyncState)]
     ));
 
+    // 扩展字段
+    let mut ext_fields = Punctuated::<Field, Comma>::new();
+
+    // 它的祖先 ancestor
+    ext_fields.push(parse_quote!(
+        pub(super) ancestor: RevelWeak<Box<NetworkBehaviour>>
+    ));
+
+    let mut parent_slot = None;
+
+    // 它的父组件
+    if let Some(parent_path) = &parent {
+        // 父组件字段
+        ext_fields.push(parse_quote! {
+            pub(super) parent: RevelWeak<Box<#parent_path>>
+        });
+
+        parent_slot = Some(quote! {
+            impl core::ops::Deref for #struct_ident {
+                type Target = Box<#parent_path>;
+
+                fn deref(&self) -> &Self::Target {
+                    self.parent.get().unwrap()
+                }
+            }
+
+            impl core::ops::DerefMut for #struct_ident {
+                fn deref_mut(&mut self) -> &mut Self::Target {
+                    self.parent.get().unwrap()
+                }
+            }
+        })
+    }
+
+    // weak self
+    ext_fields.push(parse_quote!(
+        pub(super) weak: RevelWeak<Box<Self>>
+    ));
+
+    // obj偏移
+    ext_fields.push(parse_quote!(
+        obj_start_offset: u8
+    ));
+
+    // var偏移
+    ext_fields.push(parse_quote!(
+        var_start_offset: u8
+    ));
+
+    // 扩展字段
+    match &mut item_struct.fields {
+        Fields::Named(fields_named) => {
+            fields_named.named.extend(ext_fields);
+        }
+        _ => {}
+    }
+
+    // 私有模块
+    let this_struct_private_mod_ident = format_ident!(
+        "private_component_{}",
+        struct_ident.to_string().to_snake_case().to_lowercase()
+    );
+
     let mut on_serialize_ts = Vec::new();
     if !not_impl_nos {
         on_serialize_ts.push(quote! {
@@ -199,7 +262,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut deserialize_sync_var_ts = Vec::new();
     let mut sync_variable_getter_setter = vec![];
     let mut on_change_callback_ts = Vec::new();
-    let mut parent_slot = None;
 
     for (field_index, (field, field_type)) in sync_var_fields.iter().enumerate() {
         let get_sync_field_ident = format_ident!("get_{}", field);
@@ -271,67 +333,6 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             fn #on_change_callback_ident(&mut self, old_value: &#field_type, new_value: &#field_type){}
         });
     }
-
-    // 扩展字段
-    let mut ext_fields = Punctuated::<Field, Comma>::new();
-
-    // 它的祖先 ancestor
-    ext_fields.push(parse_quote!(
-        pub(super) ancestor: RevelWeak<Box<NetworkBehaviour>>
-    ));
-
-    // 它的父组件
-    if let Some(parent_path) = &parent {
-        // 父组件字段
-        ext_fields.push(parse_quote! {
-            pub(super) parent: RevelWeak<Box<#parent_path>>
-        });
-
-        parent_slot = Some(quote! {
-            impl core::ops::Deref for #struct_ident {
-                type Target = Box<#parent_path>;
-
-                fn deref(&self) -> &Self::Target {
-                    self.parent.get().unwrap()
-                }
-            }
-
-            impl core::ops::DerefMut for #struct_ident {
-                fn deref_mut(&mut self) -> &mut Self::Target {
-                    self.parent.get().unwrap()
-                }
-            }
-        })
-    }
-
-    // weak self
-    ext_fields.push(parse_quote!(
-        pub(super) weak: RevelWeak<Box<Self>>
-    ));
-
-    // obj偏移
-    ext_fields.push(parse_quote!(
-        obj_start_offset: u8
-    ));
-
-    // var偏移
-    ext_fields.push(parse_quote!(
-        var_start_offset: u8
-    ));
-
-    // 扩展字段
-    match &mut item_struct.fields {
-        Fields::Named(fields_named) => {
-            fields_named.named.extend(ext_fields);
-        }
-        _ => {}
-    }
-
-    // 私有模块
-    let this_struct_private_mod_ident = format_ident!(
-        "private_component_{}",
-        struct_ident.to_string().to_snake_case().to_lowercase()
-    );
 
     TokenStream::from(quote! {
         mod #this_struct_private_mod_ident {
