@@ -6,7 +6,7 @@ use nalgebra::{Matrix3, Matrix4, Quaternion, Translation3, UnitQuaternion, Vecto
 
 #[derive(Default, Clone, Debug)]
 pub struct Transform {
-    pub instance_id: i32,
+    pub(super) instance_id: i32,
 
     pub parent: RevelWeak<Transform>,
     pub children: Vec<RevelWeak<Transform>>,

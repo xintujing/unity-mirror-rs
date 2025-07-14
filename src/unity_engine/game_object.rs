@@ -10,29 +10,6 @@ use once_cell::sync::Lazy;
 use rand::RngCore;
 use std::any::TypeId;
 use std::collections::HashMap;
-// 
-// static mut COMPONENT_LOADING: Lazy<Vec<(RevelWeak<GameObject>, MetadataComponentWrapper)>> =
-//     Lazy::new(|| vec![]);
-// 
-// fn append_component_loading(
-//     weak_game_object: RevelWeak<GameObject>,
-//     component: MetadataComponentWrapper,
-// ) {
-//     #[allow(static_mut_refs)]
-//     unsafe {
-//         COMPONENT_LOADING.push((weak_game_object, component));
-//     }
-// }
-// 
-// fn component_loading() {
-//     #[allow(static_mut_refs)]
-//     unsafe {
-//         COMPONENT_LOADING.reverse();
-//         while let Some((arc_game_object, metadata_prefab)) = COMPONENT_LOADING.pop() {
-//             GameObject::load_component(arc_game_object, &metadata_prefab);
-//         }
-//     }
-// }
 
 #[derive(Default)]
 pub struct GameObject {
@@ -104,11 +81,6 @@ impl GameObject {
 
         game_object.transform = RevelArc::new(transform);
         let mut arc_game_object = RevelArc::new(game_object);
-
-        // append_component_loading(
-        //     arc_game_object.downgrade(),
-        //     metadata_prefab.components.clone(),
-        // );
 
         arc_game_object.transform.game_object = arc_game_object.downgrade();
         arc_game_object
@@ -242,23 +214,6 @@ impl GameObject {
         }
         result
     }
-
-    // pub fn find_component<T: MonoBehaviour>(
-    //     &self,
-    //     t: impl Any,
-    // ) -> Option<RevelWeak<Box<dyn MonoBehaviour>>> {
-    //     let x = t as *const dyn MonoBehaviour;
-    //     // let x1 = x.eq(&self.components.as_ptr());
-    //
-    //     for component in self.components.iter() {
-    //         let x2 = component.last().unwrap().as_ref();
-    //         let x3 = x2 as *const dyn MonoBehaviour;
-    //         if x == x3 {
-    //             return Some(component.last().unwrap().downgrade());
-    //         }
-    //     }
-    //     None
-    // }
 
     pub fn find_transform(&self, instance_id: &i32) -> Option<RevelWeak<Transform>> {
         if self.transform.instance_id == *instance_id {
