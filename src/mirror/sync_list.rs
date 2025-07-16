@@ -185,6 +185,12 @@ impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer>
         }
     }
 
+    pub fn remove_range(&mut self, values: Vec<T>) {
+        for value in values {
+            self.remove(&value);
+        }
+    }
+
     pub fn clear(&mut self) {
         self.add_operation(Operation::OpClear, 0, &T::default(), &T::default(), true);
         self.value.clear();
