@@ -520,5 +520,8 @@ impl NetworkManager {
     pub fn on_server_scene_changed(&mut self, _scene_name: String) {}
 
     #[action]
+    pub fn on_start_server(&mut self) {}
+
+    #[action]
     pub fn on_stop_server(&mut self) {}
 }
