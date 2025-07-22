@@ -2,7 +2,7 @@ use crate::metadata_settings::unity::metadata_component::MetadataComponentWrappe
 use crate::metadata_settings::unity::metadata_transform::MetadataTransform;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 #[allow(unused)]
 pub struct MetadataPrefab {
     pub id: i32,
