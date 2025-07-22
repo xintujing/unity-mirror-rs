@@ -1,6 +1,8 @@
+use crate::metadata_settings::Metadata;
 use crate::mirror::NetworkLoop;
 use crate::unity_engine::time::Time;
 use crate::unity_engine::world::WorldManager;
+use crate::unity_engine::LoadSceneMode;
 use std::time::Instant;
 
 pub struct PlayerLooper {
@@ -9,6 +11,10 @@ pub struct PlayerLooper {
 }
 
 impl PlayerLooper {
+    pub fn init() {
+        WorldManager::load_scene(Metadata::get_start_scene().asset_path.as_str(), LoadSceneMode::Single);
+    }
+
     pub fn run() {
         PlayerLooper {
             last_frame_time: Instant::now(),
