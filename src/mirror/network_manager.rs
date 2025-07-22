@@ -486,7 +486,19 @@ impl NetworkManager {
     }
 
     #[action]
+    pub fn on_start_server(&mut self) {}
+
+    #[action]
+    pub fn on_stop_server(&mut self) {}
+
+    #[action]
     pub fn on_server_connect(&mut self, _conn: RevelArc<Box<NetworkConnectionToClient>>) {}
+
+    #[action]
+    pub fn on_server_change_scene(&mut self, _new_scene_name: String) {}
+
+    #[action]
+    pub fn on_server_scene_changed(&mut self, _scene_name: String) {}
 
     #[action]
     pub fn on_server_disconnect(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
@@ -501,6 +513,12 @@ impl NetworkManager {
     }
 
     #[action]
+    pub fn on_server_error(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: TransportError, reason: String) {}
+
+    #[action]
+    pub fn on_server_transport_exception(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: Box<dyn std::error::Error>) {}
+
+    #[action]
     pub fn on_server_add_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
         if let Some(player_prefab) = Metadata::get_prefab(&self.player_prefab) {
             let mut player = GameObject::instantiate(player_prefab);
@@ -512,16 +530,4 @@ impl NetworkManager {
             NetworkServer::add_player_for_connection(connection, player);
         }
     }
-
-    #[action]
-    pub fn on_server_change_scene(&mut self, _new_scene_name: String) {}
-
-    #[action]
-    pub fn on_server_scene_changed(&mut self, _scene_name: String) {}
-
-    #[action]
-    pub fn on_start_server(&mut self) {}
-
-    #[action]
-    pub fn on_stop_server(&mut self) {}
 }
