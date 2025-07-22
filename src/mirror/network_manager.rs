@@ -139,9 +139,7 @@ impl MonoBehaviour for NetworkManager {
     fn start(&mut self) {
         self.start_server()
     }
-    fn update(&mut self) {
-        self.on_start_server.call(());
-    }
+    fn update(&mut self) {}
 
     fn late_update(&mut self) {
         self.update_scene()
