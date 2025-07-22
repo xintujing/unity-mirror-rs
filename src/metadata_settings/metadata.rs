@@ -49,6 +49,13 @@ impl Metadata {
 }
 
 impl Metadata {
+    pub(crate) fn get_start_scene() -> &'static MetadataAsset {
+        #[allow(static_mut_refs)]
+        unsafe {
+            &METADATA.start_scene
+        }
+    }
+
     pub fn get_prefab(prefab_path: &str) -> Option<&MetadataPrefab> {
         #[allow(static_mut_refs)]
         unsafe {
