@@ -60,16 +60,10 @@ pub struct MetadataSnapshotSettings {
 pub struct MetadataNetworkManager {
     #[serde(rename = "dontDestroyOnLoad")]
     pub dont_destroy_on_load: bool,
-    // #[serde(rename = "runInBackground")]
-    // pub run_in_background: bool,
-    // #[serde(rename = "headlessStartMode")]
-    // pub headless_start_mode: HeadlessStartOptions,
     #[serde(rename = "editorAutoStart")]
     pub editor_auto_start: bool,
     #[serde(rename = "sendRate")]
     pub send_rate: i32,
-    #[serde(rename = "startScene")]
-    pub start_scene: MetadataAsset,
     #[serde(rename = "offlineScene")]
     pub offline_scene: Option<MetadataAsset>,
     #[serde(rename = "onlineScene")]

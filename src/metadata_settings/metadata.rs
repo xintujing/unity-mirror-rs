@@ -1,5 +1,6 @@
-use crate::metadata_settings::MetadataNetworkManagerWrapper;
+use crate::metadata_settings::metadata_asset::MetadataAsset;
 use crate::metadata_settings::unity::metadata_prefab::MetadataPrefab;
+use crate::metadata_settings::MetadataNetworkManagerWrapper;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -30,6 +31,8 @@ impl MetadataLoader {
 
 #[derive(Deserialize)]
 pub struct Metadata {
+    #[serde(rename = "startScene")]
+    pub start_scene: MetadataAsset,
     pub prefabs: HashMap<String, MetadataPrefab>,
     pub scenes: HashMap<String, HashMap<String, MetadataPrefab>>,
     #[serde(rename = "networkManagers")]
