@@ -3,7 +3,6 @@ use crate::commons::RevelArc;
 use crate::commons::RevelWeak;
 use crate::metadata_settings::Metadata;
 use crate::unity_engine::game_object::GameObject;
-use ctor::ctor;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
@@ -14,11 +13,6 @@ static mut WORLDS: Lazy<Vec<RevelArc<World>>> = Lazy::new(|| Vec::new());
 static mut ACTIVE_WORLD_INDEX: AtomicIsize = AtomicIsize::new(-1);
 static mut DONT_DESTROY_OBJECT: Lazy<HashMap<u64, RevelArc<GameObject>>> =
     Lazy::new(|| HashMap::default());
-
-#[ctor]
-fn init_world() {
-    WorldManager::load_scene("", LoadSceneMode::Single);
-}
 
 #[derive(Default)]
 pub struct World {
