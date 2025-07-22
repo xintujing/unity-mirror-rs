@@ -14,7 +14,7 @@ static METADATA_COMPONENT_REGISTERS: once_cell::sync::Lazy<
     >,
 > = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(HashMap::new()));
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct MetadataComponentWrapper {
     value: HashMap<TypeId, Vec<Box<dyn Settings>>>,
     type_mapping: HashMap<TypeId, String>,
