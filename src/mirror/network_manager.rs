@@ -152,7 +152,6 @@ impl NetworkManagerInitialize for NetworkManager {
 
         self.dont_destroy_on_load = config.dont_destroy_on_load;
         self.send_rate = config.send_rate;
-        self.start_scene = config.start_scene.asset_path.clone();
         if let Some(offline_scene) = &config.offline_scene {
             self.offline_scene = offline_scene.asset_path.clone()
         }
