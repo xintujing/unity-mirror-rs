@@ -33,22 +33,20 @@ impl NetworkManager {
             !NETWORK_MANAGER.is_empty()
         }
     }
-    pub fn singleton<T: TNetworkManager + 'static, F>(mut f: F)
-    where
-        F: FnMut(&mut T),
-    {
-        #[allow(static_mut_refs)]
+
+    pub fn singleton_mut<T: TNetworkManager + 'static>() -> Option<&'static mut T> {
         unsafe {
             let type_id = TypeId::of::<T>();
             if let Some(index) = NETWORK_MANAGER_MAPPING.get(&type_id) {
                 if let Some(network_manager) = NETWORK_MANAGER.get(*index) {
                     if let Some(weak) = network_manager.downcast::<T>() {
                         if let Some(real) = weak.get() {
-                            f(real)
+                            return Some(real);
                         }
                     }
                 }
             }
+            None
         }
     }
 }

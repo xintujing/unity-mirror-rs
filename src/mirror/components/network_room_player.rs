@@ -43,16 +43,16 @@ impl NetworkRoomPlayer {
     pub fn cmd_change_ready_state(&mut self, ready_state: bool) {
         self.set_ready_to_begin(ready_state);
         log::debug!("My index: {}, ready state: {}", self.get_index(), self.get_ready_to_begin());
-        NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
+        if let Some(room) = NetworkManager::singleton_mut::<NetworkRoomManager>() {
             // TODO: 这里需要处理一下，可能会有问题
             room.ready_status_changed();
-        });
+        }
     }
 }
 
 impl MonoBehaviour for NetworkRoomPlayer {
     fn start(&mut self) {
-        NetworkManager::singleton::<NetworkRoomManager, _>(|room| {
+        if let Some(room) = NetworkManager::singleton_mut::<NetworkRoomManager>() {
             if let Some(game_object) = self.game_object.upgrade() {
                 WorldManager::dont_destroy_object(game_object);
             }
@@ -62,7 +62,7 @@ impl MonoBehaviour for NetworkRoomPlayer {
             if NetworkServer.active {
                 room.recalculate_room_player_indices();
             }
-        })
+        }
     }
 
     fn on_disable(&mut self) {}
