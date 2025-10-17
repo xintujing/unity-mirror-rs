@@ -980,8 +980,8 @@ impl NetworkServer {
                 is_owner,
                 identity.scene_id,
                 identity.game_object.get().unwrap().asset_id,
-                identity_game_object.transform.local_position,
-                identity_game_object.transform.local_rotation,
+                identity_game_object.transform.local_position, // TODO fix
+                identity_game_object.transform.local_rotation, // TODO fix
                 identity_game_object.transform.local_scale,
                 payload,
             );
