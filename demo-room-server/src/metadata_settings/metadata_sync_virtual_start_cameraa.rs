@@ -4,7 +4,11 @@ use unity_mirror_rs::metadata_settings::MetadataNetworkBehaviourWrapper;
 use unity_mirror_rs::metadata_settings::Settings;
 use unity_mirror_rs::settings_wrapper_register;
 
-#[namespace(rename = "Projectile")]
+#[namespace(
+    prefix = "HotUpdate.VirtualCameraSys",
+    rename = "SyncVirtualStartCamera"
+)]
 #[derive(Deserialize, Clone)]
-pub struct MetadataProjectile {}
-settings_wrapper_register!(MetadataProjectile as MetadataNetworkBehaviourWrapper);
+pub struct MetadataSyncVirtualStartCamera {}
+
+settings_wrapper_register!(MetadataSyncVirtualStartCamera as MetadataNetworkBehaviourWrapper);

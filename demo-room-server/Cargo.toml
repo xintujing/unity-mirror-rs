@@ -1,0 +1,29 @@
+[package]
+name = "demo-room-server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.41"
+colored = "3.0.0"
+ctor = "0.4.2"
+env_logger = "0.11.8"
+log = "0.4.27"
+unity-mirror-rs ={path = ".."}
+serde = { version = "1.0.219", features = ["derive"] }
+rand = "0.9.1"
+nalgebra = "0.33.2"
+pprof = { version = "*", features = ["flamegraph", "prost", "cpp", "prost-codec", "protobuf-codec", "frame-pointer", "perfmaps"] }
+tokio = "1.45.0"
+
+[profile.dev]
+#debug = "line-tables-only"
+
+[profile.release]
+opt-level = 3
+debug = false
+debug-assertions = false
+strip = true
+lto = true
+incremental = false
+panic = "abort"

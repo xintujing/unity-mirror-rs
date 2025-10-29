@@ -1,10 +1,11 @@
-#![allow(dead_code, unused)]
+mod authenticator;
+mod metadata_settings;
+mod poker_helper;
+mod scripts;
+mod util_syc;
 
 use unity_mirror_rs::mirror::NetworkManager;
 use unity_mirror_rs::unity_engine::PlayerLooper;
-
-mod backend_metadata;
-mod scripts;
 
 #[ctor::ctor]
 fn init_logger() {
@@ -42,8 +43,18 @@ fn init_logger() {
         })
         .init();
 }
+ fn main() {
+    // 启动内存分析
+    // let guard = pprof::ProfilerGuard::new(100).unwrap(); // 每100ms采样一次
+    //
+    // { Logic }
+    //
+    // if let Ok(report) = guard.report().build() {
+    //     let file = std::fs::File::create("flamegraph.svg").unwrap();
+    //     report.flamegraph(file).unwrap();
+    // }
 
-fn main() {
-    NetworkManager::init("Assets/Prefabs/NetworkRoomManager.prefab");
+    PlayerLooper::init();
+    NetworkManager::init("Assets/24打大A2D/Prefabs/NetworkManagerExt.prefab");
     PlayerLooper::run();
 }

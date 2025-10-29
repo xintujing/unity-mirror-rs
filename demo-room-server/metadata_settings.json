@@ -1,0 +1,372 @@
+{
+  "startScene": {
+    "assetId": 337220923,
+    "assetPath": "Assets/24打大A2D/Scene/1打大A2D.scene"
+  },
+  "prefabs": {
+    "Assets/24打大A2D/Prefabs/GamePlayer.prefab": {
+      "id": 36646,
+      "name": "GamePlayer",
+      "tag": "Untagged",
+      "layer": 0,
+      "isStatic": false,
+      "isActive": true,
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "localPosition": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "localRotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "localScale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "instanceId": 36654,
+        "type": "UnityEngine.Transform",
+        "assetId": 1042324070,
+        "assetPath": "Assets/24打大A2D/Prefabs/GamePlayer.prefab"
+      },
+      "components": {
+        "Mirror.NetworkIdentity": [
+          [
+            {
+              "Mirror.NetworkIdentity": {
+                "assetId": 1042324070,
+                "sceneId": "0",
+                "serverOnly": false,
+                "visibility": 0,
+                "transform": {
+                  "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "localPosition": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "localRotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "localScale": [
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "instanceId": 36654,
+                  "type": "UnityEngine.Transform",
+                  "assetId": 1042324070,
+                  "assetPath": "Assets/24打大A2D/Prefabs/GamePlayer.prefab"
+                },
+                "networkBehaviours": [
+                  [
+                    {
+                      "Mirror.NetworkBehaviour": {
+                        "syncDirection": 0,
+                        "syncMode": 0,
+                        "syncInterval": 0.0
+                      }
+                    },
+                    {
+                      "DaDaA.Scripts.PlayerExt": {
+                        "nmeIndex": 0,
+                        "readyToBegin": false,
+                        "isRoomOwner": false,
+                        "stageStatus": 0,
+                        "playerExtIdentity": 0,
+                        "countdown": 0.0,
+                        "integral": 0
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "Mirror.NetworkBehaviour": {
+                        "syncDirection": 0,
+                        "syncMode": 0,
+                        "syncInterval": 0.0
+                      }
+                    },
+                    {
+                      "DaDaA.Scripts.PokerController": {
+                        "PokerCards": [],
+                        "FakePokerCards": []
+                      }
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
+        ]
+      },
+      "children": [],
+      "assetId": 1042324070,
+      "assetPath": "Assets/24打大A2D/Prefabs/GamePlayer.prefab"
+    },
+    "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab": {
+      "id": 36648,
+      "name": "NetworkManagerExtStatus",
+      "tag": "Untagged",
+      "layer": 0,
+      "isStatic": false,
+      "isActive": true,
+      "transform": {
+        "position": [
+          612.0,
+          467.5,
+          0.0
+        ],
+        "localPosition": [
+          612.0,
+          467.5,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "localRotation": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "localScale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "instanceId": 36664,
+        "type": "UnityEngine.Transform",
+        "assetId": 2313303694,
+        "assetPath": "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab"
+      },
+      "components": {
+        "Mirror.NetworkIdentity": [
+          [
+            {
+              "Mirror.NetworkIdentity": {
+                "assetId": 2313303694,
+                "sceneId": "0",
+                "serverOnly": false,
+                "visibility": 0,
+                "transform": {
+                  "position": [
+                    612.0,
+                    467.5,
+                    0.0
+                  ],
+                  "localPosition": [
+                    612.0,
+                    467.5,
+                    0.0
+                  ],
+                  "rotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "localRotation": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "localScale": [
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "instanceId": 36664,
+                  "type": "UnityEngine.Transform",
+                  "assetId": 2313303694,
+                  "assetPath": "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab"
+                },
+                "networkBehaviours": [
+                  [
+                    {
+                      "Mirror.NetworkBehaviour": {
+                        "syncDirection": 0,
+                        "syncMode": 0,
+                        "syncInterval": 0.0
+                      }
+                    },
+                    {
+                      "DaDaA.Scripts.NetworkManagerExtStatus": {
+                        "gameStageState": 0,
+                        "allPlayersReady": false,
+                        "BigAceS": [],
+                        "LastPokers": []
+                      }
+                    }
+                  ]
+                ]
+              }
+            }
+          ]
+        ]
+      },
+      "children": [],
+      "assetId": 2313303694,
+      "assetPath": "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab"
+    }
+  },
+  "scenes": {
+    "Assets/24打大A2D/Scene/1打大A2D.scene": {},
+    "Assets/24打大A2D/Scene/2Lobby.unity": {}
+  },
+  "networkManagers": {
+    "Assets/24打大A2D/Prefabs/NetworkManagerExt.prefab": [
+      {
+        "Mirror.NetworkManager": {
+          "dontDestroyOnLoad": true,
+          "runInBackground": true,
+          "headlessStartMode": 0,
+          "editorAutoStart": false,
+          "sendRate": 60,
+          "offlineScene": {
+            "assetId": 2370900690,
+            "assetPath": "Assets/24打大A2D/Scene/2Lobby.unity"
+          },
+          "onlineScene": {
+            "assetId": 337220923,
+            "assetPath": "Assets/24打大A2D/Scene/1打大A2D.scene"
+          },
+          "offlineSceneLoadDelay": 0.0,
+          "authenticator": "DaDaA.Authenticator.Authenticator",
+          "playerPrefab": {
+            "assetId": 1042324070,
+            "assetPath": "Assets/24打大A2D/Prefabs/GamePlayer.prefab"
+          },
+          "autoCreatePlayer": true,
+          "playerSpawnMethod": 0,
+          "exceptionsDisconnect": true,
+          "snapshotSettings": {
+            "bufferTimeMultiplier": 2.0,
+            "bufferLimit": 32,
+            "catchupNegativeThreshold": -1.0,
+            "catchupPositiveThreshold": 1.0,
+            "catchupSpeed": 0.0199999995529652,
+            "slowdownSpeed": 0.0399999991059303,
+            "driftEmaDuration": 1,
+            "dynamicAdjustment": true,
+            "dynamicAdjustmentTolerance": 1.0,
+            "deliveryTimeEmaDuration": 2
+          },
+          "evaluationMethod": 0,
+          "evaluationInterval": 3.0,
+          "timeInterpolationGui": false,
+          "spawnPrefabs": [
+            {
+              "assetId": 2313303694,
+              "assetPath": "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab"
+            }
+          ],
+          "startPositions": {
+            "Assets/24打大A2D/Scene/2Lobby.unity": [],
+            "Assets/24打大A2D/Scene/1打大A2D.scene": []
+          }
+        }
+      },
+      {
+        "DaDaA.Scripts.NetworkManagerExt": {
+          "minPlayers": 5,
+          "RoomSlots": [],
+          "networkManagerExtStatus": {
+            "gameStageState": 0,
+            "allPlayersReady": false,
+            "BigAceS": [],
+            "LastPokers": [],
+            "syncDirection": 0,
+            "syncMode": 0,
+            "syncInterval": 0.0,
+            "NetworkgameStageState": 0,
+            "NetworkallPlayersReady": false,
+            "netIdentity": null,
+            "ComponentIndex": 0,
+            "useGUILayout": true,
+            "runInEditMode": false,
+            "enabled": true,
+            "isActiveAndEnabled": false,
+            "transform": {
+              "position": [
+                612.0,
+                467.5,
+                0.0
+              ],
+              "localPosition": [
+                612.0,
+                467.5,
+                0.0
+              ],
+              "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              "localRotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              "localScale": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "instanceId": 36664,
+              "type": "UnityEngine.Transform",
+              "assetId": 2313303694,
+              "assetPath": "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab"
+            },
+            "gameObject": {
+              "instanceId": 36648,
+              "type": "UnityEngine.GameObject",
+              "assetId": 2313303694,
+              "assetPath": "Assets/24打大A2D/Prefabs/NetworkManagerExtStatus.prefab"
+            },
+            "tag": "Untagged",
+            "name": "NetworkManagerExtStatus",
+            "hideFlags": 0
+          },
+          "showRoomGUI": true,
+          "AllPlayersReady": false
+        }
+      }
+    ]
+  }
+}
