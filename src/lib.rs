@@ -35,6 +35,8 @@ pub mod macro_namespace {
 // use crate::macro_network_message::*;
 pub mod macro_network_message {
     pub use super::mirror::message::NetworkMessage;
+    pub use super::mirror::DataTypeDeserializer;
+    pub use super::mirror::DataTypeSerializer;
     pub use unity_mirror_macro_rs::NetworkMessage;
 }
 

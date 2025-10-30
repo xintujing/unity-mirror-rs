@@ -1,9 +1,10 @@
 use crate::macro_namespace::*;
+use crate::macro_network_message::*;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
-use crate::macro_network_message::*;
+use crate::{data_type_deserialize, data_type_serialize};
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 #[repr(u8)]
@@ -27,6 +28,19 @@ impl SceneOperation {
     }
 }
 
+data_type_serialize!(
+    (
+       SceneOperation
+    ),
+    |value, writer| writer.write_blittable(*value)
+);
+data_type_deserialize!(
+    (
+        SceneOperation
+    ),
+    {|reader| reader.read_blittable()}
+);
+
 #[namespace(prefix = "Mirror")]
 #[derive(Debug, PartialEq, Clone, Default, NetworkMessage)]
 pub struct SceneMessage {
@@ -43,34 +57,6 @@ impl SceneMessage {
         custom_handling: bool,
     ) -> SceneMessage {
         SceneMessage {
-            scene_name,
-            operation,
-            custom_handling,
-        }
-    }
-}
-
-impl MessageSerializer for SceneMessage {
-    fn serialize(&mut self, writer: &mut NetworkWriter)
-    where
-        Self: Sized,
-    {
-        writer.write_blittable(Self::get_full_name().hash16());
-        writer.write_str(self.scene_name.as_str());
-        writer.write_blittable(self.operation.to_u8());
-        writer.write_blittable(self.custom_handling);
-    }
-}
-
-impl MessageDeserializer for SceneMessage {
-    fn deserialize(reader: &mut NetworkReader) -> Self
-    where
-        Self: Sized,
-    {
-        let scene_name = reader.read_string();
-        let operation = SceneOperation::from(reader.read_blittable());
-        let custom_handling = reader.read_blittable();
-        Self {
             scene_name,
             operation,
             custom_handling,

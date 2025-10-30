@@ -23,31 +23,3 @@ impl ChangeOwnerMessage {
         }
     }
 }
-
-impl MessageSerializer for ChangeOwnerMessage {
-    fn serialize(&mut self, writer: &mut NetworkWriter)
-    where
-        Self: Sized,
-    {
-        writer.write_blittable(Self::get_full_name().hash16());
-        writer.write_blittable_compress(self.net_id);
-        writer.write_blittable(self.is_owner);
-        writer.write_blittable(self.is_local_player);
-    }
-}
-
-impl MessageDeserializer for ChangeOwnerMessage {
-    fn deserialize(reader: &mut NetworkReader) -> Self
-    where
-        Self: Sized,
-    {
-        let net_id = reader.read_blittable_compress();
-        let is_owner = reader.read_blittable();
-        let is_local_player = reader.read_blittable();
-        Self {
-            net_id,
-            is_owner,
-            is_local_player,
-        }
-    }
-}
