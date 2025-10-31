@@ -562,16 +562,14 @@ impl NetworkManager {
         connection: RevelArc<Box<NetworkConnectionToClient>>,
         error: TransportError,
         reason: String,
-    ) {
-    }
+    ) {}
 
     #[action]
     pub fn on_server_transport_exception(
         &mut self,
         connection: RevelArc<Box<NetworkConnectionToClient>>,
         error: Box<dyn std::error::Error>,
-    ) {
-    }
+    ) {}
 
     #[action]
     pub fn on_server_add_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
@@ -587,7 +585,5 @@ impl NetworkManager {
     }
 
     #[action]
-    pub fn reset(&mut self){
-        log::debug!("reset mgr")
-    }
+    pub fn reset(&mut self) {}
 }
