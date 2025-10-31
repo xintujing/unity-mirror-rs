@@ -1,3 +1,4 @@
+use crate::action;
 use crate::commons::action::SelfMutAction;
 use crate::commons::RevelArc;
 use crate::commons::RevelWeak;
@@ -11,18 +12,16 @@ use crate::mirror::NetworkWriterPool;
 use crate::unity_engine::Time;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
-use crate::action;
 
 #[derive(Default)]
 pub struct NetworkConnection {
     pub self_weak: RevelWeak<Box<NetworkConnection>>,
-
-    #[allow(unused)]
-    local_connection_id: i32,
     /// <summary>由传输层分配的此连接的唯一标识符。</summary>
     pub connection_id: u64,
     /// <summary>指示客户端已进行身份验证的标志。</summary>
     pub is_authenticated: bool,
+    /// <summary>General purpose object to hold authentication data, character selection, tokens, etc.</summary>
+    pub authentication_data: Option<Box<dyn NetworkMessage>>,
     /// <summary>加入游戏世界后准备就绪服务器连接。</summary>
     pub is_ready: bool,
     /// <summary>上次收到有关此连接的消息。包括系统和用户消息。</summary>
