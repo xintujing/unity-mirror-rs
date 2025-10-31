@@ -19,13 +19,9 @@ pub trait MessageDeserializer {
 }
 
 pub trait NetworkMessageAny {
-    fn as_any(&self) -> &dyn Any
-    where
-        Self: Sized;
+    fn as_any(&self) -> &dyn Any;
 
-    fn as_any_mut(&mut self) -> &mut dyn Any
-    where
-        Self: Sized;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 pub trait NetworkMessage: Object + MessageSerializer + MessageDeserializer + NetworkMessageAny {}
 
