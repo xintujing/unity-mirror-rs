@@ -43,7 +43,9 @@ fn init_logger() {
         })
         .init();
 }
- fn main() {
+
+#[tokio::main]
+async fn main() {
     // 启动内存分析
     // let guard = pprof::ProfilerGuard::new(100).unwrap(); // 每100ms采样一次
     //
@@ -56,5 +58,6 @@ fn init_logger() {
 
     PlayerLooper::init();
     NetworkManager::init("Assets/24打大A2D/Prefabs/NetworkManagerExt.prefab");
+    unity_mirror_rs::monitoring::start();
     PlayerLooper::run();
 }

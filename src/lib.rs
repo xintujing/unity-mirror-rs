@@ -6,6 +6,7 @@ pub mod metadata_settings;
 pub mod mirror;
 pub mod transports;
 pub mod unity_engine;
+pub mod monitoring;
 
 macro_rules! expand_macro {
     ($($name: ident),*) => {

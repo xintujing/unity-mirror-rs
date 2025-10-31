@@ -107,9 +107,23 @@ pub struct NetworkManager {
     pub on_server_scene_changed: SelfMutAction<(String,), ()>,
     pub on_server_disconnect: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
     pub on_server_ready: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
-    pub on_server_error: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, TransportError, String,), ()>,
-    pub on_server_transport_exception: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>, Box<dyn std::error::Error>,), ()>,
+    pub on_server_error: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            TransportError,
+            String,
+        ),
+        (),
+    >,
+    pub on_server_transport_exception: SelfMutAction<
+        (
+            RevelArc<Box<NetworkConnectionToClient>>,
+            Box<dyn std::error::Error>,
+        ),
+        (),
+    >,
     pub on_server_add_player: SelfMutAction<(RevelArc<Box<NetworkConnectionToClient>>,), ()>,
+    pub reset: SelfMutAction<(), ()>,
 }
 
 impl NetworkManager {
@@ -220,6 +234,7 @@ impl NetworkManager {
         let full_name = metadata.get_final_full_name();
 
         let mut arc_game_object = RevelArc::new(GameObject::default());
+        arc_game_object.name = "NetworkManager".to_string();
 
         let instances =
             NetworkManagerFactory::create(&full_name, arc_game_object.downgrade(), metadata);
@@ -292,13 +307,23 @@ impl NetworkManager {
     }
 
     fn register_server_messages(&self) {
-        NetworkServer.on_connected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
-        NetworkServer.on_disconnected_event = SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
-        NetworkServer.on_error_event = SelfMutAction::new(self.weak.clone(), Self::on_server_error_event);
-        NetworkServer.on_transport_exception_event = SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception_event);
+        NetworkServer.on_connected_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_connect_internal);
+        NetworkServer.on_disconnected_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_disconnect);
+        NetworkServer.on_error_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_error_event);
+        NetworkServer.on_transport_exception_event =
+            SelfMutAction::new(self.weak.clone(), Self::on_server_transport_exception_event);
 
-        NetworkServer.register_handler::<AddPlayerMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal), false);
-        NetworkServer.replace_handler::<ReadyMessage>(SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal), false);
+        NetworkServer.register_handler::<AddPlayerMessage>(
+            SelfMutAction::new(self.weak.clone(), Self::on_server_add_player_internal),
+            false,
+        );
+        NetworkServer.replace_handler::<ReadyMessage>(
+            SelfMutAction::new(self.weak.clone(), Self::on_server_ready_message_internal),
+            false,
+        );
     }
 
     // 服务器设置与启动
@@ -394,7 +419,10 @@ impl NetworkManager {
     }
 
     // 服务器事件处理
-    pub fn on_server_connect_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
+    pub fn on_server_connect_internal(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+    ) {
         if let Some(authenticator) = &self.authenticator {
             authenticator.on_server_authenticate(connection)
         } else {
@@ -417,11 +445,21 @@ impl NetworkManager {
         self.on_server_connect.call((conn.clone(),));
     }
 
-    pub fn on_server_ready_message_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _message: ReadyMessage, _: TransportChannel) {
+    pub fn on_server_ready_message_internal(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        _message: ReadyMessage,
+        _: TransportChannel,
+    ) {
         self.on_server_ready(connection);
     }
 
-    pub fn on_server_add_player_internal(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, _: AddPlayerMessage, _: TransportChannel) {
+    pub fn on_server_add_player_internal(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        _: AddPlayerMessage,
+        _: TransportChannel,
+    ) {
         if self.auto_create_player && self.player_prefab.is_empty() {
             log::error!("The PlayerPrefab is empty on the NetworkManager. Please setup a PlayerPrefab object.");
             return;
@@ -438,11 +476,20 @@ impl NetworkManager {
         self.on_server_add_player(connection)
     }
 
-    pub fn on_server_error_event(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: TransportError, reason: String) {
+    pub fn on_server_error_event(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        error: TransportError,
+        reason: String,
+    ) {
         self.on_server_error.call((connection, error, reason))
     }
 
-    pub fn on_server_transport_exception_event(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: Box<dyn std::error::Error>) {
+    pub fn on_server_transport_exception_event(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        error: Box<dyn std::error::Error>,
+    ) {
         self.on_server_transport_exception.call((connection, error))
     }
 
@@ -510,10 +557,21 @@ impl NetworkManager {
     }
 
     #[action]
-    pub fn on_server_error(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: TransportError, reason: String) {}
+    pub fn on_server_error(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        error: TransportError,
+        reason: String,
+    ) {
+    }
 
     #[action]
-    pub fn on_server_transport_exception(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>, error: Box<dyn std::error::Error>) {}
+    pub fn on_server_transport_exception(
+        &mut self,
+        connection: RevelArc<Box<NetworkConnectionToClient>>,
+        error: Box<dyn std::error::Error>,
+    ) {
+    }
 
     #[action]
     pub fn on_server_add_player(&mut self, connection: RevelArc<Box<NetworkConnectionToClient>>) {
@@ -526,5 +584,10 @@ impl NetworkManager {
             player.name = format!("{} [connId={}]", player.name, connection.connection_id);
             NetworkServer::add_player_for_connection(connection, player);
         }
+    }
+
+    #[action]
+    pub fn reset(&mut self){
+        log::debug!("reset mgr")
     }
 }
