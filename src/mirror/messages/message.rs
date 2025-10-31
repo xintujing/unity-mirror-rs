@@ -1,10 +1,11 @@
 use crate::commons::action::SelfMutAction;
 use crate::commons::Object;
 use crate::commons::RevelArc;
+use crate::mirror::transport::TransportChannel;
+use crate::mirror::NetworkConnectionToClient;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
-use crate::mirror::NetworkConnectionToClient;
-use crate::mirror::transport::TransportChannel;
+use std::any::Any;
 
 pub trait MessageSerializer {
     fn serialize(&mut self, writer: &mut NetworkWriter)
@@ -17,8 +18,32 @@ pub trait MessageDeserializer {
         Self: Sized;
 }
 
-pub trait NetworkMessage: Object + MessageSerializer + MessageDeserializer {}
+pub trait NetworkMessageAny {
+    fn as_any(&self) -> &dyn Any
+    where
+        Self: Sized;
 
+    fn as_any_mut(&mut self) -> &mut dyn Any
+    where
+        Self: Sized;
+}
+pub trait NetworkMessage: Object + MessageSerializer + MessageDeserializer + NetworkMessageAny {}
+
+impl<T: NetworkMessage + 'static> NetworkMessageAny for T {
+    fn as_any(&self) -> &dyn Any
+    where
+        Self: Sized,
+    {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any
+    where
+        Self: Sized,
+    {
+        self
+    }
+}
 // pub type MessageHandlerFuncType<M> = fn(RevelArc<NetworkConnection>, M, TransportChannel);
 
 type MessageHandlerWrappedFuncType =
