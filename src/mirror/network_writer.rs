@@ -312,7 +312,7 @@ impl<T: DataTypeSerializer> DataTypeSerializer for Vec<T> {
 impl<T: DataTypeSerializer> DataTypeSerializer for &[T] {
     fn serialize(&self, writer: &mut NetworkWriter) {
         if self.len() == 0 {
-            self.write_blittable_compress(0);
+            writer.write_blittable_compress::<u64>(0);
             return;
         }
         writer.write_blittable_compress::<u64>(self.len() as u64 + 1);
