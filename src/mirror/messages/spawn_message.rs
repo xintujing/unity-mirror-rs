@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 use crate::macro_namespace::*;
+use crate::macro_network_message::*;
 use crate::mirror::messages::message::{MessageDeserializer, MessageSerializer};
 use crate::mirror::stable_hash::StableHash;
 use crate::mirror::NetworkReader;
 use crate::mirror::NetworkWriter;
-use crate::macro_network_message::*;
 use nalgebra::{Quaternion, Vector3};
 
 #[derive(Clone, Debug, Default, PartialEq, Copy)]
@@ -85,48 +85,5 @@ impl SpawnMessage {
     // 方便性 setter: 设置 IsLocalPlayer
     pub fn set_is_local_player(&mut self, value: bool) {
         self.set_flag(AuthorityFlags::IsLocalPlayer, value);
-    }
-}
-
-impl MessageSerializer for SpawnMessage {
-    fn serialize(&mut self, writer: &mut NetworkWriter)
-    where
-        Self: Sized,
-    {
-        writer.write_blittable(Self::get_full_name().hash16());
-        writer.write_blittable_compress(self.net_id);
-        writer.write_blittable(self.authority_flags);
-        writer.write_blittable_compress(self.scene_id);
-        writer.write_blittable_compress(self.asset_id);
-        writer.write_blittable(self.position);
-        writer.write_blittable(self.rotation);
-        writer.write_blittable(self.scale);
-        writer.write_slice_and_size(self.payload.as_slice());
-    }
-}
-
-impl MessageDeserializer for SpawnMessage {
-    fn deserialize(reader: &mut NetworkReader) -> Self
-    where
-        Self: Sized,
-    {
-        let net_id = reader.read_blittable_compress();
-        let authority_flags = reader.read_blittable();
-        let scene_id = reader.read_blittable_compress();
-        let asset_id = reader.read_blittable_compress();
-        let position = reader.read_blittable();
-        let rotation = reader.read_blittable();
-        let scale = reader.read_blittable();
-        let payload = reader.read_slice_and_size();
-        Self {
-            net_id,
-            authority_flags,
-            scene_id,
-            asset_id,
-            position,
-            rotation,
-            scale,
-            payload: payload.to_vec(),
-        }
     }
 }

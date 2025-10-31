@@ -63,29 +63,6 @@ pub struct BasicAuthenticatorRequestMessage {
     auth_password: String,
 }
 
-impl MessageSerializer for BasicAuthenticatorRequestMessage {
-    fn serialize(&mut self, writer: &mut NetworkWriter)
-    where
-        Self: Sized,
-    {
-        writer.write_blittable(Self::get_full_name().hash16());
-        writer.write_str(&self.auth_username);
-        writer.write_str(&self.auth_password);
-    }
-}
-
-impl MessageDeserializer for BasicAuthenticatorRequestMessage {
-    fn deserialize(reader: &mut NetworkReader) -> Self
-    where
-        Self: Sized,
-    {
-        Self {
-            auth_username: reader.read_string(),
-            auth_password: reader.read_string(),
-        }
-    }
-}
-
 // BasicAuthenticator AuthResponseMessage
 #[namespace(
     prefix = "Mirror.Authenticators.BasicAuthenticator+",
@@ -95,27 +72,4 @@ impl MessageDeserializer for BasicAuthenticatorRequestMessage {
 pub struct BasicAuthenticatorResponseMessage {
     code: u8,
     message: String,
-}
-
-impl MessageSerializer for BasicAuthenticatorResponseMessage {
-    fn serialize(&mut self, writer: &mut NetworkWriter)
-    where
-        Self: Sized,
-    {
-        writer.write_blittable(Self::get_full_name().hash16());
-        writer.write_blittable(self.code);
-        writer.write_str(self.message.as_str());
-    }
-}
-
-impl MessageDeserializer for BasicAuthenticatorResponseMessage {
-    fn deserialize(reader: &mut NetworkReader) -> Self
-    where
-        Self: Sized,
-    {
-        Self {
-            code: reader.read_blittable(),
-            message: reader.read_string(),
-        }
-    }
 }
