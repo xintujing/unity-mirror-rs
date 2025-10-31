@@ -237,14 +237,14 @@ impl WorldManager {
 
             let dont_destroy_objects = DONT_DESTROY_OBJECT
                 .values()
-                .filter(|arc_game_object| {
-                    arc_game_object.parent.upgradable()
-                    // if let Ok(game_object) = arc_game_object.read() {
-                    //     game_object.parent.is_none()
-                    // } else {
-                    //     false
-                    // }
-                })
+                // .filter(|arc_game_object| {
+                //     arc_game_object.parent.upgradable()
+                //     // if let Ok(game_object) = arc_game_object.read() {
+                //     //     game_object.parent.is_none()
+                //     // } else {
+                //     //     false
+                //     // }
+                // })
                 .map(|arc_game_object| arc_game_object.downgrade())
                 .collect::<Vec<_>>();
             root_game_objects.extend(dont_destroy_objects);
