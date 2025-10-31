@@ -92,6 +92,11 @@ impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer>
         self.value.iter_mut()
     }
 
+    // pop
+    pub fn pop(&mut self) -> Option<T> {
+        self.value.pop()
+    }
+
     // ********************************************************************
 
     pub fn count(&self) -> usize {
