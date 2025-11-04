@@ -97,6 +97,11 @@ impl<T: PartialEq + Clone + Default + DataTypeSerializer + DataTypeDeserializer>
         self.value.pop()
     }
 
+    // as slice
+    pub fn as_slice(&self) -> &[T] {
+        &self.value
+    }
+
     // ********************************************************************
 
     pub fn count(&self) -> usize {
