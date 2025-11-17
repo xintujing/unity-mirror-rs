@@ -40,9 +40,9 @@ use std::ops::{Deref, DerefMut};
 #[allow(unused)]
 pub struct NetworkServerStatic {
     initialized: bool,
-    address: &'static str,
-    port: u16,
-    listen: bool,
+    pub address: &'static str,
+    pub port: u16,
+    pub listen: bool,
     pub max_connections: i32,
     // 发送速率
     pub tick_rate: u32,
