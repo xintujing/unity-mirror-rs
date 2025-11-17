@@ -96,7 +96,7 @@ pub struct NetworkManager {
     start_positions: HashMap<String, Vec<Transform>>,
 
     pub authenticator: Option<RevelArc<Box<dyn Authenticator>>>,
-    transport: Option<RevelArc<Box<dyn Transport>>>,
+    pub transport: Option<RevelArc<Box<dyn Transport>>>,
 
     // Actions
     pub server_change_scene: SelfMutAction<(String,), ()>,
