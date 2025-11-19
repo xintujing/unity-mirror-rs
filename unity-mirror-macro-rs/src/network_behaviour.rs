@@ -279,55 +279,123 @@ pub(crate) fn handler(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
         });
 
+        // sync_variable_getter_setter.push(quote! {
+        //     pub fn #get_sync_field_ident(&self) -> &#field_type {
+        //         &self.#field
+        //     }
+        //
+        //     pub fn #set_sync_field_ident(&mut self, value: #field_type) {
+        //
+        //         let old_value_buffer = unsafe {
+        //             let mut value_buffer = [0u8; size_of::<#field_type>()];
+        //             std::ptr::copy_nonoverlapping(
+        //                 &self.#field as *const #field_type as *const u8,
+        //                 value_buffer.as_mut_ptr(),
+        //                 size_of::<#field_type>(),
+        //             );
+        //             value_buffer
+        //         };
+        //
+        //         let new_value_buffer = unsafe {
+        //             let mut value_buffer = [0u8; size_of::<#field_type>()];
+        //             std::ptr::copy_nonoverlapping(
+        //                 &value as *const #field_type as *const u8,
+        //                 value_buffer.as_mut_ptr(),
+        //                 size_of::<#field_type>(),
+        //             );
+        //             value_buffer
+        //         };
+        //
+        //         if old_value_buffer == new_value_buffer {
+        //             return;
+        //         }
+        //
+        //          let old_value = unsafe {
+        //             std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(old_value_buffer)
+        //         };
+        //
+        //
+        //         let new_value = unsafe {
+        //             std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(new_value_buffer)
+        //         };
+        //
+        //         self.#field = value;
+        //
+        //         if self.parent.upgradable() {
+        //             self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
+        //         }
+        //
+        //         self.#on_change_callback_ident(&old_value, &new_value)
+        //     }
+        // });
+
         sync_variable_getter_setter.push(quote! {
             pub fn #get_sync_field_ident(&self) -> &#field_type {
                 &self.#field
             }
 
             pub fn #set_sync_field_ident(&mut self, value: #field_type) {
+                // --- 针对 String 等非 Copy 类型，直接比较引用 ---
+                if !std::mem::needs_drop::<#field_type>() {
+                    // 原实现：适用于 Copy 类型（u32、bool、结构体等）
+                    let old_value_buffer = unsafe {
+                        let mut value_buffer = [0u8; size_of::<#field_type>()];
+                        std::ptr::copy_nonoverlapping(
+                            &self.#field as *const #field_type as *const u8,
+                            value_buffer.as_mut_ptr(),
+                            size_of::<#field_type>(),
+                        );
+                        value_buffer
+                    };
 
-                let old_value_buffer = unsafe {
-                    let mut value_buffer = [0u8; size_of::<#field_type>()];
-                    std::ptr::copy_nonoverlapping(
-                        &self.#field as *const #field_type as *const u8,
-                        value_buffer.as_mut_ptr(),
-                        size_of::<#field_type>(),
-                    );
-                    value_buffer
-                };
+                    let new_value_buffer = unsafe {
+                        let mut value_buffer = [0u8; size_of::<#field_type>()];
+                        std::ptr::copy_nonoverlapping(
+                            &value as *const #field_type as *const u8,
+                            value_buffer.as_mut_ptr(),
+                            size_of::<#field_type>(),
+                        );
+                        value_buffer
+                    };
 
-                let new_value_buffer = unsafe {
-                    let mut value_buffer = [0u8; size_of::<#field_type>()];
-                    std::ptr::copy_nonoverlapping(
-                        &value as *const #field_type as *const u8,
-                        value_buffer.as_mut_ptr(),
-                        size_of::<#field_type>(),
-                    );
-                    value_buffer
-                };
+                    if old_value_buffer == new_value_buffer {
+                        return;
+                    }
 
-                if old_value_buffer == new_value_buffer {
-                    return;
+                    let old_value = unsafe {
+                        std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(old_value_buffer)
+                    };
+                    let new_value = unsafe {
+                        std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(new_value_buffer)
+                    };
+
+                    self.#field = value;
+
+                    if self.parent.upgradable() {
+                        self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
+                    }
+
+                    self.#on_change_callback_ident(&old_value, &new_value)
+                } else {
+                    // --- 新增：专门处理 String
+                    if self.#field == value {
+                        return;
+                    }
+
+                    let old_value = self.#field.clone();
+                    let new_value = value.clone();
+
+                    self.#field = value;
+
+                    if self.parent.upgradable() {
+                        self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
+                    }
+
+                    self.#on_change_callback_ident(&old_value, &new_value)
                 }
-
-                 let old_value = unsafe {
-                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(old_value_buffer)
-                };
-
-
-                let new_value = unsafe {
-                    std::mem::transmute::<[u8; size_of::<#field_type>()], #field_type>(new_value_buffer)
-                };
-
-                self.#field = value;
-
-                if self.parent.upgradable() {
-                    self.sync_var_dirty_bits |= 1u64 << (self.var_start_offset + #field_index as u8);
-                }
-
-                self.#on_change_callback_ident(&old_value, &new_value)
             }
         });
+
 
         on_change_callback_ts.push(quote! {
             fn #on_change_callback_ident(&mut self, old_value: &#field_type, new_value: &#field_type){}
