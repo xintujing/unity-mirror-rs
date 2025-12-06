@@ -10,7 +10,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::any::{type_name, Any, TypeId};
 
-pub fn start() {
+pub fn start(addr: String) {
     tokio::spawn(async move {
         // initialize tracing
         // tracing_subscriber::fmt::init();
@@ -21,7 +21,7 @@ pub fn start() {
             .route("/", get(root));
 
         // run our app with hyper, listening globally on port 3000
-        let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+        let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
         axum::serve(listener, app).await.unwrap();
     });
 }
