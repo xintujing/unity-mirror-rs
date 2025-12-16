@@ -15,7 +15,6 @@ exclude = [
 ]
 
 [dependencies]
-kcp2k = "0.0.1-beta"
 unity-mirror-macro-rs = { path = "./unity-mirror-macro-rs" }
 lazy_static = "1.5.0"
 serde = { version = "1.0.219", features = ["derive"] }
