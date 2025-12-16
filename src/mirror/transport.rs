@@ -5,15 +5,15 @@ use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
 
 pub enum TransportError {
-    None,
-    DnsResolve,       // 无法解析主机名
-    Refused,          // 连接被另一端拒绝。服务器已满等
-    Timeout,          // ping 超时或死链接
-    Congestion,       // 消息数量超过传输/网络可以处理的数量
-    InvalidReceive,   // 接收无效数据包（可能是故意攻击）
-    InvalidSend,      // 用户尝试发送无效数据
-    ConnectionClosed, // 连接自愿关闭或非自愿丢失
-    Unexpected,       // 意外错误/异常，需要修复。
+    None(String),
+    DnsResolve(String),       // 无法解析主机名
+    Refused(String),          // 连接被另一端拒绝。服务器已满等
+    Timeout(String),          // ping 超时或死链接
+    Congestion(String),       // 消息数量超过传输/网络可以处理的数量
+    InvalidReceive(String),   // 接收无效数据包（可能是故意攻击）
+    InvalidSend(String),      // 用户尝试发送无效数据
+    ConnectionClosed(String), // 连接自愿关闭或非自愿丢失
+    Unexpected(String),       // 意外错误/异常，需要修复。
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -41,15 +41,15 @@ impl Into<TransportChannel> for i32 {
 impl Display for TransportError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            TransportError::DnsResolve => write!(f, "DNS 解析错误"),
-            TransportError::Refused => write!(f, "连接被拒绝"),
-            TransportError::Timeout => write!(f, "连接超时"),
-            TransportError::Congestion => write!(f, "消息数量超过传输/网络可以处理的数量"),
-            TransportError::InvalidReceive => write!(f, "接收无效数据包（可能是故意攻击）"),
-            TransportError::InvalidSend => write!(f, "用户尝试发送无效数据"),
-            TransportError::ConnectionClosed => write!(f, "连接自愿关闭"),
-            TransportError::Unexpected => write!(f, "意外错误/异常，需要修复。"),
-            TransportError::None => write!(f, ""),
+            TransportError::DnsResolve(msg) => write!(f, "DNS 解析错误 - {}", msg),
+            TransportError::Refused(msg) => write!(f, "连接被拒绝 - {}", msg),
+            TransportError::Timeout(msg) => write!(f, "连接超时 - {}", msg),
+            TransportError::Congestion(msg) => write!(f, "消息数量超过传输/网络可以处理的数量 - {}", msg),
+            TransportError::InvalidReceive(msg) => write!(f, "接收无效数据包（可能是故意攻击）- {}", msg),
+            TransportError::InvalidSend(msg) => write!(f, "用户尝试发送无效数据 - {}", msg),
+            TransportError::ConnectionClosed(msg) => write!(f, "连接自愿关闭 - {}", msg),
+            TransportError::Unexpected(msg) => write!(f, "意外错误/异常，需要修复 - {}", msg),
+            TransportError::None(msg) => write!(f, "{}", msg),
         }
     }
 }

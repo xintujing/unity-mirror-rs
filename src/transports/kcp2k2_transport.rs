@@ -1,13 +1,10 @@
 use crate::macro_callback_processor::*;
 use crate::mirror::Transport;
 use http::Uri;
-use kcp2k::error_code::ErrorCode;
-use kcp2k::kcp2k::Kcp2K;
-use kcp2k::kcp2k_callback::{Callback, CallbackType};
-use kcp2k::kcp2k_channel::Kcp2KChannel;
-use kcp2k::kcp2k_config::Kcp2KConfig;
-use kcp2k::kcp2k_connection::Kcp2KConnection;
-use kcp2k::kcp2k_peer::Kcp2KPeer;
+use kcp2k_rust::kcp2k_common::{Callback, CallbackType, Kcp2KChannel, Kcp2KError};
+use kcp2k_rust::kcp2k_config::Kcp2KConfig;
+use kcp2k_rust::kcp2k_connection::Kcp2kConnection;
+use kcp2k_rust::kcp2k_server::Kcp2KServer;
 use std::net::ToSocketAddrs;
 use std::process::exit;
 use std::str::FromStr;
@@ -19,7 +16,7 @@ pub struct Kcp2kTransport {
     pub server_active: bool,
     pub config: Kcp2KConfig,
     pub port: u16,
-    pub kcp_serv: Option<Kcp2K>,
+    pub kcp_serv: Option<Kcp2KServer>,
 }
 impl Kcp2kTransport {
     pub fn new(config: Option<Kcp2KConfig>) -> Box<Self> {
@@ -35,22 +32,14 @@ impl Kcp2kTransport {
         })
     }
 
-    pub fn kcp2k_callback(conn: &Kcp2KConnection, c: Callback) {
+    pub fn kcp2k_callback(conn: &Kcp2kConnection, c: Callback) {
         match c.r#type {
-            CallbackType::OnConnected => on_server_connected(conn.get_connection_id()),
-            CallbackType::OnData => {
-                on_server_data_received(conn.get_connection_id(), c.data.as_ref(), c.channel.into())
-            }
-            CallbackType::OnDisconnected => {
-                on_server_disconnected(conn.get_connection_id());
-            }
+            CallbackType::OnConnected => { on_server_connected(conn.connection_id()) }
+            CallbackType::OnData => { on_server_data_received(conn.connection_id(), c.data.as_ref(), c.channel.into()) }
             CallbackType::OnError => {
-                on_server_error(
-                    conn.get_connection_id(),
-                    c.error_code.into(),
-                    &c.error_message,
-                );
+                on_server_error(conn.connection_id(), c.error.into(), &"")
             }
+            CallbackType::OnDisconnected => { on_server_disconnected(conn.connection_id()) }
         }
     }
 }
@@ -81,38 +70,22 @@ impl Transport for Kcp2kTransport {
 
     fn server_start(&mut self, (mut network_address, port): (&str, u16)) {
         self.port = port;
-        match Kcp2K::new_server(
-            self.config,
-            format!(
-                "{}:{}",
-                network_address.replace("localhost", "0.0.0.0"),
-                self.port
-            ),
-            Self::kcp2k_callback,
-        ) {
-            Ok(server) => {
-                self.kcp_serv = Some(server);
-                self.server_active = true;
-            }
-            Err(err) => {
-                log::error!("Kcp2kTransport awake error: {:?}", err);
-                exit(1)
-            }
-        }
+        self.kcp_serv = Some(Kcp2KServer::new(format!("{}:{}", network_address.replace("localhost", "0.0.0.0"), self.port), self.config, Self::kcp2k_callback));
+        self.server_active = true;
     }
 
     fn server_send(&self, connection_id: u64, segment: &[u8], channel_id: TransportChannel) {
         if let Some(serv) = &self.kcp_serv {
-            match serv.s_send(
+            match serv.send(
                 connection_id,
-                bytes::Bytes::copy_from_slice(segment),
+                segment,
                 channel_id.into(),
             ) {
                 Ok(_) => {
                     on_server_data_sent(connection_id, segment, TransportChannel::from(channel_id))
                 }
                 Err(err_code) => {
-                    let reason = format!("{:?}", err_code);
+                    let reason = format!("{}", err_code);
                     on_server_error(connection_id, err_code.into(), &reason)
                 }
             }
@@ -120,14 +93,14 @@ impl Transport for Kcp2kTransport {
     }
 
     fn server_disconnect(&self, connection_id: u64) {
-        if let Some(serv) = &self.kcp_serv {
-            serv.close_connection(connection_id)
+        if let Some(serv) = &self.kcp_serv && let Some(conn) = serv.connections().get(&connection_id) {
+            conn.send_disconnect();
         }
     }
 
     fn server_get_client_address(&self, connection_id: u64) -> Option<String> {
-        if let Some(serv) = &self.kcp_serv {
-            Some(serv.get_connection_address(connection_id))
+        if let Some(serv) = &self.kcp_serv && let Some(conn) = serv.connections().get(&connection_id) {
+            Some(conn.remote_address().to_string())
         } else {
             None
         }
@@ -144,9 +117,9 @@ impl Transport for Kcp2kTransport {
     fn get_max_packet_size(&self, channel_id: TransportChannel) -> usize {
         match channel_id {
             TransportChannel::Reliable => {
-                Kcp2KPeer::unreliable_max_message_size(self.config.mtu as u32)
+                Kcp2kConnection::unreliable_max_message_size(self.config.mtu as u32)
             }
-            TransportChannel::Unreliable => Kcp2KPeer::reliable_max_message_size(
+            TransportChannel::Unreliable => Kcp2kConnection::reliable_max_message_size(
                 self.config.mtu as u32,
                 self.config.receive_window_size as u32,
             ),
@@ -155,7 +128,7 @@ impl Transport for Kcp2kTransport {
 
     #[allow(unused)]
     fn get_batch_threshold(&self, channel_id: TransportChannel) -> usize {
-        Kcp2KPeer::unreliable_max_message_size(self.config.mtu as u32)
+        Kcp2kConnection::unreliable_max_message_size(self.config.mtu as u32)
     }
 
     fn server_early_update(&self) {
@@ -192,20 +165,19 @@ impl Into<Kcp2KChannel> for TransportChannel {
     }
 }
 
-impl Into<TransportError> for ErrorCode {
+impl Into<TransportError> for Kcp2KError {
     fn into(self) -> TransportError {
         match self {
-            ErrorCode::None => TransportError::None,
-            ErrorCode::DnsResolve => TransportError::DnsResolve,
-            ErrorCode::Timeout => TransportError::Timeout,
-            ErrorCode::Congestion => TransportError::Congestion,
-            ErrorCode::InvalidReceive => TransportError::InvalidReceive,
-            ErrorCode::InvalidSend | ErrorCode::SendError => TransportError::InvalidSend,
-            ErrorCode::ConnectionClosed => TransportError::ConnectionClosed,
-            ErrorCode::Unexpected => TransportError::Unexpected,
-            ErrorCode::ConnectionNotFound | ErrorCode::ConnectionLocked => {
-                TransportError::Unexpected
-            }
+            Kcp2KError::None(msg) => TransportError::None(msg),
+            Kcp2KError::DnsResolve(msg) => TransportError::DnsResolve(msg),
+            Kcp2KError::Timeout(msg) => TransportError::Timeout(msg),
+            Kcp2KError::Congestion(msg) => TransportError::Congestion(msg),
+            Kcp2KError::InvalidReceive(msg) => TransportError::InvalidReceive(msg),
+            Kcp2KError::InvalidSend(msg) => TransportError::InvalidSend(msg),
+            Kcp2KError::ConnectionClosed(msg) => TransportError::ConnectionClosed(msg),
+            Kcp2KError::Unexpected(msg) => TransportError::Unexpected(msg),
+            Kcp2KError::SendError(msg) => TransportError::InvalidSend(msg),
+            Kcp2KError::ConnectionNotFound(msg) => TransportError::Unexpected(msg),
         }
     }
 }

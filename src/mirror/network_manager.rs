@@ -16,7 +16,7 @@ use crate::unity_engine::{
     GameObject, LoadSceneMode, MonoBehaviour, Time, Transform, WorldManager,
 };
 use crate::{action, network_manager};
-use kcp2k::kcp2k_config::Kcp2KConfig;
+use kcp2k_rust::kcp2k_config::Kcp2KConfig;
 use once_cell::sync::Lazy;
 use rand::Rng;
 use std::any::{Any, TypeId};
@@ -34,6 +34,7 @@ impl NetworkManager {
         }
     }
 
+    #[allow(static_mut_refs)]
     pub fn singleton_mut<T: TNetworkManager + 'static>() -> Option<&'static mut T> {
         unsafe {
             let type_id = TypeId::of::<T>();
