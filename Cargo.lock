@@ -339,9 +339,9 @@ dependencies = [
 
 [[package]]
 name = "kcp2k-rust"
-version = "1.0.5"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21b9926a7932d0c019723a19ea5d24365d6993f3b4de88cdfb0b0d937fb39b03"
+checksum = "a358ab76133d4dcdca1daf91a4639e3c2baf63decc0ba05a58f58dd9328a8757"
 dependencies = [
  "kcp",
  "log",
